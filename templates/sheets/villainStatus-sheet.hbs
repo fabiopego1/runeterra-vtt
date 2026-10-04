@@ -1,0 +1,11 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header"><h2><input name="name" type="text" value="{{item.name}}" /></h2></header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.Die"}}</label>
+      <select class="die-select" data-field="dieType">
+        {{#select item.system.dieType}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+      </select>
+    </div>
+  </section>
+</form>

@@ -1,0 +1,530 @@
+/* ============================================================
+   Forja de Campeões · Runeterra — Foundry VTT system styles.
+   Design language taken directly from the Runeterra web app:
+   ink surfaces, hextech gold, chamfered corners, hairline dividers,
+   dotted editable fields, mono eyebrows. No gradients, no glass,
+   radius 0 — sharp and dense.
+   ============================================================ */
+
+@font-face { font-family: 'Marcellus'; src: url('../assets/fonts/Marcellus-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('../assets/fonts/IBMPlexMono-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('../assets/fonts/IBMPlexMono-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
+:root {
+  /* surfaces (from the web app) */
+  --ink-0: #0c0d10;
+  --ink-1: #121419;
+  --ink-2: #191c22;
+  --ink-3: #22262d;
+  /* lines */
+  --line: #2a2e35;
+  --line-2: #3a3f47;
+  /* text */
+  --text: #e8dfca;
+  --text-2: #a8a08d;
+  --text-3: #888378;
+  /* hextech gold: structure & primary actions */
+  --gold: #c8a45e;
+  --gold-hi: #ecd49c;
+  --gold-lo: #6e5a33;
+  /* hextech blue: "active / you are here" only */
+  --hex: #45b8c4;
+  /* zone meanings — the only color meanings in the UI */
+  --zone-g: #79b06a;
+  --zone-y: #d9ab45;
+  --zone-r: #c4584c;
+  --chamfer: 14px;
+}
+
+/* ---------- Window frame: Foundry's parchment overridden with the ink surface,
+   chamfered top-left / bottom-right like the ficha pages. ---------- */
+.runeterra.sheet.actor,
+.runeterra.sheet.item {
+  background: var(--ink-1);
+  border: 1px solid var(--gold-lo);
+  border-radius: 0;
+  color-scheme: dark;
+}
+.window-app.runeterra .window-content,
+.window-app.runeterra .window-content > form,
+.window-app.runeterra .sheet-body {
+  background: var(--ink-1);
+  color: var(--text);
+}
+.window-app.runeterra .window-content { padding: 0; }
+.window-app.runeterra .window-content > form {
+  clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.window-app.runeterra .sheet-body { flex: 1; min-height: 0; overflow-y: auto; }
+
+.runeterra.sheet .window-title { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; letter-spacing: .08em; }
+
+/* ---------- Typography hierarchy ---------- */
+.runeterra { font-family: 'Barlow Semi Condensed', 'Arial Narrow', sans-serif; font-size: 14px; }
+.runeterra h1, .runeterra h2, .runeterra h3, .runeterra h4 {
+  font-family: 'Marcellus', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: .01em;
+  color: var(--text);
+}
+/* Section headers are mono eyebrows, not big serif titles — hierarchy by treatment. */
+.runeterra h3 {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 3px;
+  margin: 14px 0 6px;
+}
+.runeterra.sheet.actor .rt-abilities + h3 { margin-top: 16px; }
+.runeterra h4 {
+  font-size: 1rem;
+  color: var(--text-2);
+  margin: 0 0 4px;
+}
+
+/* ---------- Header: portrait, name, creation line, health ---------- */
+.rt-header {
+  display: flex;
+  gap: 14px;
+  border-bottom: 1px solid var(--gold-lo);
+  padding-bottom: 10px;
+  margin-bottom: 0;
+  flex: none;
+}
+.rt-portrait {
+  width: 92px;
+  min-height: 118px;
+  object-fit: cover;
+  background: var(--ink-0);
+  box-shadow: inset 0 0 0 1px var(--gold-lo);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.rt-header-fields { flex: 1; display: flex; flex-direction: column; }
+.rt-header h1 { margin: 0; }
+.rt-header h1 input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted var(--line-2);
+  color: var(--gold-hi);
+  font-family: 'Marcellus', Georgia, serif;
+  font-size: 1.9rem;
+  line-height: 1.1;
+  padding: 0 0 2px;
+}
+.rt-header h1 input:focus { border-bottom-style: solid; outline: none; }
+.rt-subline {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+.rt-subline em { text-transform: none; letter-spacing: 0; color: var(--text-3); }
+
+.rt-health { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.rt-health label, .rt-statusdice label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .56rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rt-health input {
+  width: 58px;
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  color: var(--text);
+  font: 500 1.05rem 'IBM Plex Mono', monospace;
+}
+.rt-health input:focus { border-bottom-color: var(--gold); outline: none; }
+.rt-health button {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  width: 22px; height: 22px;
+  border-radius: 0;
+  padding: 0;
+  line-height: 1;
+}
+.rt-health button:hover { color: var(--gold-hi); border-color: var(--gold); }
+.rt-health span { color: var(--text-3); font-family: 'IBM Plex Mono', monospace; font-size: .78rem; }
+
+/* Zone chips: the color means the zone — nothing else uses these hues. */
+.rt-zone {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 2px 10px;
+  color: var(--ink-0);
+  font-weight: 500;
+}
+.rt-zone-green { background: var(--zone-g); }
+.rt-zone-yellow { background: var(--zone-y); }
+.rt-zone-red { background: var(--zone-r); }
+.rt-zone-out { background: var(--ink-3); color: var(--text-3); }
+
+/* ---------- Roll bar: one primary action, the rest quiet ---------- */
+.rt-rollbar { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; flex: none; }
+.runeterra .rt-rollbar button, .runeterra .rt-rollbar .scene-preset {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  border-radius: 0;
+  font: 500 .82rem 'Barlow Semi Condensed', sans-serif;
+  padding: 4px 12px;
+  cursor: pointer;
+  width: auto;
+  flex: 0 0 auto;
+}
+.runeterra .rt-rollbar button:hover { color: var(--gold-hi); border-color: var(--gold); }
+.runeterra .rt-rollbar button.make-roll {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #17130b;
+  font-weight: 600;
+}
+.runeterra .rt-rollbar button.make-roll:hover { background: var(--gold-hi); border-color: var(--gold-hi); color: #17130b; }
+
+/* ---------- Tabs: understated, active marked by gold underline ---------- */
+.runeterra .sheet-tabs { border-bottom: 1px solid var(--line); gap: 4px; margin-bottom: 10px; flex: none; }
+.runeterra .sheet-tabs .item {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .64rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 2px solid transparent;
+  padding: 4px 12px 3px;
+  text-shadow: none;
+  background: none;
+}
+.runeterra .sheet-tabs .item:hover { color: var(--text); }
+.runeterra .sheet-tabs .item.active {
+  color: var(--gold-hi);
+  border-bottom-color: var(--gold);
+  text-shadow: none;
+  background: none;
+}
+
+/* ---------- Editable fields: dotted underline (ficha style), not boxed ---------- */
+.runeterra input[type="text"], .runeterra input[type="number"], .runeterra textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted var(--line-2);
+  border-radius: 0;
+  color: var(--text);
+  font-family: inherit;
+  font-size: .95rem;
+  padding: 2px 2px;
+  min-height: 0;
+}
+.runeterra input:focus, .runeterra textarea:focus { border-bottom: 1px solid var(--gold); outline: none; box-shadow: none; }
+.runeterra textarea { border: 1px dotted var(--line-2); line-height: 1.45; }
+.runeterra textarea:focus { border: 1px solid var(--gold); }
+.runeterra select {
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  color: var(--text);
+  font-family: inherit;
+  font-size: .9rem;
+  padding: 2px 4px;
+}
+.runeterra select:focus { border-color: var(--gold); outline: none; }
+.runeterra input[type="checkbox"] { accent-color: var(--gold); }
+
+.rt-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 5px 14px;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.rt-grid label, .rt-block-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .56rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rt-grid span { color: var(--text); font-size: .95rem; }
+.rt-block-label { display: block; margin: 8px 0 2px; }
+.rt-hint { color: var(--text-3); font-size: .82rem; }
+
+/* Creation line on the identity tab: read-only facts, dense rows. */
+.rt-grid span:empty::after { content: '—'; color: var(--text-3); }
+
+/* ---------- Traits: ficha-style two-column tables, hairline rows ---------- */
+.rt-twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 22px; }
+.rt-traits { width: 100%; border-collapse: collapse; }
+.rt-traits td { padding: 2px 0; border-bottom: 1px dotted var(--line); font-size: .95rem; }
+.rt-traits tr:last-child td { border-bottom: none; }
+.rt-die { font: 500 .95rem 'IBM Plex Mono', monospace; color: var(--gold); text-align: right; width: 2.5em; }
+.rt-orig { color: var(--text-3); font-size: .78rem; font-style: italic; font-weight: 400; margin-left: 4px; }
+
+/* ---------- Status block ---------- */
+.rt-statusblock {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  border-top: 1px solid var(--gold-lo);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 0;
+  margin: 12px 0;
+}
+.rt-statusdice { display: flex; gap: 10px; align-items: center; }
+.rt-statusdice .rt-die { font-size: 1.1rem; }
+.rt-zones-range { color: var(--text-3); font-size: .78rem; font-family: 'IBM Plex Mono', monospace; }
+
+/* ---------- Abilities by zone: color carries meaning, hairline rows ---------- */
+.rt-zone-table h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin: 12px 0 4px;
+  padding: 3px 0 3px 10px;
+  border-left: 3px solid var(--gold);
+  color: var(--text-2);
+}
+.rt-zone-table-green h4 { border-left-color: var(--zone-g); }
+.rt-zone-table-yellow h4 { border-left-color: var(--zone-y); }
+.rt-zone-table-red h4 { border-left-color: var(--zone-r); }
+.rt-zone-table-out h4 { border-left-color: var(--line-2); }
+
+.rt-abilities { width: 100%; border-collapse: collapse; }
+.rt-abilities td {
+  padding: 5px 8px 5px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  font-size: .88rem;
+}
+.rt-abilities tr:last-child td { border-bottom: none; }
+.rt-ability-type {
+  font-family: 'Marcellus', serif;
+  font-size: 1rem;
+  text-align: center;
+  width: 26px;
+  color: var(--text-3);
+}
+.rt-ability-name { font-weight: 600; min-width: 130px; color: var(--text); white-space: nowrap; }
+.rt-ability-text { color: var(--text-2); }
+.rt-ability-text strong { color: var(--gold-hi); font-weight: 600; }
+.rt-ability-actions { width: 66px; text-align: right; white-space: nowrap; }
+.rt-ability-actions button {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--text-3);
+  border-radius: 0;
+  padding: 1px 7px;
+  margin-left: 3px;
+  cursor: pointer;
+}
+.rt-ability-actions button:hover { color: var(--gold-hi); border-color: var(--gold); }
+
+.rt-locked { opacity: .38; }
+.rt-locked-note { color: var(--text-3); font-size: .68rem; letter-spacing: 0; text-transform: none; font-family: 'Barlow Semi Condensed', sans-serif; }
+
+.rt-mods td { padding: 3px 8px 3px 0; }
+
+.runeterra .item-create, .runeterra button.rt-import-btn {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--text-2);
+  border-radius: 0;
+  font: 500 .82rem 'Barlow Semi Condensed', sans-serif;
+  padding: 3px 12px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+.runeterra .item-create:hover, .runeterra button.rt-import-btn:hover { color: var(--gold-hi); border-color: var(--gold); }
+
+/* ---------- Principles: two columns split by a hairline, no cards ---------- */
+.rt-principles { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--gold-lo); border-bottom: 1px solid var(--line); }
+.rt-principle { padding: 10px 14px 8px 0; }
+.rt-principle + .rt-principle { border-left: 1px solid var(--line); padding-left: 14px; }
+.rt-principle h4 { font-family: 'Marcellus', serif; color: var(--text-2); margin: 0 0 4px; font-size: 1.05rem; }
+.rt-principle h4 b, .rt-principle .rt-pr-element { color: var(--gold-hi); font-weight: 400; }
+.rt-principle p { margin: 4px 0; font-size: .9rem; color: var(--text-2); }
+.rt-principle p strong { color: var(--text-3); font-weight: 600; }
+.rt-principle .rt-ability { color: var(--text); border-top: 1px dotted var(--line-2); padding-top: 5px; }
+
+/* Special archetype cards share the principle treatment (columns, hairlines). */
+
+/* ---------- Scene tracker ---------- */
+.rt-scene-zone h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin: 10px 0 4px;
+  padding: 3px 0 3px 10px;
+  border-left: 3px solid var(--gold);
+  color: var(--text-2);
+}
+.rt-scene-zone-green h4 { border-left-color: var(--zone-g); }
+.rt-scene-zone-yellow h4 { border-left-color: var(--zone-y); }
+.rt-scene-zone-red h4 { border-left-color: var(--zone-r); }
+.rt-scene-spaces { display: flex; gap: 5px; align-items: center; }
+.rt-scene-spaces button {
+  width: 28px; height: 28px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  color: var(--line-2);
+  border-radius: 0;
+  font-size: 1rem;
+  padding: 0;
+  cursor: pointer;
+}
+.rt-scene-spaces button:hover { border-color: var(--gold); }
+.rt-scene-spaces button.filled { color: var(--gold); border-color: var(--gold-lo); background: var(--ink-3); }
+.rt-scene-count { color: var(--text-3); margin-left: 8px; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; }
+.rt-scene-counts { display: flex; gap: 16px; font-family: 'IBM Plex Mono', monospace; font-size: .85rem; }
+
+/* ---------- Roll config (manual dice) ---------- */
+.rt-roll-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold-lo);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  background: var(--ink-0);
+}
+.rt-roll-config label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .56rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rt-roll-config input { width: 110px; }
+
+/* ---------- Chat cards ---------- */
+.runeterra.chat-card {
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 0 0 1px var(--gold-lo);
+  border-radius: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  padding: 10px 14px;
+  margin: 4px 0;
+  color: var(--text);
+}
+.runeterra.chat-card h3 {
+  font-family: 'Marcellus', serif;
+  font-size: 1.05rem;
+  color: var(--gold-hi);
+  border: none;
+  letter-spacing: .01em;
+  text-transform: none;
+  margin: 0 0 4px;
+  padding: 0;
+}
+.rt-roll-dice { display: flex; gap: 14px; margin: 4px 0; }
+.rt-die { text-align: center; min-width: 44px; }
+.rt-die img { width: 34px; height: 34px; opacity: .9; }
+.rt-die-total { display: block; font: 500 1.25rem 'IBM Plex Mono', monospace; color: var(--gold-hi); }
+.rt-die-pos {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .56rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rt-roll-names { display: flex; gap: 14px; color: var(--text-3); font-size: .8rem; }
+.rt-roll-mods { font: 500 1rem 'IBM Plex Mono', monospace; color: var(--gold); }
+.rt-roll-warning { margin-top: 4px; color: var(--zone-r); font-weight: 600; font-size: .85rem; }
+
+/* Dice hue meaning: grey d4 → gold d10 → hextech d12 (same code as the web app). */
+.rt-die.d4 img { filter: grayscale(1) brightness(1.4); }
+.rt-die.d6 img { filter: sepia(.6) saturate(1.4) brightness(1.2); }
+.rt-die.d8 img { filter: hue-rotate(100deg) saturate(1.2); }
+.rt-die.d10 img { filter: sepia(1) saturate(2) brightness(1.1); }
+.rt-die.d12 img { filter: hue-rotate(160deg) saturate(1.6); }
+
+/* Ability chat card text */
+.rt-ability-text { color: var(--text-2); font-size: .92rem; }
+.rt-ability-text strong { color: var(--gold-hi); }
+
+/* ---------- Sidebar import button ---------- */
+.runeterra button.rt-import-btn { margin: 0; }
+
+/* ---------- Chat: dark ink theme everywhere (sidebar, popouts, dice popups) ---------- */
+.chat-message {
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 0 0 1px var(--gold-lo);
+  border-radius: 0;
+  color: var(--text);
+}
+.chat-message .message-header { color: var(--text-3); }
+.chat-message .message-header .message-sender { color: var(--text-2); }
+.chat-message .message-metadata { color: var(--text-3); }
+.window-app.chat-popout,
+.window-app.chat-popout .window-content,
+.window-app.chat-popout .window-content > form {
+  background: var(--ink-1);
+  color: var(--text);
+  border-radius: 0;
+}
+.window-app.chat-popout .window-content { color-scheme: dark; }
+.window-app.chat-popout .window-header { background: var(--ink-2); color: var(--text-2); }
+.chat-message .rt-roll-dice .rt-die-total { color: var(--gold-hi); }
+.chat-message .flavor-text { color: var(--text); }
+.chat-message .roll-formula, .chat-message .dice-formula {
+  background: var(--ink-0);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--text-2);
+  box-shadow: none;
+}
+.chat-message .dice-total {
+  background: var(--ink-0);
+  border: 1px solid var(--gold-lo);
+  border-radius: 0;
+  color: var(--gold-hi);
+  box-shadow: none;
+}
+.chat-message .part-flavor, .chat-message .part-formula, .chat-message .part-total { border-color: var(--line); }
+
+/* Scene status dots */
+.rt-dot { display: inline-block; width: 9px; height: 9px; border-radius: 0; margin-right: 4px; vertical-align: baseline; }
+.rt-dot-green { background: var(--zone-g); }
+.rt-dot-yellow { background: var(--zone-y); }
+.rt-dot-red { background: var(--zone-r); }
+
+/* Clickable trait rows */
+.rt-traits .trait-row { cursor: pointer; }
+.rt-traits .trait-row:hover td { color: var(--gold-hi); }
+.rt-traits .trait-row:hover .rt-die { color: var(--gold-hi); }
+
+/* Scene per-zone step input */
+.rt-scene-steps {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .56rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-left: 10px;
+}
+.rt-scene-spaces input.scene-setting { width: 46px; text-align: center; }

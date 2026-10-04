@@ -1,0 +1,10 @@
+<div class="rt-principles">
+  {{#each principles}}
+  <div class="rt-principle rt-color-{{slot}}">
+    <h4>{{name}}</h4>
+    <p class="rt-rp"><strong>{{localize "RUNETERRA.PrincipleRoleplaying"}}:</strong> {{{rp}}}</p>
+    <p class="rt-twist"><strong>{{localize "RUNETERRA.PrincipleMinorTwist"}}:</strong> {{{minor}}}</p>
+    <p class="rt-twist"><strong>{{localize "RUNETERRA.PrincipleMajorTwist"}}:</strong> {{{major}}}</p>
+  </div>
+  {{/each}}
+</div>

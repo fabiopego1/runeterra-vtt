@@ -1,0 +1,35 @@
+{{!-- Runeterra Foundry — Villain sheet (Phase 1 working version) --}}
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header rt-header">
+    <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="rt-header-fields">
+      <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'ACTOR.TypeVillain'}}" /></h1>
+      <div class="rt-rollbar">
+        <button type="button" class="make-roll"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
+        <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
+      </div>
+    </div>
+  </header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.Alias"}}</label>
+      <input name="system.alias" type="text" value="{{system.alias}}" />
+      <label>{{localize "RUNETERRA.Approach"}}</label>
+      <input name="system.approach" type="text" value="{{system.approach}}" />
+    </div>
+    <div class="rt-roll-config">
+      <label>{{localize "RUNETERRA.DicePower"}}</label>
+      <select class="die-select" data-field="firstDie">
+        {{#select system.firstDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+      </select>
+      <label>{{localize "RUNETERRA.DiceQuality"}}</label>
+      <select class="die-select" data-field="secondDie">
+        {{#select system.secondDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+      </select>
+      <label>{{localize "RUNETERRA.DiceStatus"}}</label>
+      <select class="die-select" data-field="thirdDie">
+        {{#select system.thirdDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+      </select>
+    </div>
+  </section>
+</form>

@@ -1,0 +1,13 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header"><h2><input name="name" type="text" value="{{item.name}}" /></h2></header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.Mods"}}</label>
+      <input name="system.value" type="number" value="{{item.system.value}}" min="-4" max="4" />
+      <label>Persistente</label>
+      <input name="system.persistent" type="checkbox" {{checked item.system.persistent}} />
+      <label>Exclusivo</label>
+      <input name="system.exclusive" type="checkbox" {{checked item.system.exclusive}} />
+    </div>
+  </section>
+</form>

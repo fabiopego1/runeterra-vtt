@@ -1,0 +1,13 @@
+{{!-- Runeterra Foundry — single-die roll --}}
+<div class="runeterra chat-card rt-roll">
+  <div class="rt-roll-dice">
+    <div class="rt-die {{rollResult.imgClass}}">
+      <img src="{{rollResult.img}}" />
+      <span class="rt-die-total">{{rollResult.total}}</span>
+    </div>
+  </div>
+  <div class="rt-roll-names"><span>{{rollResult.rollName}}</span></div>
+  {{#if bonus}}<div class="rt-roll-mods">+{{bonus}}</div>{{/if}}
+  {{#if penalty}}<div class="rt-roll-mods">{{penalty}}</div>{{/if}}
+  {{#if forgotPenalty}}<div class="rt-roll-warning"><i class="fas fa-triangle-exclamation"></i> {{localize "RUNETERRA.ForgotPenalty"}}</div>{{/if}}
+</div>

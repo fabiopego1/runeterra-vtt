@@ -1,0 +1,35 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header"><h2><input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'RUNETERRA.Ability'}}" /></h2></header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.CanonicalAbility"}}</label>
+      <input class="canonical-picker" list="rt-ability-list" name="system.canonicalName" type="text" value="{{item.system.canonicalName}}" placeholder="{{localize 'RUNETERRA.CanonicalAbilityHint'}}" />
+      <datalist id="rt-ability-list">
+        {{#each abilityOptions}}<option value="{{en}}">{{pt}}</option>{{/each}}
+      </datalist>
+      {{#if canonicalPt}}
+      <label></label><span class="rt-orig">{{canonicalPt}}</span>
+      {{/if}}
+      <label>{{localize "RUNETERRA.CustomName"}}</label>
+      <input name="system.customName" type="text" value="{{item.system.customName}}" />
+      <label>{{localize "RUNETERRA.Zone"}}</label>
+      <select name="system.zone">
+        {{#select item.system.zone}}
+        <option value="green">{{localize "RUNETERRA.ZoneGreen"}}</option>
+        <option value="yellow">{{localize "RUNETERRA.ZoneYellow"}}</option>
+        <option value="red">{{localize "RUNETERRA.ZoneRed"}}</option>
+        {{/select}}
+      </select>
+      <label>Tipo</label>
+      <select name="system.type">
+        {{#select item.system.type}}
+        <option value="A">{{localize "RUNETERRA.AbilityAction"}}</option>
+        <option value="R">{{localize "RUNETERRA.AbilityReaction"}}</option>
+        <option value="I">{{localize "RUNETERRA.AbilityInherent"}}</option>
+        {{/select}}
+      </select>
+    </div>
+    <label class="rt-block-label">{{localize "RUNETERRA.Ability"}}</label>
+    <textarea name="system.gameText" rows="6">{{item.system.gameText}}</textarea>
+  </section>
+</form>

@@ -1,0 +1,26 @@
+{{!-- Runeterra Foundry — Minion sheet: die, group, form and description. --}}
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header rt-header">
+    <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="rt-header-fields">
+      <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'ACTOR.TypeMinion'}}" /></h1>
+      <div class="rt-rollbar">
+        <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
+      </div>
+    </div>
+  </header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.Group"}}</label>
+      <input name="system.group" type="text" value="{{system.group}}" />
+      <label>{{localize "RUNETERRA.Die"}}</label>
+      <select class="die-select" data-field="dieType">
+        {{#select system.dieType}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+      </select>
+      <label>{{localize "ITEM.TypeMinionForm"}}</label>
+      <input name="system.formName" type="text" value="{{system.formName}}" />
+    </div>
+    <label class="rt-block-label">{{localize "RUNETERRA.Notes"}}</label>
+    <textarea name="system.description" rows="5">{{system.description}}</textarea>
+  </section>
+</form>

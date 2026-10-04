@@ -1,0 +1,41 @@
+{{!-- Runeterra Foundry — abilities by health zone (mirrors the ficha's zone tables). --}}
+{{#each tables}}
+<div class="rt-zone-table rt-zone-table-{{zone}}">
+  <h4>
+    {{localize label}}
+    {{#if locked}}<em class="rt-locked-note">— {{localize "RUNETERRA.ZoneLocked"}}</em>{{/if}}
+  </h4>
+  <table class="rt-abilities {{#if locked}}rt-locked{{/if}}">
+    <tbody>
+      {{#each rows}}
+      <tr data-item-id="{{id}}">
+        <td class="rt-ability-type rt-type-{{type}}">{{type}}</td>
+        <td class="rt-ability-name">{{name}}{{#if renamed}} <span class="rt-orig">{{base}}</span>{{/if}}</td>
+        <td class="rt-ability-text">{{{text}}}</td>
+        <td class="rt-ability-actions">
+          <button type="button" class="roll-item" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>
+          <button type="button" class="item-edit" title="{{localize 'RUNETERRA.Edit'}}"><i class="fas fa-pen"></i></button>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/each}}
+
+{{#if out}}
+<div class="rt-zone-table rt-zone-table-out {{#unless outActive}}rt-locked{{/unless}}">
+  <h4>{{localize "RUNETERRA.Knockout"}}</h4>
+  <table class="rt-abilities">
+    <tbody>
+      <tr>
+        <td class="rt-ability-type rt-type-A">{{out.type}}</td>
+        <td class="rt-ability-name">{{out.name}}</td>
+        <td class="rt-ability-text">{{{out.text}}}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{{/if}}
+<p class="rt-hint"><em>{{localize "RUNETERRA.AbilitiesHint"}}</em></p>

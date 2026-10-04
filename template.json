@@ -1,0 +1,207 @@
+{
+    "Actor": {
+        "types": [
+            "champion",
+            "villain",
+            "minion",
+            "environment",
+            "scene"
+        ],
+        "templates": {
+            "dice": {
+                "firstDie": "d4",
+                "secondDie": "d4",
+                "thirdDie": "d4",
+                "firstDieName": "N/A",
+                "secondDieName": "N/A",
+                "thirdDieName": "N/A"
+            },
+            "championdata": {
+                "character": {
+                    "people": null,
+                    "region": null,
+                    "bg": {
+                        "id": null,
+                        "assign": {},
+                        "principle": null
+                    },
+                    "ps": {
+                        "id": null,
+                        "assign": {},
+                        "extra": {}
+                    },
+                    "arch": {
+                        "id": null,
+                        "base": null,
+                        "assign": {},
+                        "principle": null,
+                        "extra": {},
+                        "divMethod": null,
+                        "minionQ": null,
+                        "minionForms": [],
+                        "notes": "",
+                        "split": {},
+                        "powerless": {}
+                    },
+                    "pers": {
+                        "id": null,
+                        "qname": "",
+                        "qdesc": "",
+                        "qok": false,
+                        "outTrait": null,
+                        "upgrade": null,
+                        "id2": null
+                    },
+                    "health": {
+                        "trait": null,
+                        "mode": "fixed",
+                        "roll": null,
+                        "rerolled": false
+                    },
+                    "pch": {},
+                    "sel": {},
+                    "renames": {},
+                    "traitNames": {},
+                    "evo": {
+                        "traits": {},
+                        "principles": {},
+                        "abilities": {},
+                        "log": []
+                    },
+                    "info": {
+                        "alias": "",
+                        "player": "",
+                        "gender": "",
+                        "age": "",
+                        "height": "",
+                        "eyes": "",
+                        "hair": "",
+                        "skin": "",
+                        "build": "",
+                        "costume": "",
+                        "notes": ""
+                    }
+                },
+                "derived": {
+                    "powers": {},
+                    "qualities": {},
+                    "status": {
+                        "green": "d8",
+                        "yellow": "d8",
+                        "red": "d8"
+                    },
+                    "status2": null,
+                    "healthMax": 0,
+                    "greenLow": 0,
+                    "yellowHigh": 0,
+                    "yellowLow": 0,
+                    "redHigh": 0
+                },
+                "health": {
+                    "value": 0,
+                    "max": 0
+                },
+                "scene": "green",
+                "play": {
+                    "hp": [],
+                    "rw": [],
+                    "issues": [],
+                    "coll": [],
+                    "cdone": [],
+                    "current": null,
+                    "notes": []
+                }
+            }
+        },
+        "champion": {
+            "templates": ["dice", "championdata"]
+        },
+        "villain": {
+            "templates": ["dice", "championdata"],
+            "approach": ""
+        },
+        "minion": {
+            "group": "",
+            "dieType": "d4"
+        },
+        "environment": {
+            "templates": ["dice"],
+            "description": ""
+        },
+        "scene": {
+            "greenSpace": {
+                "setting": 2,
+                "current": 0
+            },
+            "yellowSpace": {
+                "setting": 4,
+                "current": 0
+            },
+            "redSpace": {
+                "setting": 2,
+                "current": 0
+            },
+            "options": true
+        }
+    },
+    "Item": {
+        "types": [
+            "power",
+            "quality",
+            "ability",
+            "principle",
+            "mod",
+            "twist",
+            "minionForm",
+            "villainStatus"
+        ],
+        "power": {
+            "traitKey": "",
+            "dieType": "d4"
+        },
+        "quality": {
+            "traitKey": "",
+            "dieType": "d4"
+        },
+        "ability": {
+            "iid": "",
+            "group": "",
+            "canonicalName": "",
+            "customName": "",
+            "type": "A",
+            "zone": "green",
+            "traits": [],
+            "choices": {},
+            "gameText": ""
+        },
+        "principle": {
+            "slot": "bg",
+            "principleId": "",
+            "rp": "",
+            "minor": "",
+            "major": "",
+            "abilityText": ""
+        },
+        "mod": {
+            "value": 1,
+            "persistent": false,
+            "exclusive": false,
+            "named": true,
+            "selected": false
+        },
+        "twist": {
+            "type": "greenminor",
+            "description": ""
+        },
+        "minionForm": {
+            "formName": "",
+            "description": "",
+            "bonus": "one",
+            "group": 1
+        },
+        "villainStatus": {
+            "dieType": "d4",
+            "selected": false
+        }
+    }
+}

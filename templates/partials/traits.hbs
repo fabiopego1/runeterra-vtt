@@ -1,0 +1,11 @@
+<h3>{{title}}</h3>
+<table class="rt-traits">
+  <tbody>
+    {{#each list}}
+    <tr class="trait-row" data-trait-key="{{key}}" data-trait-die="{{die}}" data-trait-kind="{{kind}}" title="{{localize 'RUNETERRA.ClickTraitHint'}}">
+      <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
+      <td class="rt-die">{{die}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

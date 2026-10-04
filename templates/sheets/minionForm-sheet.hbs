@@ -1,0 +1,14 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header"><h2><input name="name" type="text" value="{{item.name}}" /></h2></header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.Bonus"}}</label>
+      <select name="system.bonus">
+        {{#select item.system.bonus}}{{#each config.bonus}}
+        <option value="{{@key}}">{{localize this}}</option>
+        {{/each}}{{/select}}
+      </select>
+    </div>
+    <textarea name="system.description" rows="6">{{item.system.description}}</textarea>
+  </section>
+</form>

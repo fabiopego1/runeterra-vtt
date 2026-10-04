@@ -1,0 +1,195 @@
+{{!-- Runeterra Foundry — Champion sheet, based on the web app's playable ficha (ficha.html). --}}
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header rt-header">
+    <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="rt-header-fields">
+      <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'RUNETERRA.Name'}}" /></h1>
+      <div class="rt-subline">
+        {{#if derived}}
+          {{peopleName}} · {{regionName}} — {{bgName}} / {{psName}} / {{archName}} / {{persName}}
+        {{else}}
+          <em>{{localize "RUNETERRA.NoCharacterData"}}</em>
+        {{/if}}
+      </div>
+      {{#if derived}}
+      <div class="rt-health rt-health-header">
+        <label>{{localize "RUNETERRA.Health"}}</label>
+        <button type="button" class="health-step" data-delta="-1">−</button>
+        <input class="health-update" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
+        <span>/ {{derived.health.max}}</span>
+        <button type="button" class="health-step" data-delta="1">+</button>
+        <span class="rt-zone rt-zone-{{derived.zone}}">{{zoneLabel}}</span>
+      </div>
+      {{/if}}
+      <div class="rt-rollbar">
+        <button type="button" class="make-roll" title="{{localize 'RUNETERRA.RollCombined'}}"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
+        <button type="button" class="roll-power">{{localize "RUNETERRA.RollPower"}}</button>
+        <button type="button" class="roll-quality">{{localize "RUNETERRA.RollQuality"}}</button>
+        <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="champ">{{localize "RUNETERRA.Tabs.info"}}</a>
+    <a class="item" data-tab="powers">{{localize "RUNETERRA.Tabs.powers"}}</a>
+    <a class="item" data-tab="auxiliary">{{localize "RUNETERRA.Tabs.auxiliary"}}</a>
+  </nav>
+
+  <section class="sheet-body">
+    {{!-- ------------------------------------------------ page 1: identity + principles --}}
+    <div class="tab" data-tab="champ">
+      <div class="rt-grid">
+        <label>{{localize "RUNETERRA.Alias"}}</label>
+        <input name="system.character.info.alias" type="text" value="{{info.alias}}" />
+        <label>{{localize "RUNETERRA.Player"}}</label>
+        <input name="system.character.info.player" type="text" value="{{info.player}}" />
+        <label>{{localize "RUNETERRA.People"}}</label>
+        <span>{{peopleName}}</span>
+        <label>{{localize "RUNETERRA.Region"}}</label>
+        <span>{{regionName}}</span>
+        <label>{{localize "RUNETERRA.Background"}}</label>
+        <span>{{bgName}}</span>
+        <label>{{localize "RUNETERRA.PowerSource"}}</label>
+        <span>{{psName}}</span>
+        <label>{{localize "RUNETERRA.Archetype"}}</label>
+        <span>{{archName}}</span>
+        <label>{{localize "RUNETERRA.Personality"}}</label>
+        <span>{{persName}}</span>
+      </div>
+
+      <h3>{{localize "RUNETERRA.Physical"}}</h3>
+      <div class="rt-grid">
+        <label>{{localize "RUNETERRA.Gender"}}</label><input name="system.character.info.gender" type="text" value="{{info.gender}}" />
+        <label>{{localize "RUNETERRA.Age"}}</label><input name="system.character.info.age" type="text" value="{{info.age}}" />
+        <label>{{localize "RUNETERRA.Height"}}</label><input name="system.character.info.height" type="text" value="{{info.height}}" />
+        <label>{{localize "RUNETERRA.Eyes"}}</label><input name="system.character.info.eyes" type="text" value="{{info.eyes}}" />
+        <label>{{localize "RUNETERRA.Hair"}}</label><input name="system.character.info.hair" type="text" value="{{info.hair}}" />
+        <label>{{localize "RUNETERRA.Skin"}}</label><input name="system.character.info.skin" type="text" value="{{info.skin}}" />
+        <label>{{localize "RUNETERRA.Build"}}</label><input name="system.character.info.build" type="text" value="{{info.build}}" />
+      </div>
+      <label class="rt-block-label">{{localize "RUNETERRA.Costume"}}</label>
+      <textarea name="system.character.info.costume" rows="4">{{info.costume}}</textarea>
+
+      {{#if principles}}
+      <h3>{{localize "RUNETERRA.Principles"}}</h3>
+      {{> "systems/runeterra/templates/partials/principles.hbs" principles=principles }}
+      {{/if}}
+    </div>
+
+    {{!-- ------------------------------------------------ page 2: powers & abilities --}}
+    <div class="tab" data-tab="powers">
+      <div class="rt-roll-config">
+        <label>{{localize "RUNETERRA.DicePower"}}</label>
+        <select class="die-select" data-field="firstDie">
+          {{#select system.firstDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+        </select>
+        <input type="text" name="system.firstDieName" value="{{system.firstDieName}}" />
+        <label>{{localize "RUNETERRA.DiceQuality"}}</label>
+        <select class="die-select" data-field="secondDie">
+          {{#select system.secondDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+        </select>
+        <input type="text" name="system.secondDieName" value="{{system.secondDieName}}" />
+        <label>{{localize "RUNETERRA.DiceStatus"}}</label>
+        <select class="die-select" data-field="thirdDie">
+          {{#select system.thirdDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+        </select>
+        <input type="text" name="system.thirdDieName" value="{{system.thirdDieName}}" />
+      </div>
+
+      {{#if derived}}
+      <div class="rt-twocol">
+        <div>
+          <h3>{{localize "RUNETERRA.Powers"}}</h3>
+          <table class="rt-traits">
+            <tbody>
+              {{#each powers}}
+              <tr>
+                <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
+                <td class="rt-die">{{die}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>{{localize "RUNETERRA.Qualities"}}</h3>
+          <table class="rt-traits">
+            <tbody>
+              {{#each qualities}}
+              <tr>
+                <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
+                <td class="rt-die">{{die}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="rt-statusblock">
+        <div class="rt-statusdice">
+          <label>{{localize "RUNETERRA.StatusDice"}}</label>
+          <span class="rt-die">{{derived.status.green}}</span>
+          <span class="rt-die">{{derived.status.yellow}}</span>
+          <span class="rt-die">{{derived.status.red}}</span>
+        </div>
+        <div class="rt-health">
+          <label>{{localize "RUNETERRA.HealthCurrent"}}</label>
+          <button type="button" class="health-step" data-delta="-1">−</button>
+          <input class="health-update" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
+          <span>/ {{derived.health.max}}</span>
+          <button type="button" class="health-step" data-delta="1">+</button>
+          <span class="rt-zone rt-zone-{{derived.zone}}">{{zoneLabel}}</span>
+          <span class="rt-zones-range">
+            {{localize "RUNETERRA.ZoneGreen"}} {{derived.health.greenLow}}+ ·
+            {{localize "RUNETERRA.ZoneYellow"}} {{derived.health.yellowLow}}–{{derived.health.yellowHigh}} ·
+            {{localize "RUNETERRA.ZoneRed"}} 1–{{derived.health.redHigh}}
+          </span>
+        </div>
+      </div>
+      {{/if}}
+
+      {{> "systems/runeterra/templates/partials/abilities.hbs" tables=zoneTables.tables out=zoneTables.out outActive=zoneTables.outActive }}
+
+      <h3>{{localize "RUNETERRA.Mods"}}</h3>
+      <table class="rt-abilities rt-mods">
+        <tbody>
+          {{#each mods}}
+          <tr data-item-id="{{id}}">
+            <td><input type="checkbox" class="mod-select" {{checked selected}} title="{{localize 'RUNETERRA.RollCombined'}}" /></td>
+            <td class="rt-ability-name">{{name}}</td>
+            <td class="rt-die">{{#if persistent}}<i class="fas fa-hourglass-half"></i> {{/if}}{{#if exclusive}}<i class="fas fa-lock"></i> {{/if}}{{value}}</td>
+            <td class="rt-ability-actions">
+              <button type="button" class="item-edit" title="{{localize 'RUNETERRA.Edit'}}"><i class="fas fa-pen"></i></button>
+              <button type="button" class="item-delete" title="{{localize 'RUNETERRA.Delete'}}"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      <button type="button" class="item-create" data-type="mod">+ {{localize "RUNETERRA.Create"}} {{localize "ITEM.TypeMod"}}</button>
+      <p class="rt-hint"><em>{{localize "RUNETERRA.ModsHint"}}</em></p>
+    </div>
+
+    {{!-- ------------------------------------------------ page 3: auxiliary --}}
+    <div class="tab" data-tab="auxiliary">
+      {{#if special}}
+      <h3>{{special.name}}</h3>
+      <div class="rt-principles">
+        {{#each special.cards}}
+        <div class="rt-principle">
+          <h4>{{title}}</h4>
+          {{#each lines}}<p>{{{this}}}</p>{{/each}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+      <h3>{{localize "RUNETERRA.Biography"}}</h3>
+      <textarea name="system.character.info.notes" rows="10">{{info.notes}}</textarea>
+      <h3>{{localize "RUNETERRA.Notes"}}</h3>
+      <textarea name="system.play.notes" rows="4">{{#each system.play.notes}}{{this}}
+{{/each}}</textarea>
+    </div>
+  </section>
+</form>

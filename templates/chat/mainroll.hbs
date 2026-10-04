@@ -1,0 +1,20 @@
+{{!-- Runeterra Foundry — combined Power + Quality + Status roll --}}
+<div class="runeterra chat-card rt-roll rt-color-green">
+  <div class="rt-roll-dice">
+    {{#each dice}}
+    <div class="rt-die {{imgClass}}">
+      <img src="{{img}}" title="{{dicePosition}}" />
+      <span class="rt-die-total">{{total}}</span>
+      <span class="rt-die-pos">{{dicePosition}}</span>
+    </div>
+    {{/each}}
+  </div>
+  <div class="rt-roll-names">
+    <span>{{lookup names 0}}</span>
+    <span>{{lookup names 1}}</span>
+    <span>{{lookup names 2}}</span>
+  </div>
+  {{#if bonus}}<div class="rt-roll-mods">+{{bonus}}</div>{{/if}}
+  {{#if penalty}}<div class="rt-roll-mods">{{penalty}}</div>{{/if}}
+  {{#if forgotPenalty}}<div class="rt-roll-warning"><i class="fas fa-triangle-exclamation"></i> {{localize "RUNETERRA.ForgotPenalty"}}</div>{{/if}}
+</div>

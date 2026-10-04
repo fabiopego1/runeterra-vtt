@@ -1,0 +1,16 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header"><h2><input name="name" type="text" value="{{item.name}}" /></h2></header>
+  <section class="sheet-body">
+    <div class="rt-grid">
+      <label>{{localize "RUNETERRA.Trait"}}</label>
+      <input list="rt-quality-list" name="system.traitKey" type="text" value="{{item.system.traitKey}}" />
+      <datalist id="rt-quality-list">
+        {{#each traitOptions}}{{#if (eq kind "quality")}}<option value="{{key}}">{{name}}</option>{{/if}}{{/each}}
+      </datalist>
+      <label>{{localize "RUNETERRA.Die"}}</label>
+      <select class="die-select" data-field="dieType">
+        {{#select item.system.dieType}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+      </select>
+    </div>
+  </section>
+</form>

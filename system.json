@@ -1,0 +1,61 @@
+{
+    "id": "runeterra",
+    "title": "Forja de Campeões · Runeterra (Projeto de fã não oficial)",
+    "description": "Sistema Runeterra para Foundry VTT — uma evolução independente do sistema Sentinel Comics RPG, usando os dados e regras da Forja de Campeões (fabiopego1.github.io/Runeterra).",
+    "authors": [
+        {
+            "name": "Fabio Pego"
+        },
+        {
+            "name": "Base técnica: RabidRaccoon, GamerDragon (sistema SCRPG não oficial)"
+        }
+    ],
+    "version": "0.1.0",
+    "compatibility": {
+        "minimum": "12",
+        "verified": "14"
+    },
+    "scripts": [
+        "data/i18n-shim.js",
+        "data/data-rules.js",
+        "data/data-tables.js",
+        "data/data-lore.js",
+        "data/pt/abilities.js",
+        "data/pt/data-tables.js",
+        "data/pt/data-lore.js",
+        "data/pt/peoples.js",
+        "data/pt/principles.js",
+        "data/pt/suggestions.js"
+    ],
+    "esmodules": [
+        "runeterra.js"
+    ],
+    "styles": [
+        "styles/runeterra.css"
+    ],
+    "languages": [
+        {
+            "lang": "pt-BR",
+            "name": "Português (Brasil)",
+            "path": "lang/pt-BR.json"
+        },
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "lang/en.json"
+        }
+    ],
+    "gridDistance": 5,
+    "gridUnits": "m",
+    "primaryTokenAttribute": "system.health.value",
+    "initiative": null,
+    "url": "https://github.com/fabiopego1/runeterra-vtt",
+    "manifest": "https://raw.githubusercontent.com/fabiopego1/runeterra-vtt/main/system.json",
+    "download": "https://github.com/fabiopego1/runeterra-vtt/archive/refs/heads/main.zip",
+    "flags": {
+        "runeterra": {
+            "basedOn": "scrpg (unofficial Sentinel Comics RPG system, gitlab.com/RabidRaccoon/scrpg)",
+            "rulesSource": "https://fabiopego1.github.io/Runeterra/"
+        }
+    }
+}
