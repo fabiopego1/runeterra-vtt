@@ -104,7 +104,7 @@
           <table class="rt-traits">
             <tbody>
               {{#each powers}}
-              <tr>
+              <tr class="trait-row" data-trait-key="{{key}}" data-trait-die="{{die}}" data-trait-kind="power" title="{{localize 'RUNETERRA.ClickTraitHint'}}">
                 <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
                 <td class="rt-die">{{die}}</td>
               </tr>
@@ -117,7 +117,7 @@
           <table class="rt-traits">
             <tbody>
               {{#each qualities}}
-              <tr>
+              <tr class="trait-row" data-trait-key="{{key}}" data-trait-die="{{die}}" data-trait-kind="quality" title="{{localize 'RUNETERRA.ClickTraitHint'}}">
                 <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
                 <td class="rt-die">{{die}}</td>
               </tr>
