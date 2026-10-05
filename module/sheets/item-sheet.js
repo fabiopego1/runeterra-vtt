@@ -3,7 +3,7 @@
 // type + pt-BR game text; the custom name stays separate so identity is never overwritten.
 import { catalog } from '../data/catalog.js';
 
-export class RuneterraItemSheet extends ItemSheet {
+export class RuneterraItemSheet extends foundry.appv1.sheets.ItemSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['runeterra', 'sheet', 'item'],

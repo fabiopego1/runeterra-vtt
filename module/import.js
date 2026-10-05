@@ -114,10 +114,11 @@ async function uploadPortrait(dataURI, baseName) {
     const blob = await (await fetch(dataURI)).blob();
     const file = new File([blob], `${baseName}.${ext}`, { type: blob.type });
     // The target directory must exist, or Foundry's upload silently returns false.
+    const FPA = foundry.applications.apps.FilePicker;
     try {
-      await FilePicker.createDirectory('data', 'runeterra-portraits', {});
+      await FPA.createDirectory('data', 'runeterra-portraits', {});
     } catch (e) { /* already exists */ }
-    const res = await FilePicker.upload('data', 'runeterra-portraits', file, {}, { notify: false });
+    const res = await FPA.upload('data', 'runeterra-portraits', file, {}, { notify: false });
     if (res === false) throw new Error('FilePicker.upload retornou false');
     return { img: `runeterra-portraits/${baseName}.${ext}`, warning: null };
   } catch (e) {

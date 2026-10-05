@@ -10,7 +10,7 @@ import { onSetScene, SceneReset, applyPreset } from '../scene.js';
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
 const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
 
-export class RuneterraCharacterSheet extends ActorSheet {
+export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['runeterra', 'sheet', 'actor'],
@@ -475,13 +475,20 @@ export class RuneterraCharacterSheet extends ActorSheet {
     const itemId = ev.currentTarget.closest('[data-item-id]')?.dataset.itemId;
     const item = this.actor.items.get(itemId);
     if (!item) return;
-    new Dialog({
-      title: game.i18n.localize('RUNETERRA.DeleteItem'),
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize('RUNETERRA.DeleteItem') },
       content: game.i18n.localize('RUNETERRA.DeleteItemConfirm'),
-      buttons: {
-        yes: { icon: '<i class="fas fa-trash"></i>', label: game.i18n.localize('RUNETERRA.Delete'), callback: () => item.delete() },
-        no: { icon: '<i class="fas fa-times"></i>', label: game.i18n.localize('RUNETERRA.Cancel') }
-      }
+      buttons: [
+        {
+          action: 'yes', icon: 'fas fa-trash',
+          label: game.i18n.localize('RUNETERRA.Delete'),
+          callback: () => item.delete()
+        },
+        {
+          action: 'no', icon: 'fas fa-times', default: true,
+          label: game.i18n.localize('RUNETERRA.Cancel')
+        }
+      ]
     }).render(true);
   }
 }

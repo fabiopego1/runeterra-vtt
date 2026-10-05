@@ -18,10 +18,12 @@ Hooks.once('init', () => {
   CONFIG.RUNETERRA = RUNETERRA;
 
   // Document sheets.
-  DocumentSheetConfig.unregisterSheet(Actor, 'core', ActorSheet);
-  DocumentSheetConfig.registerSheet(Actor, 'runeterra', RuneterraCharacterSheet, { makeDefault: true });
-  DocumentSheetConfig.unregisterSheet(Item, 'core', ItemSheet);
-  DocumentSheetConfig.registerSheet(Item, 'runeterra', RuneterraItemSheet, { makeDefault: true });
+  const DSC = foundry.applications.apps.DocumentSheetConfig;
+  const AppV1Sheets = foundry.appv1.sheets;
+  DSC.unregisterSheet(Actor, 'core', AppV1Sheets.ActorSheet);
+  DSC.registerSheet(Actor, 'runeterra', RuneterraCharacterSheet, { makeDefault: true });
+  DSC.unregisterSheet(Item, 'core', AppV1Sheets.ItemSheet);
+  DSC.registerSheet(Item, 'runeterra', RuneterraItemSheet, { makeDefault: true });
 
   // Settings.
   game.settings.register('runeterra', 'coloredDice', {
@@ -48,7 +50,7 @@ Hooks.once('init', () => {
     return `color-${base}`;
   });
 
-  loadTemplates([
+  HB.loadTemplates([
     'systems/runeterra/templates/partials/traits.hbs',
     'systems/runeterra/templates/partials/abilities.hbs',
     'systems/runeterra/templates/partials/principles.hbs',
@@ -85,61 +87,112 @@ Hooks.once('ready', () => {
   });
 
   /** Add the "Importar personagem Runeterra" button to the Actors directory header. */
-  const ensureImportButton = (root) => {
-    try {
-      const scope = root instanceof HTMLElement ? root : document;
-      const header = scope.querySelector?.('.directory-header .action-buttons')
-        ?? scope.querySelector?.('.header-actions')
-        ?? document.querySelector('#actors .directory-header .action-buttons')
-        ?? document.querySelector('#actors .header-actions');
-      if (!header || header.querySelector('.rt-import-btn')) return;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'rt-import-btn';
-      btn.innerHTML = `<i class="fas fa-file-import"></i> ${game.i18n.localize('RUNETERRA.ImportCharacter')}`;
-      btn.addEventListener('click', () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'application/json,.json';
-        input.addEventListener('change', async () => {
-          const file = input.files?.[0];
-          if (!file) return;
-          const text = await file.text();
-          const res = await game.runeterra.importChampion(text);
-          if (res.ok) {
-            const msgs = [game.i18n.format('RUNETERRA.ImportSuccess', { name: res.actor.name })];
-            for (const w of res.warnings ?? []) msgs.push(w);
-            ui.notifications.info(msgs.join(' '), { permanent: true });
-            res.actor.sheet.render(true);
-          } else {
-            ui.notifications.error(
-              game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
-              { permanent: true });
-          }
-        });
-        input.click();
+  // Strictly scoped to the Actors panel: an unscoped '.directory-header' lookup
+  // can land in another tab (Items/Scenes), and the duplicate guard would then
+  // block the real injection into Actors forever.
+  // Containers tried in order: an empty directory renders a different header
+  // (sometimes without .action-buttons), so fall back to the header itself and
+  // finally the footer — the button must exist even with zero actors.
+  const CONTAINER_SELS = [
+    '.directory-header .action-buttons',
+    '.header-actions',
+    '.directory-header',
+    '.directory-footer'
+  ];
+  const firstContainer = (root) => {
+    for (const sel of CONTAINER_SELS) {
+      const el = root?.querySelector?.(sel);
+      if (el) return el;
+    }
+    return null;
+  };
+  const findActorsPanel = () => document.querySelector('#sidebar [data-tab="actors"]')
+    ?? document.querySelector('.tab[data-tab="actors"]')
+    ?? document.querySelector('#actors');
+  const findActorsContainer = () => {
+    const panel = findActorsPanel();
+    if (!panel) return null;
+    return firstContainer(panel);
+  };
+  const createImportButton = () => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'rt-import-btn';
+    btn.innerHTML = `<i class="fas fa-file-import"></i> ${game.i18n.localize('RUNETERRA.ImportCharacter')}`;
+    btn.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json,.json';
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        const text = await file.text();
+        const res = await game.runeterra.importChampion(text);
+        if (res.ok) {
+          const msgs = [game.i18n.format('RUNETERRA.ImportSuccess', { name: res.actor.name })];
+          for (const w of res.warnings ?? []) msgs.push(w);
+          ui.notifications.info(msgs.join(' '), { permanent: true });
+          res.actor.sheet.render(true);
+        } else {
+          ui.notifications.error(
+            game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
+            { permanent: true });
+        }
       });
-      header.appendChild(btn);
+      input.click();
+    });
+    return btn;
+  };
+  const ensureImportButton = () => {
+    try {
+      const panel = findActorsPanel();
+      // Panel-wide guard: exactly one button per panel, whichever container it landed in.
+      if (!panel || panel.querySelector('.rt-import-btn')) return;
+      const header = firstContainer(panel);
+      if (!header) return;
+      header.appendChild(createImportButton());
     } catch (e) {
       console.warn('RUNETERRA | botão de importação não pôde ser adicionado:', e);
     }
   };
 
-  // Re-inject on EVERY directory render (search, sort, create/delete actors all
-  // re-render the header and destroy the manually appended button) plus tab
-  // switches back to Actors. The in-button guard prevents duplicates.
-  const injectSoon = (root) => {
-    ensureImportButton(root);
-    setTimeout(() => ensureImportButton(root), 200);
+  // Hook path: the rendered app's own element is always the right tab, so this
+  // can never land in Items/Scenes. Falls back to panel search when unavailable.
+  const injectFromApp = (_app, html) => {
+    try {
+      const el = html instanceof HTMLElement ? html : _app?.element;
+      const header = firstContainer(el);
+      if (header && !header.querySelector('.rt-import-btn')) {
+        header.appendChild(createImportButton());
+        return;
+      }
+    } catch (e) { /* fall through to panel search */ }
+    ensureImportButton();
   };
-  Hooks.on('renderActorDirectory', (_app, html) => injectSoon(html ?? _app?.element));
-  Hooks.on('renderSidebarTab', (_app, html) => injectSoon(html ?? _app?.element));
+
+  // Re-inject whenever the sidebar DOM changes (search, sort, create/delete actors
+  // all re-render the header and destroy the manually appended button). A
+  // MutationObserver doesn't depend on hook names or render timing: whenever the
+  // Actors header exists without our button, it gets one. Injection always
+  // targets the Actors panel (see findActorsHeader), no matter what changed.
+  // The in-button guard prevents duplicates, so this is cheap to run often.
+  const injectSoon = () => {
+    ensureImportButton();
+    setTimeout(ensureImportButton, 200);
+  };
+  try {
+    const sidebar = document.getElementById('sidebar') ?? document.body;
+    new MutationObserver(ensureImportButton).observe(sidebar, { childList: true, subtree: true });
+  } catch (e) { /* observer unavailable: hooks + timeouts below still cover it */ }
+  Hooks.on('renderActorDirectory', injectFromApp);
+  Hooks.on('renderSidebarTab', injectSoon);
+  Hooks.on('renderSidebar', injectSoon);
   Hooks.on('changeSidebarTab', (_app, tab) => {
     if (typeof tab === 'string' ? tab === 'actors' : tab?.tabId === 'actors') {
-      setTimeout(() => ensureImportButton(), 100);
+      setTimeout(ensureImportButton, 100);
     }
   });
-  // The directory may already be rendered when this hook registers.
-  setTimeout(() => ensureImportButton(), 500);
-  setTimeout(() => ensureImportButton(), 4000);
+  // Fallback for slow loads. Also exposed for manual trigger/debugging.
+  game.runeterra.ensureImportButton = ensureImportButton;
+  for (const ms of [500, 2000, 4000, 8000]) setTimeout(ensureImportButton, ms);
 });

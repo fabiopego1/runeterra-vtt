@@ -511,7 +511,7 @@
 .rt-ability-text strong { color: var(--gold-hi); }
 
 /* ---------- Sidebar import button ---------- */
-.runeterra button.rt-import-btn { margin: 0; }
+.runeterra button.rt-import-btn { margin: 0; align-self: center; white-space: nowrap; }
 
 /* ---------- Chat: dark ink theme everywhere (sidebar, popouts, dice popups) ---------- */
 .chat-message {

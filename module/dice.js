@@ -44,7 +44,7 @@ export async function TaskCheck(actor) {
     game.i18n.localize('RUNETERRA.DiceStatus')
   ];
   const formula = `{${sys.firstDie},${sys.secondDie},${sys.thirdDie}}`;
-  const rollResult = await new Roll(formula).evaluate();
+  const rollResult = await new foundry.dice.Roll(formula).evaluate();
   rollResult.dice.forEach((d, i) => {
     d.slotName = slotNames[i] ?? '';
     d.slotType = slotTypes[i] ?? '';
@@ -78,7 +78,7 @@ export async function TaskCheck(actor) {
  * Single-die roll (power / quality / status).
  */
 export async function SingleCheck(roll, rollType, rollName, actor) {
-  const rollResult = await new Roll(roll).evaluate();
+  const rollResult = await new foundry.dice.Roll(roll).evaluate();
   rollResult.rollType = rollType;
   rollResult.rollName = rollName;
   rollResult.img = 'icons/svg/d' + (rollResult.dice[0]?.faces ?? 4) + '-grey.svg';
