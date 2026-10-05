@@ -163,8 +163,8 @@ Hooks.once('ready', () => {
   }
   // Safety net: Foundry's async render can wipe the button AFTER the observer's
   // re-injection lands (the two interleave). A cheap periodic check bounds how long
-  // the button can ever be missing to one interval; it no-ops when present.
-  setInterval(ensureImportButton, 3000);
+  // the button can ever be missing to one interval (1.5s); it no-ops when present.
+  setInterval(ensureImportButton, 1500);
   Hooks.on('renderActorDirectory', () => queueEnsure());
   // First paint after login (the observer may bind before the sidebar exists).
   setTimeout(ensureImportButton, 2000);
