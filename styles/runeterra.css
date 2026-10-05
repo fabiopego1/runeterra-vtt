@@ -23,10 +23,10 @@
   /* lines */
   --line: #2a2e35;
   --line-2: #3a3f47;
-  /* text */
+  /* text — lifted 2026-10-05 for small-label legibility (was #a8a08d / #888378) */
   --text: #e8dfca;
-  --text-2: #a8a08d;
-  --text-3: #888378;
+  --text-2: #c9c1ad;
+  --text-3: #b3ac9c;
   /* hextech gold: structure & primary actions */
   --gold: #c8a45e;
   --gold-hi: #ecd49c;
@@ -126,21 +126,24 @@
 .rt-header h1 input:focus { border-bottom-style: solid; outline: none; }
 .rt-subline {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: .62rem;
-  letter-spacing: .1em;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .06em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2);
   margin-top: 4px;
+  line-height: 1.5;
 }
-.rt-subline em { text-transform: none; letter-spacing: 0; color: var(--text-3); }
+.rt-subline em { text-transform: none; letter-spacing: 0; color: var(--text-2); }
 
 .rt-health { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
 .rt-health label, .rt-statusdice label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: .56rem;
+  font-size: .62rem;
+  font-weight: 500;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2);
 }
 .rt-health input {
   width: 58px;
@@ -162,24 +165,30 @@
   line-height: 1;
 }
 .rt-health button:hover { color: var(--gold-hi); border-color: var(--gold); }
-.rt-health span { color: var(--text-3); font-family: 'IBM Plex Mono', monospace; font-size: .78rem; }
+.rt-health span:not(.rt-zone) { color: var(--text-3); font-family: 'IBM Plex Mono', monospace; font-size: .78rem; }
+/* Chips keep their dark text on the colored zone — never inherit the dim span color. */
+.rt-health span.rt-zone-green, .rt-health span.rt-zone-yellow, .rt-health span.rt-zone-red { color: var(--ink-0); }
 
-/* Zone chips: the color means the zone — nothing else uses these hues. */
+/* Zone chips: the color means the zone — nothing else uses these hues.
+   Bold + larger than other eyebrows: colored background with small text must stay readable. */
 .rt-zone {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: .6rem;
-  letter-spacing: .12em;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .06em;
   text-transform: uppercase;
-  padding: 2px 10px;
+  padding: 4px 14px;
   color: var(--ink-0);
-  font-weight: 500;
 }
 .rt-zone-green { background: var(--zone-g); }
 .rt-zone-yellow { background: var(--zone-y); }
 .rt-zone-red { background: var(--zone-r); }
 .rt-zone-out { background: var(--ink-3); color: var(--text-3); }
 
-/* ---------- Roll bar: one primary action, the rest quiet ---------- */
+/* Header health number: tinted only behind the value that changes. */
+.rt-health input.health-update.rt-zonebg-green { background: rgba(121, 176, 106, .20); }
+.rt-health input.health-update.rt-zonebg-yellow { background: rgba(217, 171, 69, .20); }
+.rt-health input.health-update.rt-zonebg-red { background: rgba(196, 88, 76, .22); }
 .rt-rollbar { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; flex: none; }
 .runeterra .rt-rollbar button, .runeterra .rt-rollbar .scene-preset {
   background: transparent;
@@ -205,10 +214,11 @@
 .runeterra .sheet-tabs { border-bottom: 1px solid var(--line); gap: 4px; margin-bottom: 10px; flex: none; }
 .runeterra .sheet-tabs .item {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: .64rem;
+  font-size: .68rem;
+  font-weight: 500;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2);
   border-bottom: 2px solid transparent;
   padding: 4px 12px 3px;
   text-shadow: none;
@@ -247,6 +257,10 @@
   padding: 2px 4px;
 }
 .runeterra select:focus { border-color: var(--gold); outline: none; }
+/* Native dropdown lists ignore the closed-select styling on some platforms and
+   open white with light text — force the dark surface on options too. */
+.runeterra select option { background-color: var(--ink-2); color: var(--text); }
+.runeterra select option:checked { background-color: var(--ink-3); color: var(--gold-hi); }
 .runeterra input[type="checkbox"] { accent-color: var(--gold); }
 
 .rt-grid {
@@ -258,10 +272,11 @@
 }
 .rt-grid label, .rt-block-label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: .56rem;
+  font-size: .62rem;
+  font-weight: 500;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2);
 }
 .rt-grid span { color: var(--text); font-size: .95rem; }
 .rt-block-label { display: block; margin: 8px 0 2px; }
@@ -300,14 +315,9 @@
   letter-spacing: .16em;
   text-transform: uppercase;
   margin: 12px 0 4px;
-  padding: 3px 0 3px 10px;
-  border-left: 3px solid var(--gold);
+  padding: 3px 0;
   color: var(--text-2);
 }
-.rt-zone-table-green h4 { border-left-color: var(--zone-g); }
-.rt-zone-table-yellow h4 { border-left-color: var(--zone-y); }
-.rt-zone-table-red h4 { border-left-color: var(--zone-r); }
-.rt-zone-table-out h4 { border-left-color: var(--line-2); }
 
 .rt-abilities { width: 100%; border-collapse: collapse; }
 .rt-abilities td {
@@ -322,16 +332,16 @@
   font-size: 1rem;
   text-align: center;
   width: 26px;
-  color: var(--text-3);
+  color: var(--text-2);
 }
 .rt-ability-name { font-weight: 600; min-width: 130px; color: var(--text); white-space: nowrap; }
-.rt-ability-text { color: var(--text-2); }
+.rt-ability-text { color: var(--text); }
 .rt-ability-text strong { color: var(--gold-hi); font-weight: 600; }
 .rt-ability-actions { width: 66px; text-align: right; white-space: nowrap; }
 .rt-ability-actions button {
   background: transparent;
   border: 1px solid var(--line-2);
-  color: var(--text-3);
+  color: var(--text-2);
   border-radius: 0;
   padding: 1px 7px;
   margin-left: 3px;
@@ -339,8 +349,8 @@
 }
 .rt-ability-actions button:hover { color: var(--gold-hi); border-color: var(--gold); }
 
-.rt-locked { opacity: .38; }
-.rt-locked-note { color: var(--text-3); font-size: .68rem; letter-spacing: 0; text-transform: none; font-family: 'Barlow Semi Condensed', sans-serif; }
+.rt-locked { opacity: .62; }
+.rt-locked-note { color: var(--text-2); font-size: .75rem; letter-spacing: 0; text-transform: none; font-family: 'Barlow Semi Condensed', sans-serif; }
 
 .rt-mods td { padding: 3px 8px 3px 0; }
 
@@ -362,8 +372,8 @@
 .rt-principle + .rt-principle { border-left: 1px solid var(--line); padding-left: 14px; }
 .rt-principle h4 { font-family: 'Marcellus', serif; color: var(--text-2); margin: 0 0 4px; font-size: 1.05rem; }
 .rt-principle h4 b, .rt-principle .rt-pr-element { color: var(--gold-hi); font-weight: 400; }
-.rt-principle p { margin: 4px 0; font-size: .9rem; color: var(--text-2); }
-.rt-principle p strong { color: var(--text-3); font-weight: 600; }
+.rt-principle p { margin: 4px 0; font-size: .9rem; color: var(--text); }
+.rt-principle p strong { color: var(--gold-hi); font-weight: 600; }
 .rt-principle .rt-ability { color: var(--text); border-top: 1px dotted var(--line-2); padding-top: 5px; }
 
 /* Special archetype cards share the principle treatment (columns, hairlines). */
@@ -375,13 +385,9 @@
   letter-spacing: .16em;
   text-transform: uppercase;
   margin: 10px 0 4px;
-  padding: 3px 0 3px 10px;
-  border-left: 3px solid var(--gold);
+  padding: 3px 0;
   color: var(--text-2);
 }
-.rt-scene-zone-green h4 { border-left-color: var(--zone-g); }
-.rt-scene-zone-yellow h4 { border-left-color: var(--zone-y); }
-.rt-scene-zone-red h4 { border-left-color: var(--zone-r); }
 .rt-scene-spaces { display: flex; gap: 5px; align-items: center; }
 .rt-scene-spaces button {
   width: 28px; height: 28px;
@@ -405,19 +411,33 @@
   gap: 6px 12px;
   align-items: center;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--gold-lo);
   padding: 8px 10px;
   margin-bottom: 10px;
   background: var(--ink-0);
 }
 .rt-roll-config label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: .56rem;
+  font-size: .62rem;
+  font-weight: 500;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2);
 }
 .rt-roll-config input { width: 110px; }
+.rt-roll-config .trait-select { max-width: 280px; }
+/* Status die is rule-driven (health zone + scene) — readout, not a control.
+   Its background always matches the zone color. */
+.rt-status-auto {
+  font: 700 .95rem 'IBM Plex Mono', monospace;
+  color: var(--ink-0);
+  background: var(--ink-2);
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.rt-status-auto.rt-status-green { background: var(--zone-g); }
+.rt-status-auto.rt-status-yellow { background: var(--zone-y); }
+.rt-status-auto.rt-status-red { background: var(--zone-r); }
+.rt-status-auto.rt-status-out { background: var(--ink-3); color: var(--text-3); }
 
 /* ---------- Chat cards ---------- */
 .runeterra.chat-card {
@@ -441,17 +461,26 @@
   padding: 0;
 }
 .rt-roll-dice { display: flex; gap: 14px; margin: 4px 0; }
-.rt-die { text-align: center; min-width: 44px; }
-.rt-die img { width: 34px; height: 34px; opacity: .9; }
+.rt-die { text-align: center; min-width: 44px; max-width: 120px; flex: 1 1 0; }
+.rt-die img { display: block; width: 34px; height: 34px; margin: 0 auto; opacity: .9; }
 .rt-die-total { display: block; font: 500 1.25rem 'IBM Plex Mono', monospace; color: var(--gold-hi); }
 .rt-die-pos {
+  display: block;
   font-family: 'IBM Plex Mono', monospace;
   font-size: .56rem;
   letter-spacing: .14em;
   text-transform: uppercase;
   color: var(--text-3);
 }
-.rt-roll-names { display: flex; gap: 14px; color: var(--text-3); font-size: .8rem; }
+.rt-die-name {
+  display: block;
+  margin-top: 2px;
+  font-size: .78rem;
+  line-height: 1.25;
+  color: var(--text-2);
+  overflow-wrap: break-word;
+}
+.rt-roll-names { display: flex; gap: 14px; color: var(--text-2); font-size: .8rem; }
 .rt-roll-mods { font: 500 1rem 'IBM Plex Mono', monospace; color: var(--gold); }
 .rt-roll-warning { margin-top: 4px; color: var(--zone-r); font-weight: 600; font-size: .85rem; }
 
@@ -462,7 +491,22 @@
 .rt-die.d10 img { filter: sepia(1) saturate(2) brightness(1.1); }
 .rt-die.d12 img { filter: hue-rotate(160deg) saturate(1.6); }
 
-/* Ability chat card text */
+/* Single-die popup: bigger die, explicit type + size header so it's clear
+   which die the text belongs to. */
+.rt-single-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.rt-single .rt-die img { width: 44px; height: 44px; }
+.rt-single .rt-die-total { font-size: 1.6rem; }
+.rt-single .rt-roll-names { font-size: .95rem; color: var(--text-2); }
 .rt-ability-text { color: var(--text-2); font-size: .92rem; }
 .rt-ability-text strong { color: var(--gold-hi); }
 
@@ -517,6 +561,17 @@
 .rt-traits .trait-row { cursor: pointer; }
 .rt-traits .trait-row:hover td { color: var(--gold-hi); }
 .rt-traits .trait-row:hover .rt-die { color: var(--gold-hi); }
+/* Selected trait = the die currently in the roll config. */
+.rt-traits .trait-row.rt-selected td { color: var(--gold-hi); }
+.rt-traits .trait-row.rt-selected { background: var(--ink-2); }
+/* Roll config flash when a trait click lands there. */
+.rt-roll-config { transition: border-color .3s, background .3s; }
+.rt-roll-config.rt-flash {
+  border-color: var(--gold);
+  border-left-color: var(--gold-hi);
+  background: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
 
 /* Scene per-zone step input */
 .rt-scene-steps {

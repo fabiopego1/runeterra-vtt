@@ -12,13 +12,45 @@ async function sceneStatus(gc, yc, rc, gt, yt, rt) {
   await ChatMessage.create({ user: game.user.id, content, flavor: 'Scene' });
 }
 
-/** Broadcast a scene color to every champion and refresh their status dice. */
+/** Broadcast a scene color to every champion and villain and refresh their status dice. */
 async function broadcastScene(color) {
   for (const actor of game.actors.contents) {
-    if (actor.type !== 'champion') continue;
+    if (actor.type !== 'champion' && actor.type !== 'villain') continue;
     await actor.update({ 'system.scene': color }, { render: false });
     await HealthUpdate(actor);
   }
+}
+
+/** First scene-tracker actor in the world, if the GM created one. */
+export function findSceneActor() {
+  return game.actors.contents.find(a => a.type === 'scene') ?? null;
+}
+
+/**
+ * Macro/API entry: jump straight to a scene color (like the old SCRPG macros).
+ * Actors always follow; the tracker's spaces are lined up to match when one exists.
+ */
+export async function setSceneColor(color) {
+  if (!['green', 'yellow', 'red'].includes(color)) return;
+  await broadcastScene(color);
+  const sc = findSceneActor();
+  if (!sc) return;
+  const g = sc.system.greenSpace?.setting ?? 0;
+  const y = sc.system.yellowSpace?.setting ?? 0;
+  if (color === 'green') {
+    await sc.update({ 'system.greenSpace.current': 0, 'system.yellowSpace.current': 0, 'system.redSpace.current': 0 });
+  } else if (color === 'yellow') {
+    await sc.update({ 'system.greenSpace.current': g, 'system.yellowSpace.current': 0, 'system.redSpace.current': 0 });
+  } else {
+    await sc.update({ 'system.greenSpace.current': g, 'system.yellowSpace.current': y, 'system.redSpace.current': 0 });
+  }
+}
+
+/** Macro/API entry: back to green, tracker included when one exists. */
+export async function resetScene() {
+  const sc = findSceneActor();
+  if (sc) await SceneReset(sc);
+  else await broadcastScene('green');
 }
 
 export async function SceneReset(actor) {

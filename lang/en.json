@@ -101,6 +101,7 @@
     "DicePower": "Power",
     "DiceQuality": "Quality",
     "DiceStatus": "Status",
+    "DiceStatusAuto": "Automatic from Health and Scene — follows the health zone and the scene color.",
     "Mods": "Mods",
     "Bonus": "Bonus",
     "Penalty": "Penalty",
@@ -140,6 +141,7 @@
     "Trait": "Trait",
     "ModsHint": "Drag Mods from the Item Directory or create here. Check the ones included in the roll; the hourglass icon means persistent and the lock, exclusive.",
     "Zone": "Zone",
+    "Scene": "Scene",
     "SceneReset": "Reset Scene",
     "ScenePreset": "Preset…",
     "PresetStandard": "Standard (2/4/2)",
@@ -158,6 +160,8 @@
     "ImportFailed": "Import failed:",
     "ClickTraitHint": "Click to use this trait in the roll (the Status die follows Health and the Scene automatically).",
     "TraitSet": "{trait} ({die}) set as the roll die.",
+    "NoTokensSelected": "No champion/villain token selected.",
+    "VillainStatusAuto": "The Status die is automatic (Temperament + Health + Scene) — Villain Status items do not change the die.",
     "AbilitiesHint": "Abilities and their custom names are managed by the Champion Forge creator and arrive via import.",
     "SceneSteps": "Steps"
   }

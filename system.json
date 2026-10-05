@@ -10,7 +10,7 @@
             "name": "Base técnica: RabidRaccoon, GamerDragon (sistema SCRPG não oficial)"
         }
     ],
-    "version": "0.1.1",
+    "version": "0.1.2",
     "compatibility": {
         "minimum": "12",
         "verified": "14"
@@ -29,6 +29,14 @@
     ],
     "esmodules": [
         "runeterra.js"
+    ],
+    "packs": [
+        {
+            "name": "macros",
+            "label": "Runeterra Macros",
+            "path": "packs/macros.db",
+            "type": "Macro"
+        }
     ],
     "styles": [
         "styles/runeterra.css"

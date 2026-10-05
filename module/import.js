@@ -5,6 +5,7 @@
 
 import { catalog } from './data/catalog.js';
 import { derive } from './rules.js';
+import { HealthUpdate } from './status.js';
 
 /** Bracket-token pt-BR labels (from the web app). */
 const TOKEN_PT = {
@@ -240,6 +241,12 @@ export async function importChampion(json) {
 
   const [actor] = await Actor.createDocuments([actorData]);
   if (items.length) await actor.createEmbeddedDocuments('Item', items);
+
+  // The status die follows health zone + scene automatically — set it on import
+  // so the sheet never opens with the d4 template default.
+  try {
+    await HealthUpdate(actor);
+  } catch (e) { /* sheet render-time sync covers it as fallback */ }
 
   return { ok: true, actor, warnings };
 }

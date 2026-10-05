@@ -15,10 +15,9 @@
       <div class="rt-health rt-health-header">
         <label>{{localize "RUNETERRA.Health"}}</label>
         <button type="button" class="health-step" data-delta="-1">−</button>
-        <input class="health-update" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
+        <input class="health-update {{statusBgClass}}" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
         <span>/ {{derived.health.max}}</span>
         <button type="button" class="health-step" data-delta="1">+</button>
-        <span class="rt-zone rt-zone-{{derived.zone}}">{{zoneLabel}}</span>
       </div>
       {{/if}}
       <div class="rt-rollbar">
@@ -81,20 +80,17 @@
     <div class="tab" data-tab="powers">
       <div class="rt-roll-config">
         <label>{{localize "RUNETERRA.DicePower"}}</label>
-        <select class="die-select" data-field="firstDie">
-          {{#select system.firstDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+        <select class="trait-select" data-slot="first">
+          <option value="">—</option>
+          {{#select firstKey}}{{#each powers}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
         </select>
-        <input type="text" name="system.firstDieName" value="{{system.firstDieName}}" />
         <label>{{localize "RUNETERRA.DiceQuality"}}</label>
-        <select class="die-select" data-field="secondDie">
-          {{#select system.secondDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
+        <select class="trait-select" data-slot="second">
+          <option value="">—</option>
+          {{#select secondKey}}{{#each qualities}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
         </select>
-        <input type="text" name="system.secondDieName" value="{{system.secondDieName}}" />
         <label>{{localize "RUNETERRA.DiceStatus"}}</label>
-        <select class="die-select" data-field="thirdDie">
-          {{#select system.thirdDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
-        </select>
-        <input type="text" name="system.thirdDieName" value="{{system.thirdDieName}}" />
+        <span class="rt-status-auto {{statusZoneClass}}" title="{{localize 'RUNETERRA.DiceStatusAuto'}}">{{statusDie}} · {{statusAutoLabel}}</span>
       </div>
 
       {{#if derived}}
@@ -127,27 +123,6 @@
         </div>
       </div>
 
-      <div class="rt-statusblock">
-        <div class="rt-statusdice">
-          <label>{{localize "RUNETERRA.StatusDice"}}</label>
-          <span class="rt-die">{{derived.status.green}}</span>
-          <span class="rt-die">{{derived.status.yellow}}</span>
-          <span class="rt-die">{{derived.status.red}}</span>
-        </div>
-        <div class="rt-health">
-          <label>{{localize "RUNETERRA.HealthCurrent"}}</label>
-          <button type="button" class="health-step" data-delta="-1">−</button>
-          <input class="health-update" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
-          <span>/ {{derived.health.max}}</span>
-          <button type="button" class="health-step" data-delta="1">+</button>
-          <span class="rt-zone rt-zone-{{derived.zone}}">{{zoneLabel}}</span>
-          <span class="rt-zones-range">
-            {{localize "RUNETERRA.ZoneGreen"}} {{derived.health.greenLow}}+ ·
-            {{localize "RUNETERRA.ZoneYellow"}} {{derived.health.yellowLow}}–{{derived.health.yellowHigh}} ·
-            {{localize "RUNETERRA.ZoneRed"}} 1–{{derived.health.redHigh}}
-          </span>
-        </div>
-      </div>
       {{/if}}
 
       {{> "systems/runeterra/templates/partials/abilities.hbs" tables=zoneTables.tables out=zoneTables.out outActive=zoneTables.outActive }}

@@ -101,6 +101,7 @@
     "DicePower": "Poder",
     "DiceQuality": "Qualidade",
     "DiceStatus": "Status",
+    "DiceStatusAuto": "Automático pela Vida e pela Cena — segue a zona de Vida e a cor da Cena.",
     "Mods": "Modificadores",
     "Bonus": "Bônus",
     "Penalty": "Penalidade",
@@ -140,6 +141,7 @@
     "Trait": "Traço",
     "ModsHint": "Arraste Modificadores do Diretório de Itens ou crie aqui. Marque os que entram na rolagem; o ícone de ampulheta indica persistente e o cadeado, exclusivo.",
     "Zone": "Zona",
+    "Scene": "Cena",
     "SceneReset": "Zerar cena",
     "ScenePreset": "Predefinição…",
     "PresetStandard": "Padrão (2/4/2)",
@@ -158,6 +160,8 @@
     "ImportFailed": "Falha na importação:",
     "ClickTraitHint": "Clique para usar este traço na rolagem (o dado de Status segue a Vida e a Cena automaticamente).",
     "TraitSet": "{trait} ({die}) definido como dado de rolagem.",
+    "NoTokensSelected": "Nenhum token de campeão/vilão selecionado.",
+    "VillainStatusAuto": "O dado de Status é automático (Temperamento + Vida + Cena) — itens de Status de Vilão não alteram o dado.",
     "AbilitiesHint": "As habilidades e seus nomes personalizados são gerenciados pelo criador da Forja de Campeões e chegam pela importação.",
     "SceneSteps": "Passos"
   }

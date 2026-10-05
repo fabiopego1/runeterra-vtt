@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "7f3a9c1e5b2d48a6",
+    "name": "Cena Verde",
+    "img": "icons/svg/dice-target.svg",
+    "command": "await game.runeterra.setScene('green');"
+  },
+  {
+    "_id": "7f3a9c1e5b2d48a7",
+    "name": "Cena Amarela",
+    "img": "icons/svg/dice-target.svg",
+    "command": "await game.runeterra.setScene('yellow');"
+  },
+  {
+    "_id": "7f3a9c1e5b2d48a8",
+    "name": "Cena Vermelha",
+    "img": "icons/svg/dice-target.svg",
+    "command": "await game.runeterra.setScene('red');"
+  },
+  {
+    "_id": "7f3a9c1e5b2d48a9",
+    "name": "Zerar Cena",
+    "img": "icons/svg/dice-target.svg",
+    "command": "await game.runeterra.resetScene();"
+  },
+  {
+    "_id": "7f3a9c1e5b2d48b0",
+    "name": "Rolar Selecionados",
+    "img": "icons/svg/d20-grey.svg",
+    "command": "await game.runeterra.rollSelected();"
+  }
+]

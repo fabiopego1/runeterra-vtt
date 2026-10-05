@@ -4,7 +4,7 @@
 import { catalog } from '../data/catalog.js';
 import { derive } from '../rules.js';
 import * as dice from '../dice.js';
-import { HealthUpdate } from '../status.js';
+import { HealthUpdate, resolveStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
 
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
@@ -185,6 +185,11 @@ export class RuneterraCharacterSheet extends ActorSheet {
       data.qualities = derived ? this._traitRows(derived.qualities, ch) : [];
       data.principles = this._principles(ch);
 
+      // Roll slots as single dropdowns: selected option = row matching stored die + name.
+      const matchKey = (rows, die, name) => rows.find(r => r.die === die && r.name === name)?.key ?? '';
+      data.firstKey = matchKey(data.powers, sys.firstDie, sys.firstDieName);
+      data.secondKey = matchKey(data.qualities, sys.secondDie, sys.secondDieName);
+
       // Health & zones.
       const current = parseInt(sys.play?.current, 10);
       const curValue = isNaN(current) ? (derived?.health.max ?? 0) : current;
@@ -194,6 +199,20 @@ export class RuneterraCharacterSheet extends ActorSheet {
         : 'green';
       data.zoneLabel = game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`);
       data.zoneTables = await this._zoneTables(this.actor, ch, zone);
+
+      // Status die readout (rule-driven info): localized die zone + why (health zone · scene).
+      const ZONE_KEY = { green: 'RUNETERRA.ZoneGreen', yellow: 'RUNETERRA.ZoneYellow', red: 'RUNETERRA.ZoneRed' };
+      const stKey = String(sys.thirdDieName ?? zone);
+      data.statusDie = sys.thirdDie || '—';
+      data.statusZoneClass = stKey === 'out' ? 'rt-status-out'
+        : (ZONE_KEY[stKey] ? `rt-status-${stKey}` : '');
+      data.statusBgClass = ZONE_KEY[stKey] ? `rt-zonebg-${stKey}` : '';
+      data.statusAutoLabel = stKey === 'out'
+        ? game.i18n.localize('RUNETERRA.Knockout')
+        : (ZONE_KEY[stKey] ? game.i18n.localize(ZONE_KEY[stKey]) : stKey);
+      const sceneKey = String(sys.scene ?? 'green');
+      const sceneLabel = ZONE_KEY[sceneKey] ? game.i18n.localize(ZONE_KEY[sceneKey]) : sceneKey;
+      data.statusAutoHint = `${game.i18n.localize('RUNETERRA.Health')}: ${data.zoneLabel} · ${game.i18n.localize('RUNETERRA.Scene')}: ${sceneLabel}`;
 
       // Names of the chosen creation options.
       data.peopleName = ch.people ? catalog.people(ch.people)?.name : '';
@@ -251,6 +270,17 @@ export class RuneterraCharacterSheet extends ActorSheet {
     super.activateListeners(html);
     if (!this.actor.isOwner) return;
 
+    // Safety net: the status die is rule-driven (health zone + scene), never manual.
+    // If it ever desyncs (legacy actors, macro edits), fix it once — HealthUpdate
+    // skips the write when already correct, so this cannot loop.
+    try {
+      const sys = this.actor.system;
+      if ((this.actor.type === 'champion' || this.actor.type === 'villain') && sys.character) {
+        const r = resolveStatusDie(sys.character, sys.play?.current, sys.scene ?? 'green', sys.derived);
+        if (sys.thirdDie !== r.die || sys.thirdDieName !== r.name) HealthUpdate(this.actor);
+      }
+    } catch (e) { /* resolution needs the dataset; triggers already cover the sync */ }
+
     html.find('.make-roll').click(() => dice.TaskCheck(this.actor));
     html.find('.roll-power').click(() => dice.SingleCheck(this.actor.system.firstDie, 'power', this.actor.system.firstDieName, this.actor));
     html.find('.roll-quality').click(() => dice.SingleCheck(this.actor.system.secondDie, 'quality', this.actor.system.secondDieName, this.actor));
@@ -258,6 +288,19 @@ export class RuneterraCharacterSheet extends ActorSheet {
 
     html.find('.die-select').change(ev => {
       this.actor.update({ [`system.${ev.currentTarget.dataset.field}`]: ev.currentTarget.value });
+    });
+
+    // Single trait dropdown per slot: the option carries the trait key, its die rides along.
+    html.find('.trait-select').change(ev => {
+      const slot = ev.currentTarget.dataset.slot; // 'first' | 'second'
+      if (slot !== 'first' && slot !== 'second') return;
+      const key = ev.currentTarget.value;
+      const die = ev.currentTarget.selectedOptions?.[0]?.dataset.die;
+      if (!key || !die) return;
+      this.actor.update({
+        [`system.${slot}Die`]: die,
+        [`system.${slot}DieName`]: catalog.traitName(key, this.actor.system.character)
+      });
     });
 
     html.find('.health-update').change(async ev => {
@@ -310,19 +353,47 @@ export class RuneterraCharacterSheet extends ActorSheet {
 
     // Click a power/quality row → it becomes the roll die for that slot.
     // The status die is intentionally NOT clickable: it follows the health zone / scene.
-    html.find('.trait-row').click(ev => {
+    // After setting, the roll config at the top is scrolled into view and flashed,
+    // and the clicked row is marked selected (full re-render is skipped to keep scroll).
+    const markSelectedTraits = () => {
+      html.find('.trait-row').each((_, r) => {
+        const k = r.dataset.traitKind;
+        const slot = k === 'power' ? 'first' : k === 'quality' ? 'second' : null;
+        if (!slot) return;
+        const curDie = this.actor.system[`${slot}Die`];
+        const curName = this.actor.system[`${slot}DieName`];
+        const key = r.dataset.traitKey;
+        const rowName = key ? catalog.traitName(key, this.actor.system.character) : '';
+        r.classList.toggle('rt-selected', !!curDie && r.dataset.traitDie === curDie && rowName === curName);
+      });
+    };
+    markSelectedTraits();
+    html.find('.trait-row').click(async ev => {
       const row = ev.currentTarget;
       const kind = row.dataset.traitKind;
       if (kind !== 'power' && kind !== 'quality') return;
       const slot = kind === 'power' ? 'first' : 'second';
       const key = row.dataset.traitKey;
-      this.actor.update({
-        [`system.${slot}Die`]: row.dataset.traitDie,
-        [`system.${slot}DieName`]: key ? catalog.traitName(key, this.actor.system.character) : ''
-      });
-      ui.notifications.info(game.i18n.format('RUNETERRA.TraitSet', {
-        trait: row.querySelector('td')?.innerText.split('\n')[0] ?? '', die: row.dataset.traitDie
-      }));
+      const die = row.dataset.traitDie;
+      const label = row.querySelector('td')?.innerText.split('\n')[0] ?? '';
+      const name = key ? catalog.traitName(key, this.actor.system.character) : '';
+      await this.actor.update({
+        [`system.${slot}Die`]: die,
+        [`system.${slot}DieName`]: name
+      }, { render: false });
+      // Reflect immediately in the roll dropdown without a full re-render.
+      const config = html.find('.rt-roll-config');
+      config.find(`.trait-select[data-slot="${slot}"]`).val(key);
+      html.find(`.trait-row[data-trait-kind="${kind}"]`).removeClass('rt-selected');
+      row.classList.add('rt-selected');
+      // Bring the dice choice into view so the user sees where it went.
+      const configEl = config[0];
+      configEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      configEl?.classList.remove('rt-flash');
+      void configEl?.offsetWidth;
+      configEl?.classList.add('rt-flash');
+      setTimeout(() => configEl?.classList.remove('rt-flash'), 1400);
+      ui.notifications.info(game.i18n.format('RUNETERRA.TraitSet', { trait: label, die }));
     });
 
     // Scene tracker: per-zone step count (1–12).
@@ -376,9 +447,10 @@ export class RuneterraCharacterSheet extends ActorSheet {
       });
       return false;
     }
-    // Villain status item sets the villain's status die.
+    // Villain status items do NOT set the die: like champions, villains get their
+    // status die automatically from Temperament + health zone + scene.
     if (item.type === 'villainStatus') {
-      await this.actor.update({ 'system.thirdDie': item.system.dieType, 'system.thirdDieName': item.name });
+      ui.notifications?.warn(game.i18n.localize('RUNETERRA.VillainStatusAuto'));
       return false;
     }
     // Everything else (ability, mod, minionForm, twist) becomes an owned item.

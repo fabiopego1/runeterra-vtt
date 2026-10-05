@@ -1,26 +1,87 @@
-// Runeterra Foundry — status die resolution (ported from SCRPG status.js, adapted to
-// Runeterra: status dice come from the Temperament and the zone follows current health).
-import { zoneOf } from './rules.js';
+// Runeterra Foundry — status die resolution.
+// Rule: the status die ALWAYS follows the health zone (Temperament dice
+// green/yellow/red); the Scene tracker color can only push it DOWN one step
+// (green→yellow when the scene is yellow, anything→red when the scene is red).
+// It is never edited by hand — HealthUpdate recomputes it on every trigger
+// (import, health change, scene broadcast) and the sheet re-syncs on render.
 
-const ZONE_DIE_FIELD = { green: 'green', yellow: 'yellow', red: 'red' };
+import { derive, zoneOf } from './rules.js';
+
+const ZONE_INDEX = { green: 0, yellow: 1, red: 2 };
+
+function statusDieFrom(source, zoneName) {
+  const st = source?.status;
+  if (Array.isArray(st)) return st[ZONE_INDEX[zoneName] ?? 0] ?? 'd8';
+  if (st && typeof st === 'object') return st[zoneName] ?? 'd8';
+  return 'd8';
+}
 
 /**
- * Update the actor's third (status) die from its current health zone.
- * The scene color (greenSpace tracker) overrides the zone, mirroring SCRPG behavior.
+ * Pure rule resolution (no side effects — safe to call from render paths).
+ * `character` = system.character (live derive preferred); `snapshot` =
+ * system.derived (fallback for incomplete actors). Returns { die, name, zone }.
+ * When knocked out (zone 'out') there is no status die to roll: we keep the red
+ * die stored but label it 'out' so chat stays readable.
+ */
+export function resolveStatusDie(character, current, scene, snapshot) {
+  const live = character ? safeDerive(character, current) : null;
+  const zone = live?.zone ?? zoneOf(current, snapshot ?? {});
+  let effective = zone;
+  if (zone !== 'out') {
+    if (scene === 'red') effective = 'red';
+    else if (scene === 'yellow' && zone === 'green') effective = 'yellow';
+  }
+  const source = live ? { status: live.status } : snapshot;
+  if (zone === 'out') return { die: statusDieFrom(source, 'red'), name: 'out', zone };
+  return { die: statusDieFrom(source, effective), name: effective, zone };
+}
+
+function safeDerive(character, current) {
+  try {
+    return derive(character, current);
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Recompute the actor's third (status) die from health zone + scene.
+ * Also refreshes the stored derived snapshot and the token health value,
+ * so legacy actors created before this rule heal themselves on first render.
+ * Skips the update when everything already matches (no render loops).
  */
 export async function HealthUpdate(actor) {
+  if (actor.type !== 'champion' && actor.type !== 'villain') return;
   const sys = actor.system;
   const current = sys.play?.current;
-  const zone = zoneOf(current, sys.derived ?? {});
   const scene = sys.scene ?? 'green';
+  const r = resolveStatusDie(sys.character, current, scene, sys.derived);
+  const cur = parseInt(current, 10);
 
-  let dieName = zone;
-  if (scene === 'red') dieName = 'red';
-  else if (scene === 'yellow' && zone === 'green') dieName = 'yellow';
+  const patch = {};
+  if (sys.thirdDie !== r.die) patch['system.thirdDie'] = r.die;
+  if (sys.thirdDieName !== r.name) patch['system.thirdDieName'] = r.name;
+  if (!isNaN(cur) && sys.health?.value !== cur) patch['system.health.value'] = cur;
 
-  const die = sys.derived?.status?.[ZONE_DIE_FIELD[dieName]] ?? 'd8';
-  await actor.update({
-    'system.thirdDie': die,
-    'system.thirdDieName': dieName
-  });
+  // Refresh a stale stored snapshot whenever the live derive is available.
+  const live = sys.character ? safeDerive(sys.character, current) : null;
+  if (live) {
+    const snap = {
+      powers: live.powers,
+      qualities: live.qualities,
+      status: { green: live.status[0], yellow: live.status[1], red: live.status[2] },
+      status2: live.status2,
+      healthMax: live.health.max,
+      greenLow: live.health.greenLow,
+      yellowHigh: live.health.yellowHigh,
+      yellowLow: live.health.yellowLow,
+      redHigh: live.health.redHigh
+    };
+    for (const [k, v] of Object.entries(snap)) {
+      if (JSON.stringify(sys.derived?.[k]) !== JSON.stringify(v)) patch[`system.derived.${k}`] = v;
+    }
+    if (sys.health?.max !== live.health.max) patch['system.health.max'] = live.health.max;
+  }
+
+  if (Object.keys(patch).length) await actor.update(patch);
 }
