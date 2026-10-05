@@ -93,9 +93,12 @@ Hooks.once('ready', () => {
   // document.body (never replaced by Foundry), filters to sidebar changes, and
   // throttles to one check per frame. The append itself is guarded and scoped to the
   // Actors panel, so a run is cheap and can never touch Items/Scenes.
-  const findActorsPanel = () => document.querySelector('#sidebar [data-tab="actors"]')
-    ?? document.querySelector('.tab[data-tab="actors"]')
-    ?? document.querySelector('#actors');
+  const findActorsPanel = () => game.actors.apps?.[0]?.element
+    ?? ui.actors?.element
+    // fallbacks for odd render orders; note [data-tab="actors"] ALSO matches the
+    // sidebar icon button, so it must not be used to find the panel itself.
+    ?? document.querySelector('#actors')
+    ?? document.querySelector('.sidebar-tab.directory.actors-sidebar');
   const findHeader = (panel) => panel?.querySelector('.directory-header .action-buttons')
     ?? panel?.querySelector('.header-actions')
     ?? panel?.querySelector('.directory-header');
