@@ -152,17 +152,12 @@ Hooks.once('ready', () => {
     });
   };
   try {
-    new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        for (const node of m.addedNodes) {
-          // Only sidebar-sized subtrees matter; skip character-data mutations.
-          if (node.nodeType === 1 && (node.id === 'sidebar' || node.querySelector?.('#sidebar, #actors, .directory-header'))) {
-            queueEnsure();
-            return;
-          }
-        }
-      }
-    }).observe(document.body, { childList: true, subtree: true });
+    // No node filter on purpose: a header re-render adds the .directory-header node
+    // ITSELF (no matching descendant), so matching descendants alone misses exactly
+    // the mutation that wipes the button. queueEnsure is rAF-throttled and
+    // ensureImportButton no-ops in one query when nothing is needed.
+    new MutationObserver(() => queueEnsure())
+      .observe(document.body, { childList: true, subtree: true });
   } catch (e) {
     console.warn('RUNETERRA | observer indisponível, usando timer único:', e);
     setTimeout(ensureImportButton, 2000);
