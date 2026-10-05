@@ -55,3 +55,16 @@ Exemplo — dano em área nos selecionados: selecione os tokens e rode
 (a ficha recalcula zona e Status sozinha ao reabrir/atualizar a Vida).
 
 ## Fontes (SIL OFL): Marcellus, Barlow Semi Condensed, IBM Plex Mono.
+
+## Decisões de design
+
+- **Status é automático**: o dado de Status é sempre recalculado (Temperamento → zona de Vida;
+  a Cena só empurra para baixo: verde→amarelo com Cena amarela, tudo→vermelho com Cena vermelha).
+  Não existe seletor manual — é a regra do livro.
+- **Habilidades na ficha são espelho da Forja**: não há botão de excluir/criar habilidades na
+  ficha de propósito — o personagem nasce no site e chega pela importação; mudou o personagem,
+  mude no site e re-importe. Criar/excluir habilidades manuais continua possível via Diretório
+  de Itens (construção sem importação).
+- **O botão de importação sobrevive a re-renders** do diretório de Atores (re-injetado por
+  observação de mutação); se algum dia desaparecer, `game.runeterra.importChampion(json)` na
+  console faz a mesma coisa.

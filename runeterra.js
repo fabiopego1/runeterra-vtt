@@ -87,33 +87,18 @@ Hooks.once('ready', () => {
   });
 
   /** Add the "Importar personagem Runeterra" button to the Actors directory header. */
-  // Strictly scoped to the Actors panel: an unscoped '.directory-header' lookup
-  // can land in another tab (Items/Scenes), and the duplicate guard would then
-  // block the real injection into Actors forever.
-  // Containers tried in order: an empty directory renders a different header
-  // (sometimes without .action-buttons), so fall back to the header itself and
-  // finally the footer — the button must exist even with zero actors.
-  const CONTAINER_SELS = [
-    '.directory-header .action-buttons',
-    '.header-actions',
-    '.directory-header',
-    '.directory-footer'
-  ];
-  const firstContainer = (root) => {
-    for (const sel of CONTAINER_SELS) {
-      const el = root?.querySelector?.(sel);
-      if (el) return el;
-    }
-    return null;
-  };
+  // Design: ONE re-injection mechanism (a body-level MutationObserver), not a pile of
+  // hooks and timers. The button is appended DOM, so the directory header re-render
+  // wipes it — the observer re-adds it on the next mutation. The observer binds to
+  // document.body (never replaced by Foundry), filters to sidebar changes, and
+  // throttles to one check per frame. The append itself is guarded and scoped to the
+  // Actors panel, so a run is cheap and can never touch Items/Scenes.
   const findActorsPanel = () => document.querySelector('#sidebar [data-tab="actors"]')
     ?? document.querySelector('.tab[data-tab="actors"]')
     ?? document.querySelector('#actors');
-  const findActorsContainer = () => {
-    const panel = findActorsPanel();
-    if (!panel) return null;
-    return firstContainer(panel);
-  };
+  const findHeader = (panel) => panel?.querySelector('.directory-header .action-buttons')
+    ?? panel?.querySelector('.header-actions')
+    ?? panel?.querySelector('.directory-header');
   const createImportButton = () => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -146,53 +131,42 @@ Hooks.once('ready', () => {
   const ensureImportButton = () => {
     try {
       const panel = findActorsPanel();
-      // Panel-wide guard: exactly one button per panel, whichever container it landed in.
       if (!panel || panel.querySelector('.rt-import-btn')) return;
-      const header = firstContainer(panel);
+      const header = findHeader(panel);
       if (!header) return;
       header.appendChild(createImportButton());
     } catch (e) {
       console.warn('RUNETERRA | botão de importação não pôde ser adicionado:', e);
     }
   };
-
-  // Hook path: the rendered app's own element is always the right tab, so this
-  // can never land in Items/Scenes. Falls back to panel search when unavailable.
-  const injectFromApp = (_app, html) => {
-    try {
-      const el = html instanceof HTMLElement ? html : _app?.element;
-      const header = firstContainer(el);
-      if (header && !header.querySelector('.rt-import-btn')) {
-        header.appendChild(createImportButton());
-        return;
-      }
-    } catch (e) { /* fall through to panel search */ }
-    ensureImportButton();
-  };
-
-  // Re-inject whenever the sidebar DOM changes (search, sort, create/delete actors
-  // all re-render the header and destroy the manually appended button). A
-  // MutationObserver doesn't depend on hook names or render timing: whenever the
-  // Actors header exists without our button, it gets one. Injection always
-  // targets the Actors panel (see findActorsHeader), no matter what changed.
-  // The in-button guard prevents duplicates, so this is cheap to run often.
-  const injectSoon = () => {
-    ensureImportButton();
-    setTimeout(ensureImportButton, 200);
+  let ensureQueued = false;
+  const queueEnsure = () => {
+    if (ensureQueued) return;
+    ensureQueued = true;
+    requestAnimationFrame(() => {
+      ensureQueued = false;
+      ensureImportButton();
+    });
   };
   try {
-    const sidebar = document.getElementById('sidebar') ?? document.body;
-    new MutationObserver(ensureImportButton).observe(sidebar, { childList: true, subtree: true });
-  } catch (e) { /* observer unavailable: hooks + timeouts below still cover it */ }
-  Hooks.on('renderActorDirectory', injectFromApp);
-  Hooks.on('renderSidebarTab', injectSoon);
-  Hooks.on('renderSidebar', injectSoon);
-  Hooks.on('changeSidebarTab', (_app, tab) => {
-    if (typeof tab === 'string' ? tab === 'actors' : tab?.tabId === 'actors') {
-      setTimeout(ensureImportButton, 100);
-    }
-  });
-  // Fallback for slow loads. Also exposed for manual trigger/debugging.
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          // Only sidebar-sized subtrees matter; skip character-data mutations.
+          if (node.nodeType === 1 && (node.id === 'sidebar' || node.querySelector?.('#sidebar, #actors, .directory-header'))) {
+            queueEnsure();
+            return;
+          }
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  } catch (e) {
+    console.warn('RUNETERRA | observer indisponível, usando timer único:', e);
+    setTimeout(ensureImportButton, 2000);
+  }
+  Hooks.on('renderActorDirectory', () => queueEnsure());
+  // First paint after login (the observer may bind before the sidebar exists).
+  setTimeout(ensureImportButton, 2000);
+  // Manual trigger/debugging.
   game.runeterra.ensureImportButton = ensureImportButton;
-  for (const ms of [500, 2000, 4000, 8000]) setTimeout(ensureImportButton, ms);
 });
