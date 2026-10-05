@@ -159,9 +159,12 @@ Hooks.once('ready', () => {
     new MutationObserver(() => queueEnsure())
       .observe(document.body, { childList: true, subtree: true });
   } catch (e) {
-    console.warn('RUNETERRA | observer indisponível, usando timer único:', e);
-    setTimeout(ensureImportButton, 2000);
+    console.warn('RUNETERRA | observer indisponível:', e);
   }
+  // Safety net: Foundry's async render can wipe the button AFTER the observer's
+  // re-injection lands (the two interleave). A cheap periodic check bounds how long
+  // the button can ever be missing to one interval; it no-ops when present.
+  setInterval(ensureImportButton, 3000);
   Hooks.on('renderActorDirectory', () => queueEnsure());
   // First paint after login (the observer may bind before the sidebar exists).
   setTimeout(ensureImportButton, 2000);
