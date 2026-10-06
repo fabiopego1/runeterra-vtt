@@ -1,6 +1,7 @@
 // Runeterra Foundry — dice (ported from the SCRPG foundation's dice.js, V14-clean APIs).
 // Core mechanic preserved: three dice (Poder / Qualidade / Status) rolled as one pool
 // "{a,b,c}", sorted → Máx/Méd/Mín. Mods (bonus/penalty items) included.
+import { catalog } from './data/catalog.js';
 import { resolveStatusDie } from './status.js';
 
 function collectMods(actor) {
@@ -116,6 +117,29 @@ export async function ItemRoll(item) {
   await ChatMessage.create({
     user: game.user.id,
     speaker: ChatMessage.getSpeaker({ actor: item.actor ?? undefined }),
+    content: render
+  });
+}
+
+/**
+ * Out (knockout) ability card: no dice, Temperament text with the trait chip
+ * filled — same content as the sheet's Out row. Only usable while knocked out;
+ * the sheet only shows the button when the Out row is active.
+ */
+export async function OutRoll(actor) {
+  const ch = actor?.system?.character;
+  const pers = ch?.pers?.id ? catalog.personality(ch.pers.id) : null;
+  if (!pers) return;
+  const raw = window.I18N?.text?.[pers.out] ?? pers.out ?? '';
+  const traitName = ch.pers.outTrait ? catalog.traitName(ch.pers.outTrait, ch) : '[…]';
+  const text = raw.replace(/\[(power|quality)\]/g, `<strong>${traitName}</strong>`);
+  const gameText = await foundry.applications.ux.TextEditor.implementation.enrichHTML(text);
+  const item = { name: game.i18n.localize('RUNETERRA.Knockout'), system: { zone: 'out' } };
+  const render = await foundry.applications.handlebars.renderTemplate(
+    'systems/runeterra/templates/chat/abilityroll.hbs', { item, gameText });
+  await ChatMessage.create({
+    user: game.user.id,
+    speaker: ChatMessage.getSpeaker({ actor }),
     content: render
   });
 }

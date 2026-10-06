@@ -325,6 +325,13 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     html.find('.item-create').click(this._onItemCreate.bind(this));
     html.find('.item-edit').click(this._onItemEdit.bind(this));
     html.find('.item-delete').click(this._onItemDelete.bind(this));
+    html.find('.roll-out').click(ev => {
+      if (ev.currentTarget.closest('.rt-locked')) {
+        ui.notifications.warn(game.i18n.localize('RUNETERRA.ZoneLocked'));
+        return;
+      }
+      dice.OutRoll(this.actor);
+    });
     html.find('.roll-item').click(ev => {
       // Zone-locked tables show no roll button, but guard anyway: a locked
       // ability (greyed by health zone + scene) can never roll.

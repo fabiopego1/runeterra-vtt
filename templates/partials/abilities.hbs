@@ -30,7 +30,7 @@
         <td class="rt-ability-type rt-type-A">{{out.type}}</td>
         <td class="rt-ability-name">{{out.name}}</td>
         <td class="rt-ability-text">{{{out.text}}}</td>
-        <td></td>
+        <td class="rt-ability-actions">{{#if outActive}}<button type="button" class="roll-out" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>{{/if}}</td>
       </tr>
     </tbody>
   </table>
