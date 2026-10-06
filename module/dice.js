@@ -145,6 +145,40 @@ export async function OutRoll(actor) {
 }
 
 /**
+ * Minion group roll (SCRPG RollAllMinions, adapted): every minion actor sharing
+ * the same group name rolls its own die into a single chat card. No group set
+ * (or no match) → just this minion rolls.
+ */
+export async function rollMinionGroup(actor, groupName = null) {
+  const group = (groupName ?? actor?.system?.group ?? '').trim();
+  const minions = group
+    ? (game.actors?.filter(a => a.type === 'minion' && (a.system.group ?? '').trim() === group) ?? [])
+    : [];
+  const roster = minions.length ? minions : [actor].filter(Boolean);
+  const colored = game.settings.get('runeterra', 'coloredDice');
+  const rolls = [];
+  for (const m of roster) {
+    const die = m.system.dieType ?? 'd4';
+    const r = await new foundry.dice.Roll(die).evaluate();
+    const faces = r.dice[0]?.faces ?? 4;
+    rolls.push({
+      name: m.name, die,
+      total: r.total,
+      img: 'icons/svg/d' + faces + '-grey.svg',
+      imgClass: colored ? ('d' + faces) : ''
+    });
+  }
+  const render = await foundry.applications.handlebars.renderTemplate(
+    'systems/runeterra/templates/chat/minionsroll.hbs', { group, rolls });
+  await ChatMessage.create({
+    user: game.user.id,
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: render
+  });
+  return rolls;
+}
+
+/**
  * Macro/API entry: combined roll for every selected champion/villain token.
  * Nothing selected → warn instead of rolling blindly.
  */

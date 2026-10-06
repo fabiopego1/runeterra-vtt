@@ -8,6 +8,7 @@ import { RuneterraCharacterSheet } from './module/sheets/character-sheet.js';
 import { RuneterraItemSheet } from './module/sheets/item-sheet.js';
 import { importChampion, parseChampion } from './module/import.js';
 import { setSceneColor, resetScene } from './module/scene.js';
+import * as dice from './module/dice.js';
 import { rollSelected } from './module/dice.js';
 import { HealthUpdate, resolveStatusDie } from './module/status.js';
 
@@ -57,6 +58,7 @@ Hooks.once('init', () => {
     'systems/runeterra/templates/chat/mainroll.hbs',
     'systems/runeterra/templates/chat/minorroll.hbs',
     'systems/runeterra/templates/chat/abilityroll.hbs',
+    'systems/runeterra/templates/chat/minionsroll.hbs',
     'systems/runeterra/templates/chat/scenestatus.hbs'
   ]);
 
@@ -69,7 +71,7 @@ Hooks.once('init', () => {
 
 Hooks.once('ready', () => {
   // Importer + table API (used by compendium macros and available for custom macros/tests).
-  game.runeterra = { importChampion, parseChampion, setScene: setSceneColor, resetScene, rollSelected };
+  game.runeterra = { importChampion, parseChampion, setScene: setSceneColor, resetScene, rollSelected, rollMinionGroup: dice.rollMinionGroup, OutRoll: dice.OutRoll };
 
   // Rule safety net: Vida/Cena/criação mudados por qualquer via (macro, API, outra
   // ficha) recalculam o Status sozinho. HealthUpdate não escreve quando já está

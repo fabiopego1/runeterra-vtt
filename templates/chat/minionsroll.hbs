@@ -1,0 +1,13 @@
+{{!-- Runeterra Foundry — minion group roll --}}
+<div class="runeterra chat-card rt-roll rt-minions">
+  <div class="rt-single-head"><span>{{localize "RUNETERRA.TypeMinionPl"}}{{#if group}} · {{group}}{{/if}}</span></div>
+  <div class="rt-roll-dice">
+    {{#each rolls}}
+    <div class="rt-die {{imgClass}}">
+      <img src="{{img}}" />
+      <span class="rt-die-total">{{total}}</span>
+    </div>
+    {{/each}}
+  </div>
+  <div class="rt-roll-names">{{#each rolls}}<span>{{name}} ({{die}})</span>{{/each}}</div>
+</div>

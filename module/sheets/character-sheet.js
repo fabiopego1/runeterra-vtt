@@ -289,6 +289,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     html.find('.roll-power').click(() => dice.SingleCheck(this.actor.system.firstDie, 'power', this.actor.system.firstDieName, this.actor));
     html.find('.roll-quality').click(() => dice.SingleCheck(this.actor.system.secondDie, 'quality', this.actor.system.secondDieName, this.actor));
     html.find('.roll-status').click(() => dice.SingleCheck(this.actor.system.thirdDie, 'status', this.actor.system.thirdDieName, this.actor));
+    html.find('.roll-minion-group').click(() => dice.rollMinionGroup(this.actor));
 
     html.find('.die-select').change(ev => {
       this.actor.update({ [`system.${ev.currentTarget.dataset.field}`]: ev.currentTarget.value });
