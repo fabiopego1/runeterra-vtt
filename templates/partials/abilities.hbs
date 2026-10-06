@@ -12,10 +12,8 @@
         <td class="rt-ability-type rt-type-{{type}}">{{type}}</td>
         <td class="rt-ability-name">{{name}}{{#if renamed}} <span class="rt-orig">{{base}}</span>{{/if}}</td>
         <td class="rt-ability-text">{{{text}}}</td>
-        <td class="rt-ability-actions">
-          {{#unless ../locked}}<button type="button" class="roll-item" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>{{/unless}}
-          <button type="button" class="item-edit" title="{{localize 'RUNETERRA.Edit'}}"><i class="fas fa-pen"></i></button>
-        </td>
+        <td class="rt-ability-actions">{{#unless ../locked}}<button type="button" class="roll-item" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>
+          <button type="button" class="item-edit" title="{{localize 'RUNETERRA.Edit'}}"><i class="fas fa-pen"></i></button>{{/unless}}</td>
       </tr>
       {{/each}}
     </tbody>
