@@ -22,8 +22,8 @@
       {{/if}}
       <div class="rt-rollbar">
         <button type="button" class="make-roll" title="{{localize 'RUNETERRA.RollCombined'}}"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
-        <button type="button" class="roll-power">{{localize "RUNETERRA.RollPower"}}</button>
-        <button type="button" class="roll-quality">{{localize "RUNETERRA.RollQuality"}}</button>
+        <button type="button" class="roll-slot" data-slot="first" data-kind="{{firstKind}}">{{localize "RUNETERRA.Roll"}} {{firstTypeLabel}}</button>
+        <button type="button" class="roll-slot" data-slot="second" data-kind="{{secondKind}}">{{localize "RUNETERRA.Roll"}} {{secondTypeLabel}}</button>
         <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
       </div>
     </div>
@@ -78,16 +78,23 @@
 
     {{!-- ------------------------------------------------ page 2: powers & abilities --}}
     <div class="tab" data-tab="powers">
+      {{#if isDivided}}
+      <div class="rt-roll-config rt-divided-switch">
+        <label>{{localize "RUNETERRA.DividedMode"}}</label>
+        <button type="button" class="divide-mode {{#if (eq dividedMode 'heroic')}}rt-active{{/if}}" data-mode="heroic">{{localize "RUNETERRA.HeroicForm"}}</button>
+        <button type="button" class="divide-mode {{#if (eq dividedMode 'civilian')}}rt-active{{/if}}" data-mode="civilian">{{localize "RUNETERRA.CivilianForm"}}</button>
+      </div>
+      {{/if}}
       <div class="rt-roll-config">
-        <label>{{localize "RUNETERRA.DicePower"}}</label>
+        <label>{{firstTypeLabel}}</label>
         <select class="trait-select" data-slot="first">
           <option value="">—</option>
-          {{#select firstKey}}{{#each powers}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
+          {{#select firstKey}}{{#each firstRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
         </select>
-        <label>{{localize "RUNETERRA.DiceQuality"}}</label>
+        <label>{{secondTypeLabel}}</label>
         <select class="trait-select" data-slot="second">
           <option value="">—</option>
-          {{#select secondKey}}{{#each qualities}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
+          {{#select secondKey}}{{#each secondRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
         </select>
         <label>{{localize "RUNETERRA.DiceStatus"}}</label>
         <span class="rt-status-auto {{statusZoneClass}}" title="{{localize 'RUNETERRA.DiceStatusAuto'}}">{{statusDie}} · {{statusAutoLabel}}</span>

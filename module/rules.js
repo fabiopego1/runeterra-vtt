@@ -175,6 +175,31 @@ export function computeHealth(character, status) {
   };
 }
 
+/**
+ * Divided helpers (P2). `mode` is 'heroic' (default) or 'civilian', stored on the
+ * actor when the Path is Divided. Divided Psyche swaps both roll slots to a single
+ * trait kind: civilian rolls two qualities, heroic two powers (rulebook).
+ */
+export function dividedModeOf(system, character) {
+  const archDef = character?.arch?.id ? catalog.archetype(character.arch.id) : null;
+  if (!archDef?.divided) return 'heroic';
+  return system?.dividedMode === 'civilian' ? 'civilian' : 'heroic';
+}
+
+export function hasDividedPsyche(character) {
+  const archDef = character?.arch?.id ? catalog.archetype(character.arch.id) : null;
+  if (!archDef?.divided) return false;
+  return (character?.sel?.['arch-divafter'] ?? []).some(e => (e?.name ?? e) === 'Divided Psyche');
+}
+
+/** Roll-slot trait kinds for the sheet dropdowns and TaskCheck labels. */
+export function slotKinds(character, mode) {
+  if (hasDividedPsyche(character)) {
+    return mode === 'civilian' ? ['quality', 'quality'] : ['power', 'power'];
+  }
+  return ['power', 'quality'];
+}
+
 /** Zone of the current health value: green / yellow / red / out. */
 export function zoneOf(healthValue, derived) {
   if (healthValue == null || healthValue === '' || isNaN(parseInt(healthValue, 10))) return 'green';

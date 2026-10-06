@@ -9,8 +9,9 @@ import { derive, zoneOf, effectiveZone } from './rules.js';
 
 const ZONE_INDEX = { green: 0, yellow: 1, red: 2 };
 
-function statusDieFrom(source, zoneName) {
-  const st = source?.status;
+function statusDieFrom(source, zoneName, mode = 'heroic') {
+  // Civilian form uses the second Temperament's dice when they exist (Divided).
+  const st = (mode === 'civilian' && source?.status2) ? source.status2 : source?.status;
   if (Array.isArray(st)) return st[ZONE_INDEX[zoneName] ?? 0] ?? 'd8';
   if (st && typeof st === 'object') return st[zoneName] ?? 'd8';
   return 'd8';
@@ -19,17 +20,18 @@ function statusDieFrom(source, zoneName) {
 /**
  * Pure rule resolution (no side effects — safe to call from render paths).
  * `character` = system.character (live derive preferred); `snapshot` =
- * system.derived (fallback for incomplete actors). Returns { die, name, zone }.
+ * system.derived (fallback for incomplete actors). `mode` = 'heroic'|'civilian'
+ * (Divided second form uses status2). Returns { die, name, zone }.
  * When knocked out (zone 'out') there is no status die to roll: we keep the red
  * die stored but label it 'out' so chat stays readable.
  */
-export function resolveStatusDie(character, current, scene, snapshot) {
+export function resolveStatusDie(character, current, scene, snapshot, mode = 'heroic') {
   const live = character ? safeDerive(character, current) : null;
   const zone = live?.zone ?? zoneOf(current, snapshot ?? {});
   const effective = effectiveZone(zone, scene);
-  const source = live ? { status: live.status } : snapshot;
-  if (zone === 'out') return { die: statusDieFrom(source, 'red'), name: 'out', zone };
-  return { die: statusDieFrom(source, effective), name: effective, zone };
+  const source = live ? { status: live.status, status2: live.status2 } : snapshot;
+  if (zone === 'out') return { die: statusDieFrom(source, 'red', mode), name: 'out', zone };
+  return { die: statusDieFrom(source, effective, mode), name: effective, zone };
 }
 
 function safeDerive(character, current) {
@@ -51,7 +53,8 @@ export async function HealthUpdate(actor) {
   const sys = actor.system;
   const current = sys.play?.current;
   const scene = sys.scene ?? 'green';
-  const r = resolveStatusDie(sys.character, current, scene, sys.derived);
+  const mode = sys.dividedMode === 'civilian' ? 'civilian' : 'heroic';
+  const r = resolveStatusDie(sys.character, current, scene, sys.derived, mode);
   const cur = parseInt(current, 10);
 
   const patch = {};

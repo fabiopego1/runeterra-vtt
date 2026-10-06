@@ -425,6 +425,11 @@
 }
 .rt-roll-config input { width: 110px; }
 .rt-roll-config .trait-select { max-width: 280px; }
+/* Divided form switch: active form highlighted. */
+.rt-divided-switch .divide-mode.rt-active {
+  border-color: var(--gold, #c9a227);
+  font-weight: bold;
+}
 /* Status die is rule-driven (health zone + scene) — readout, not a control.
    Its background always matches the zone color. */
 .rt-status-auto {

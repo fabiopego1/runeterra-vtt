@@ -102,6 +102,7 @@
                     "max": 0
                 },
                 "scene": "green",
+                "dividedMode": "heroic",
                 "play": {
                     "hp": [],
                     "rw": [],

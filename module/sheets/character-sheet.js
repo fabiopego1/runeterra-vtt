@@ -2,7 +2,7 @@
 // The champion sheet follows the web app's playable ficha (ficha.html): identity + principles,
 // powers/qualities, status dice, health zones with per-zone abilities, and the auxiliary page.
 import { catalog } from '../data/catalog.js';
-import { derive, effectiveZone } from '../rules.js';
+import { derive, effectiveZone, dividedModeOf, slotKinds } from '../rules.js';
 import * as dice from '../dice.js';
 import { HealthUpdate, resolveStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
@@ -186,10 +186,24 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.qualities = derived ? this._traitRows(derived.qualities, ch) : [];
       data.principles = this._principles(ch);
 
+      // Divided second form: civilian/heroic mode drives status dice + slot kinds.
+      const archDef = ch.arch?.id ? catalog.archetype(ch.arch.id) : null;
+      data.isDivided = !!archDef?.divided;
+      data.dividedMode = dividedModeOf(sys, ch);
+      const [firstKind, secondKind] = slotKinds(ch, data.dividedMode);
+      data.firstKind = firstKind;
+      data.secondKind = secondKind;
+      data.firstTypeLabel = game.i18n.localize(firstKind === 'power' ? 'RUNETERRA.DicePower' : 'RUNETERRA.DiceQuality');
+      data.secondTypeLabel = game.i18n.localize(secondKind === 'power' ? 'RUNETERRA.DicePower' : 'RUNETERRA.DiceQuality');
+      const firstRows = firstKind === 'power' ? data.powers : data.qualities;
+      const secondRows = secondKind === 'power' ? data.powers : data.qualities;
+
       // Roll slots as single dropdowns: selected option = row matching stored die + name.
       const matchKey = (rows, die, name) => rows.find(r => r.die === die && r.name === name)?.key ?? '';
-      data.firstKey = matchKey(data.powers, sys.firstDie, sys.firstDieName);
-      data.secondKey = matchKey(data.qualities, sys.secondDie, sys.secondDieName);
+      data.firstKey = matchKey(firstRows, sys.firstDie, sys.firstDieName);
+      data.secondKey = matchKey(secondRows, sys.secondDie, sys.secondDieName);
+      data.firstRows = firstRows;
+      data.secondRows = secondRows;
 
       // Health & zones.
       const current = parseInt(sys.play?.current, 10);
@@ -223,7 +237,6 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.regionName = ch.region ? catalog.region(ch.region)?.name : '';
       data.bgName = ch.bg?.id ? catalog.background(ch.bg.id)?.rt : '';
       data.psName = ch.ps?.id ? catalog.powerSource(ch.ps.id)?.rt : '';
-      const archDef = ch.arch?.id ? catalog.archetype(ch.arch.id) : null;
       data.archName = archDef ? (archDef.rt + ((archDef.divided || archDef.modular) && ch.arch.base
         ? ` (${catalog.archetype(ch.arch.base)?.rt})` : '')) : '';
       data.persName = ch.pers?.id ? catalog.personality(ch.pers.id)?.rt : '';
@@ -280,16 +293,33 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     try {
       const sys = this.actor.system;
       if ((this.actor.type === 'champion' || this.actor.type === 'villain') && sys.character) {
-        const r = resolveStatusDie(sys.character, sys.play?.current, sys.scene ?? 'green', sys.derived);
+        const mode = sys.dividedMode === 'civilian' ? 'civilian' : 'heroic';
+        const r = resolveStatusDie(sys.character, sys.play?.current, sys.scene ?? 'green', sys.derived, mode);
         if (sys.thirdDie !== r.die || sys.thirdDieName !== r.name) HealthUpdate(this.actor);
       }
     } catch (e) { /* resolution needs the dataset; triggers already cover the sync */ }
 
     html.find('.make-roll').click(() => dice.TaskCheck(this.actor));
-    html.find('.roll-power').click(() => dice.SingleCheck(this.actor.system.firstDie, 'power', this.actor.system.firstDieName, this.actor));
-    html.find('.roll-quality').click(() => dice.SingleCheck(this.actor.system.secondDie, 'quality', this.actor.system.secondDieName, this.actor));
+    // Single-slot buttons follow the slot's current kind (Divided Psyche swaps kinds).
+    html.find('.roll-slot').click(ev => {
+      const slot = ev.currentTarget.dataset.slot === 'second' ? 'second' : 'first';
+      const kind = ev.currentTarget.dataset.kind === 'quality' ? 'quality' : 'power';
+      dice.SingleCheck(this.actor.system[`${slot}Die`], kind, this.actor.system[`${slot}DieName`], this.actor);
+    });
     html.find('.roll-status').click(() => dice.SingleCheck(this.actor.system.thirdDie, 'status', this.actor.system.thirdDieName, this.actor));
     html.find('.roll-minion-group').click(() => dice.rollMinionGroup(this.actor));
+
+    // Divided form switch (heroic/civilian): reset both roll slots (SCRPG
+    // reference: slots don't carry across forms) and resync the status die.
+    html.find('.divide-mode').click(async ev => {
+      const mode = ev.currentTarget.dataset.mode === 'civilian' ? 'civilian' : 'heroic';
+      await this.actor.update({
+        'system.dividedMode': mode,
+        'system.firstDie': 'd4', 'system.firstDieName': 'N/A',
+        'system.secondDie': 'd4', 'system.secondDieName': 'N/A'
+      });
+      await HealthUpdate(this.actor);
+    });
 
     html.find('.die-select').change(ev => {
       this.actor.update({ [`system.${ev.currentTarget.dataset.field}`]: ev.currentTarget.value });
@@ -373,11 +403,20 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     // The status die is intentionally NOT clickable: it follows the health zone / scene.
     // After setting, the roll config at the top is scrolled into view and flashed,
     // and the clicked row is marked selected (full re-render is skipped to keep scroll).
+    // Slot for a kind comes from slotKinds (Divided Psyche puts both slots on one kind).
+    const slotForKind = (kind) => {
+      const [k1, k2] = slotKinds(this.actor.system.character, this.actor.system.dividedMode);
+      const slots = [];
+      if (k1 === kind) slots.push('first');
+      if (k2 === kind) slots.push('second');
+      return slots;
+    };
     const markSelectedTraits = () => {
       html.find('.trait-row').each((_, r) => {
         const k = r.dataset.traitKind;
-        const slot = k === 'power' ? 'first' : k === 'quality' ? 'second' : null;
-        if (!slot) return;
+        const slots = slotForKind(k);
+        if (!slots.length) return;
+        const slot = slots[0];
         const curDie = this.actor.system[`${slot}Die`];
         const curName = this.actor.system[`${slot}DieName`];
         const key = r.dataset.traitKey;
@@ -390,11 +429,15 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       const row = ev.currentTarget;
       const kind = row.dataset.traitKind;
       if (kind !== 'power' && kind !== 'quality') return;
-      const slot = kind === 'power' ? 'first' : 'second';
+      const slots = slotForKind(kind);
+      if (!slots.length) return;
+      // Both slots share the kind (Divided Psyche): fill the first slot not
+      // already holding this exact trait, else the first slot.
       const key = row.dataset.traitKey;
       const die = row.dataset.traitDie;
-      const label = row.querySelector('td')?.innerText.split('\n')[0] ?? '';
       const name = key ? catalog.traitName(key, this.actor.system.character) : '';
+      const slot = slots.find(s => this.actor.system[`${s}DieName`] !== name) ?? slots[0];
+      const label = row.querySelector('td')?.innerText.split('\n')[0] ?? '';
       await this.actor.update({
         [`system.${slot}Die`]: die,
         [`system.${slot}DieName`]: name

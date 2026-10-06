@@ -3,6 +3,7 @@
 // "{a,b,c}", sorted → Máx/Méd/Mín. Mods (bonus/penalty items) included.
 import { catalog } from './data/catalog.js';
 import { resolveStatusDie } from './status.js';
+import { slotKinds } from './rules.js';
 
 function collectMods(actor) {
   const all = (actor?.items ?? []).filter(i => i.type === 'mod');
@@ -39,9 +40,12 @@ export async function TaskCheck(actor) {
   // Each name rides along with its own die through the Max/Mid/Min sort, so the
   // label under a die always belongs to that die (fixed-order rows misaligned).
   const slotNames = [sys.firstDieName, sys.secondDieName, statusDisplayName(sys.thirdDieName)];
+  // Divided Psyche swaps slot kinds by form (civilian = two qualities, heroic = two powers).
+  const [k1, k2] = slotKinds(sys.character, sys.dividedMode);
+  const kindLabel = (k) => game.i18n.localize(k === 'quality' ? 'RUNETERRA.DiceQuality' : 'RUNETERRA.DicePower');
   const slotTypes = [
-    game.i18n.localize('RUNETERRA.DicePower'),
-    game.i18n.localize('RUNETERRA.DiceQuality'),
+    kindLabel(k1),
+    kindLabel(k2),
     game.i18n.localize('RUNETERRA.DiceStatus')
   ];
   const formula = `{${sys.firstDie},${sys.secondDie},${sys.thirdDie}}`;
