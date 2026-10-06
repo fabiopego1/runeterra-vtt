@@ -5,7 +5,7 @@
 // It is never edited by hand — HealthUpdate recomputes it on every trigger
 // (import, health change, scene broadcast) and the sheet re-syncs on render.
 
-import { derive, zoneOf } from './rules.js';
+import { derive, zoneOf, effectiveZone } from './rules.js';
 
 const ZONE_INDEX = { green: 0, yellow: 1, red: 2 };
 
@@ -26,11 +26,7 @@ function statusDieFrom(source, zoneName) {
 export function resolveStatusDie(character, current, scene, snapshot) {
   const live = character ? safeDerive(character, current) : null;
   const zone = live?.zone ?? zoneOf(current, snapshot ?? {});
-  let effective = zone;
-  if (zone !== 'out') {
-    if (scene === 'red') effective = 'red';
-    else if (scene === 'yellow' && zone === 'green') effective = 'yellow';
-  }
+  const effective = effectiveZone(zone, scene);
   const source = live ? { status: live.status } : snapshot;
   if (zone === 'out') return { die: statusDieFrom(source, 'red'), name: 'out', zone };
   return { die: statusDieFrom(source, effective), name: effective, zone };

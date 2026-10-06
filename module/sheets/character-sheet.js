@@ -2,7 +2,7 @@
 // The champion sheet follows the web app's playable ficha (ficha.html): identity + principles,
 // powers/qualities, status dice, health zones with per-zone abilities, and the auxiliary page.
 import { catalog } from '../data/catalog.js';
-import { derive } from '../rules.js';
+import { derive, effectiveZone } from '../rules.js';
 import * as dice from '../dice.js';
 import { HealthUpdate, resolveStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
@@ -84,7 +84,8 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
   /** Ability items grouped by zone, with renames resolved and zone locking applied. */
   async _zoneTables(actor, character, currentZone) {
     const zones = ['green', 'yellow', 'red'];
-    const curRank = ZONE_RANK[currentZone] ?? 0;
+    // Knocked out: rank below every table so green+yellow+red all lock (only Out stays usable).
+    const curRank = currentZone === 'out' ? -1 : (ZONE_RANK[currentZone] ?? 0);
     const enrich = (s) => foundry.applications.ux.TextEditor.implementation.enrichHTML(s ?? '');
     const tables = await Promise.all(zones.map(async zone => {
       const items = actor.items.filter(i => i.type === 'ability' && (i.system.zone ?? 'green') === zone);
@@ -198,7 +199,10 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
         ? (curValue >= derived.health.greenLow ? 'green' : curValue >= derived.health.yellowLow ? 'yellow' : curValue >= 1 ? 'red' : 'out')
         : 'green';
       data.zoneLabel = game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`);
-      data.zoneTables = await this._zoneTables(this.actor, ch, zone);
+      // Locks follow the EFFECTIVE zone (health pushed down by the scene, SCRPG
+      // reference rule); knockout locks every table, Out row excepted.
+      const effZone = effectiveZone(zone, sys.scene ?? 'green');
+      data.zoneTables = await this._zoneTables(this.actor, ch, effZone);
 
       // Status die readout (rule-driven info): localized die zone + why (health zone · scene).
       const ZONE_KEY = { green: 'RUNETERRA.ZoneGreen', yellow: 'RUNETERRA.ZoneYellow', red: 'RUNETERRA.ZoneRed' };

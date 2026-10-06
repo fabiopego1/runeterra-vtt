@@ -186,6 +186,20 @@ export function zoneOf(healthValue, derived) {
 }
 
 /**
+ * Effective zone for ability locks and the Status die (SCRPG reference:
+ * getAbilitiesEnabledFromStatusClass — scene red/yellow unlocks as if the
+ * actor were in that zone, but the scene can only push DOWN, never up).
+ * Knockout ('out') stays out: everything locks except the Out ability.
+ * Pure — covered by scripts/test-zone-locks.mjs.
+ */
+export function effectiveZone(healthZone, scene) {
+  if (healthZone === 'out') return 'out';
+  if (scene === 'red') return 'red';
+  if (scene === 'yellow' && healthZone === 'green') return 'yellow';
+  return healthZone ?? 'green';
+}
+
+/**
  * Full derivation for a champion actor: traits, status, health, zone.
  * Returns null when the character definition is incomplete.
  */
