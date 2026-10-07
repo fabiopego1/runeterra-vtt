@@ -42,6 +42,27 @@ function safeDerive(character, current) {
   }
 }
 
+const ENVIRONMENT_STATUS = { green: 'd6', yellow: 'd8', red: 'd10' };
+
+/**
+ * Environments have no health zones: the status die IS the scene color
+ * (canonical SCRPG default d6/d8/d10). Never edited by hand.
+ */
+export function resolveEnvironmentStatusDie(scene) {
+  const zone = ENVIRONMENT_STATUS[scene] ? scene : 'green';
+  return { die: ENVIRONMENT_STATUS[zone], name: zone, zone };
+}
+
+/** Sync the environment's third die from the current scene color. */
+export async function EnvironmentUpdate(actor) {
+  if (actor.type !== 'environment') return;
+  const r = resolveEnvironmentStatusDie(actor.system.scene);
+  const patch = {};
+  if (actor.system.thirdDie !== r.die) patch['system.thirdDie'] = r.die;
+  if (actor.system.thirdDieName !== r.name) patch['system.thirdDieName'] = r.name;
+  if (Object.keys(patch).length) await actor.update(patch);
+}
+
 /**
  * Recompute the actor's third (status) die from health zone + scene.
  * Also refreshes the stored derived snapshot and the token health value,

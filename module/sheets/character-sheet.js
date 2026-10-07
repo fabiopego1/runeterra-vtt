@@ -4,11 +4,14 @@
 import { catalog } from '../data/catalog.js';
 import { derive, effectiveZone, dividedModeOf, slotKinds } from '../rules.js';
 import * as dice from '../dice.js';
-import { HealthUpdate, resolveStatusDie } from '../status.js';
+import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
+import { importIntoChampion, pickChampionJson } from '../import.js';
 
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
 const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
+// How long the last ability's chat card stays attached to new rolls.
+const ABILITY_CARD_LEASE_MS = 20000;
 
 export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
   static get defaultOptions() {
@@ -16,11 +19,22 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       classes: ['runeterra', 'sheet', 'actor'],
       width: 880,
       height: 760,
-      tabs: [{ navSelector: '.sheet-tabs', contentSelector: '.sheet-body', initial: 'champ' }]
+      tabs: [{ navSelector: '.sheet-tabs', contentSelector: '.sheet-body', initial: 'powers' }]
     });
   }
 
+  /** A champion with nothing chosen (fresh from the create dialog) is an import shell only. */
+  _isImportPending(actor) {
+    if (actor.type !== 'champion') return false;
+    const c = actor.system?.character;
+    return !c?.bg?.id && !c?.ps?.id && !c?.arch?.id && !c?.pers?.id;
+  }
+
   get template() {
+    // Blank champions cannot be hand-built: the sheet is the JSON importer alone.
+    if (this._isImportPending(this.actor)) {
+      return 'systems/runeterra/templates/sheets/champion-import.hbs';
+    }
     // Champions and villains share the ficha layout (Runeterra builds villains like champions).
     if (this.actor.type === 'champion' || this.actor.type === 'villain') {
       return 'systems/runeterra/templates/sheets/champion-sheet.hbs';
@@ -175,6 +189,9 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
   async getData(options = {}) {
     const data = await super.getData(options);
     const sys = this.actor.system;
+    // Foundry v14 AppV1 no longer exposes `system` in the sheet context; the
+    // environment/minion templates read `system.*` (die selects, notes) directly.
+    data.system = sys;
 
     if (this.actor.type === 'champion' || this.actor.type === 'villain') {
       const ch = sys.character ?? {};
@@ -243,12 +260,6 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
 
       data.info = ch.info ?? {};
       data.special = this._specialArchetype(ch);
-
-      // Mods (bonus/penalty items selected into the roll).
-      data.mods = this.actor.items.filter(i => i.type === 'mod').map(i => ({
-        id: i.id, name: i.name, value: i.system.value,
-        selected: !!i.system.selected, persistent: !!i.system.persistent, exclusive: !!i.system.exclusive
-      }));
     }
 
     // Scene tracker: build the space grid for each zone.
@@ -267,18 +278,123 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       ];
     }
 
-    // Environment: twist cards owned by this actor.
+    // Environment: twist cards owned by this actor + scene-driven status die.
     if (this.actor.type === 'environment') {
       data.twists = await Promise.all(this.actor.items.filter(i => i.type === 'twist').map(async i => ({
         id: i.id,
         name: i.name,
         text: await foundry.applications.ux.TextEditor.implementation.enrichHTML(i.system.description ?? '')
       })));
+      const zone = ['green', 'yellow', 'red'].includes(sys.scene) ? sys.scene : 'green';
+      data.statusZone = zone;
+      data.statusZoneClass = `rt-status-${zone}`;
+      data.statusZoneLabel = game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`);
     }
 
     data.config = CONFIG.RUNETERRA;
     data.dieTypes = ['d4', 'd6', 'd8', 'd10', 'd12'];
     return data;
+  }
+
+  /* ------------------------------------------------------------ roll priming */
+
+  /** Roll slots that accept this kind ('power' | 'quality') — Divided Psyche may put both on one kind. */
+  _slotsForKind(kind) {
+    const sys = this.actor.system;
+    const [k1, k2] = slotKinds(sys.character, sys.dividedMode);
+    const slots = [];
+    if (k1 === kind) slots.push('first');
+    if (k2 === kind) slots.push('second');
+    return slots;
+  }
+
+  /** Mark trait rows whose die+name matches a roll slot, without a re-render. */
+  _markSelectedTraits(html) {
+    html.find('.trait-row').each((_, r) => {
+      const slots = this._slotsForKind(r.dataset.traitKind);
+      if (!slots.length) return;
+      const slot = slots[0];
+      const curDie = this.actor.system[`${slot}Die`];
+      const curName = this.actor.system[`${slot}DieName`];
+      const key = r.dataset.traitKey;
+      const rowName = key ? catalog.traitName(key, this.actor.system.character) : '';
+      r.classList.toggle('rt-selected', !!curDie && r.dataset.traitDie === curDie && rowName === curName);
+    });
+  }
+
+  /**
+   * After an ability button press: fixed dice (traits the ability's text
+   * names, max two, text order) are set into their slots; every slot the
+   * ability leaves free goes empty ("—") for the player to choose. Both
+   * dropdowns get a light gold tint and the combined roll button glows.
+   * Texts store canonical trait names, so both the display name and the
+   * canonical one are matched.
+   */
+  async _prepareAbilityRoll(item, html) {
+    const sys = this.actor.system;
+    if (!sys.character) return;
+    const norm = (s) => String(s ?? '').replace(/<[^>]*>/g, ' ')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/\s+/g, ' ');
+    const hay = norm(item.system.gameText);
+    const derived = derive(sys.character, sys.play?.current);
+    if (!derived) return;
+    const found = [];
+    for (const [kind, map] of [['power', derived.powers], ['quality', derived.qualities]]) {
+      for (const row of this._traitRows(map, sys.character)) {
+        const nName = norm(row.name);
+        if (hay && nName && nName.length >= 3 && (hay.includes(nName) || hay.includes(norm(row.orig)))) {
+          found.push({ ...row, kind });
+        }
+      }
+    }
+    found.sort((a, b) => hay.indexOf(norm(a.name)) - hay.indexOf(norm(b.name)));
+    const updates = {};
+    const chosen = [];
+    const taken = new Set();
+    for (const row of found.slice(0, 2)) {
+      const slots = this._slotsForKind(row.kind).filter(s => !taken.has(s));
+      if (!slots.length) continue;
+      const slot = slots.find(s => sys[`${s}DieName`] !== row.name) ?? slots[0];
+      taken.add(slot);
+      updates[`system.${slot}Die`] = row.die;
+      updates[`system.${slot}DieName`] = row.name;
+      chosen.push({ slot, key: row.key });
+    }
+    // Slots the ability doesn't fix reset to the empty state ('d4' + 'N/A'
+    // never matches a trait row, so the dropdown shows the "—" option).
+    for (const kind of ['power', 'quality']) {
+      for (const slot of this._slotsForKind(kind)) {
+        if (!taken.has(slot)) {
+          updates[`system.${slot}Die`] = 'd4';
+          updates[`system.${slot}DieName`] = 'N/A';
+        }
+      }
+    }
+    await this.actor.update(updates, { render: false });
+    const config = html.find('.rt-roll-config:not(.rt-divided-switch)');
+    config.find('.trait-select').addClass('rt-primed');
+    for (const { slot, key } of chosen) config.find(`.trait-select[data-slot="${slot}"]`).val(key);
+    // Free slots show "—" without a re-render.
+    for (const slot of ['first', 'second']) {
+      if (!chosen.some(c => c.slot === slot)) config.find(`.trait-select[data-slot="${slot}"]`).val('');
+    }
+    this._markSelectedTraits(html);
+    this._setRollReady(html, html.find('.make-roll')[0]);
+  }
+
+  /** Glow on the panel's combined roll button until any panel roll is clicked. */
+  _setRollReady(html, button) {
+    html.find('.rt-rollbar .rt-ready').removeClass('rt-ready');
+    button?.classList.add('rt-ready');
+  }
+
+  /** Keep the last ability's card attached to rolls for a short while. */
+  _armAbilityLease(id) {
+    clearTimeout(this._abilityLease);
+    this._abilityLease = setTimeout(() => {
+      if (this._lastAbilityId === id) this._lastAbilityId = null;
+    }, ABILITY_CARD_LEASE_MS);
   }
 
   /* ------------------------------------------------------------ listeners */
@@ -297,14 +413,65 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
         const r = resolveStatusDie(sys.character, sys.play?.current, sys.scene ?? 'green', sys.derived, mode);
         if (sys.thirdDie !== r.die || sys.thirdDieName !== r.name) HealthUpdate(this.actor);
       }
+      // Environment status die follows the scene color alone.
+      if (this.actor.type === 'environment') {
+        const r = resolveEnvironmentStatusDie(sys.scene);
+        if (sys.thirdDie !== r.die || sys.thirdDieName !== r.name) EnvironmentUpdate(this.actor);
+      }
     } catch (e) { /* resolution needs the dataset; triggers already cover the sync */ }
 
-    html.find('.make-roll').click(() => dice.TaskCheck(this.actor));
+    html.find('.make-roll').click(async () => {
+      const sys = this.actor.system;
+      const [k1, k2] = slotKinds(sys.character, sys.dividedMode);
+      const lbl = (k) => game.i18n.localize(k === 'quality' ? 'RUNETERRA.DiceQuality' : 'RUNETERRA.DicePower');
+      const missing = ['first', 'second']
+        .filter(s => sys[`${s}DieName`] === 'N/A')
+        .map(s => lbl(s === 'first' ? k1 : k2));
+      if (missing.length) {
+        ui.notifications.warn(game.i18n.format('RUNETERRA.NeedsTrait', { type: missing.join(' + ') }));
+        return;
+      }
+      const abilityId = this._lastAbilityId;
+      await dice.TaskCheck(this.actor, { abilityId });
+      // The card outlives the roll briefly (refreshed on every roll) so
+      // follow-up rolls keep it; a pause longer than the lease lets it fade.
+      if (abilityId) this._armAbilityLease(abilityId);
+    });
+    // Any panel roll consumes the primed ("ready") highlight and the
+    // primed dropdown tint.
+    html.find('.rt-rollbar button').click(ev => {
+      ev.currentTarget.classList.remove('rt-ready');
+      html.find('.trait-select.rt-primed').removeClass('rt-primed');
+    });
+
+    // Import-only state: fill this blank champion from a Forja de Campeões JSON.
+    html.find('.rt-import-json').click(async () => {
+      const text = await pickChampionJson();
+      if (text == null) return;
+      const res = await importIntoChampion(this.actor, text);
+      if (res.ok) {
+        const msgs = [game.i18n.format('RUNETERRA.ImportSuccess', { name: res.actor.name })];
+        for (const w of res.warnings ?? []) msgs.push(w);
+        ui.notifications.info(msgs.join(' '), { permanent: true });
+        this.render(true);
+      } else {
+        ui.notifications.error(
+          game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
+          { permanent: true });
+      }
+    });
     // Single-slot buttons follow the slot's current kind (Divided Psyche swaps kinds).
     html.find('.roll-slot').click(ev => {
       const slot = ev.currentTarget.dataset.slot === 'second' ? 'second' : 'first';
       const kind = ev.currentTarget.dataset.kind === 'quality' ? 'quality' : 'power';
-      dice.SingleCheck(this.actor.system[`${slot}Die`], kind, this.actor.system[`${slot}DieName`], this.actor);
+      const sys = this.actor.system;
+      if (sys[`${slot}DieName`] === 'N/A') {
+        ui.notifications.warn(game.i18n.format('RUNETERRA.NeedsTrait', {
+          type: game.i18n.localize(kind === 'quality' ? 'RUNETERRA.DiceQuality' : 'RUNETERRA.DicePower')
+        }));
+        return;
+      }
+      dice.SingleCheck(sys[`${slot}Die`], kind, sys[`${slot}DieName`], this.actor);
     });
     html.find('.roll-status').click(() => dice.SingleCheck(this.actor.system.thirdDie, 'status', this.actor.system.thirdDieName, this.actor));
     html.find('.roll-minion-group').click(() => dice.rollMinionGroup(this.actor));
@@ -321,12 +488,9 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       await HealthUpdate(this.actor);
     });
 
-    html.find('.die-select').change(ev => {
-      this.actor.update({ [`system.${ev.currentTarget.dataset.field}`]: ev.currentTarget.value });
-    });
-
     // Single trait dropdown per slot: the option carries the trait key, its die rides along.
     html.find('.trait-select').change(ev => {
+      ev.currentTarget.classList.remove('rt-primed');
       const slot = ev.currentTarget.dataset.slot; // 'first' | 'second'
       if (slot !== 'first' && slot !== 'second') return;
       const key = ev.currentTarget.value;
@@ -370,66 +534,27 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
         ui.notifications.warn(game.i18n.localize('RUNETERRA.ZoneLocked'));
         return;
       }
-      const itemId = ev.currentTarget.closest('[data-item-id]')?.dataset.itemId;
-      if (itemId) dice.ItemRoll(this.actor.items.get(itemId));
-    });
-    html.find('.mod-select').change(async ev => {
-      const itemId = ev.currentTarget.closest('[data-item-id]')?.dataset.itemId;
-      const mod = this.actor.items.get(itemId);
-      if (!mod) return;
-      const select = ev.currentTarget.checked;
-      const positive = (mod.system.value ?? 0) > 0;
-      if (select) {
-        // Selecting an exclusive mod deselects the others in the same bonus/penalty group…
-        if (mod.system.exclusive) {
-          for (const other of this.actor.items.filter(i => i.type === 'mod' && i.id !== itemId
-            && i.system.selected && ((i.system.value ?? 0) > 0) === positive)) {
-            await other.update({ 'system.selected': false }, { render: false });
-          }
-          this.render(false);
-        } else if (
-          // …and a non-exclusive mod can't join an already-selected exclusive one.
-          this.actor.items.some(i => i.type === 'mod' && i.id !== itemId && i.system.selected
-            && i.system.exclusive && ((i.system.value ?? 0) > 0) === positive)
-        ) {
-          ev.currentTarget.checked = false;
-          return;
-        }
-      }
-      await mod.update({ 'system.selected': select });
+      const item = this.actor.items.get(ev.currentTarget.closest('[data-item-id]')?.dataset.itemId);
+      if (!item) return;
+      // No card in chat yet — the ability only reaches chat when the combined
+      // roll posts (TaskCheck), always the last ability clicked. Any pending
+      // lease from a previous ability dies here so it can't clear this one.
+      clearTimeout(this._abilityLease);
+      this._lastAbilityId = item.id;
+      // Prime the panel slots with the traits the ability names and flag the combined roll.
+      this._prepareAbilityRoll(item, html);
     });
 
     // Click a power/quality row → it becomes the roll die for that slot.
     // The status die is intentionally NOT clickable: it follows the health zone / scene.
     // After setting, the roll config at the top is scrolled into view and flashed,
     // and the clicked row is marked selected (full re-render is skipped to keep scroll).
-    // Slot for a kind comes from slotKinds (Divided Psyche puts both slots on one kind).
-    const slotForKind = (kind) => {
-      const [k1, k2] = slotKinds(this.actor.system.character, this.actor.system.dividedMode);
-      const slots = [];
-      if (k1 === kind) slots.push('first');
-      if (k2 === kind) slots.push('second');
-      return slots;
-    };
-    const markSelectedTraits = () => {
-      html.find('.trait-row').each((_, r) => {
-        const k = r.dataset.traitKind;
-        const slots = slotForKind(k);
-        if (!slots.length) return;
-        const slot = slots[0];
-        const curDie = this.actor.system[`${slot}Die`];
-        const curName = this.actor.system[`${slot}DieName`];
-        const key = r.dataset.traitKey;
-        const rowName = key ? catalog.traitName(key, this.actor.system.character) : '';
-        r.classList.toggle('rt-selected', !!curDie && r.dataset.traitDie === curDie && rowName === curName);
-      });
-    };
-    markSelectedTraits();
+    this._markSelectedTraits(html);
     html.find('.trait-row').click(async ev => {
       const row = ev.currentTarget;
       const kind = row.dataset.traitKind;
       if (kind !== 'power' && kind !== 'quality') return;
-      const slots = slotForKind(kind);
+      const slots = this._slotsForKind(kind);
       if (!slots.length) return;
       // Both slots share the kind (Divided Psyche): fill the first slot not
       // already holding this exact trait, else the first slot.
@@ -443,7 +568,9 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
         [`system.${slot}DieName`]: name
       }, { render: false });
       // Reflect immediately in the roll dropdown without a full re-render.
-      const config = html.find('.rt-roll-config');
+      // The dice config now lives in the pinned side panel; exclude the
+      // Divided form switch, which only borrows the rt-roll-config styling.
+      const config = html.find('.rt-roll-config:not(.rt-divided-switch)');
       config.find(`.trait-select[data-slot="${slot}"]`).val(key);
       html.find(`.trait-row[data-trait-kind="${kind}"]`).removeClass('rt-selected');
       row.classList.add('rt-selected');

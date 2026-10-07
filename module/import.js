@@ -127,11 +127,25 @@ async function uploadPortrait(dataURI, baseName) {
   }
 }
 
+/** Open a file picker and resolve with the chosen .json file's text (null on cancel). */
+export function pickChampionJson() {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json,.json';
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      resolve(file ? await file.text() : null);
+    });
+    input.click();
+  });
+}
+
 /**
- * Import a champion JSON string (or object). All-or-nothing.
- * Returns { ok, actor?, errors?, warnings? }.
+ * Build the actor data + items from a champion JSON (no documents touched).
+ * All-or-nothing: returns { ok:false, errors } when validation fails.
  */
-export async function importChampion(json) {
+export async function buildChampionImport(json) {
   const { state, errors } = parseChampion(json);
   if (!state || errors.length) return { ok: false, errors: errors ?? ['JSON inválido.'] };
 
@@ -240,8 +254,19 @@ export async function importChampion(json) {
     });
   }
 
-  const [actor] = await Actor.createDocuments([actorData]);
-  if (items.length) await actor.createEmbeddedDocuments('Item', items);
+  return { ok: true, actorData, items, warnings };
+}
+
+/**
+ * Import a champion JSON string (or object) as a NEW actor. All-or-nothing.
+ * Returns { ok, actor?, errors?, warnings? }.
+ */
+export async function importChampion(json) {
+  const built = await buildChampionImport(json);
+  if (!built.ok) return built;
+
+  const [actor] = await Actor.createDocuments([built.actorData]);
+  if (built.items.length) await actor.createEmbeddedDocuments('Item', built.items);
 
   // The status die follows health zone + scene automatically — set it on import
   // so the sheet never opens with the d4 template default.
@@ -249,5 +274,26 @@ export async function importChampion(json) {
     await HealthUpdate(actor);
   } catch (e) { /* sheet render-time sync covers it as fallback */ }
 
-  return { ok: true, actor, warnings };
+  return { ok: true, actor, warnings: built.warnings };
+}
+
+/**
+ * Fill an existing empty champion actor in place (the sheet's import button).
+ * Replaces name, portrait and system; ability items are rebuilt from scratch.
+ */
+export async function importIntoChampion(actor, json) {
+  const built = await buildChampionImport(json);
+  if (!built.ok) return built;
+  const { name, img, system } = built.actorData;
+
+  const staleIds = actor.items.filter(i => i.type === 'ability').map(i => i.id);
+  if (staleIds.length) await actor.deleteEmbeddedDocuments('Item', staleIds);
+  await actor.update({ name, img, system });
+  if (built.items.length) await actor.createEmbeddedDocuments('Item', built.items);
+
+  try {
+    await HealthUpdate(actor);
+  } catch (e) { /* sheet render-time sync covers it as fallback */ }
+
+  return { ok: true, actor, warnings: built.warnings };
 }

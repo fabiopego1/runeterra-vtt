@@ -1,7 +1,7 @@
 // Runeterra Foundry — Scene Tracker logic (ported from the SCRPG foundation's scene.js).
 // The scene actor holds per-zone space settings/currents; filling a zone's spaces advances
 // the scene color, which broadcasts to every champion and shifts their status die.
-import { HealthUpdate } from './status.js';
+import { HealthUpdate, EnvironmentUpdate } from './status.js';
 
 const CHAT_TEMPLATE = 'systems/runeterra/templates/chat/scenestatus.hbs';
 
@@ -12,12 +12,13 @@ async function sceneStatus(gc, yc, rc, gt, yt, rt) {
   await ChatMessage.create({ user: game.user.id, content, flavor: 'Scene' });
 }
 
-/** Broadcast a scene color to every champion and villain and refresh their status dice. */
+/** Broadcast a scene color to every champion, villain and environment, refreshing status dice. */
 async function broadcastScene(color) {
   for (const actor of game.actors.contents) {
-    if (actor.type !== 'champion' && actor.type !== 'villain') continue;
+    if (actor.type !== 'champion' && actor.type !== 'villain' && actor.type !== 'environment') continue;
     await actor.update({ 'system.scene': color }, { render: false });
-    await HealthUpdate(actor);
+    if (actor.type === 'environment') await EnvironmentUpdate(actor);
+    else await HealthUpdate(actor);
   }
 }
 

@@ -14,7 +14,7 @@
       <label>{{localize "RUNETERRA.Group"}}</label>
       <input name="system.group" type="text" value="{{system.group}}" />
       <label>{{localize "RUNETERRA.Die"}}</label>
-      <select class="die-select" data-field="dieType">
+      <select class="die-select" name="system.dieType">
         {{#select system.dieType}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
       </select>
       <label>{{localize "ITEM.TypeMinionForm"}}</label>

@@ -35,7 +35,7 @@ async function consumeMods(actor) {
 /**
  * Combined Power + Quality + Status roll.
  */
-export async function TaskCheck(actor) {
+export async function TaskCheck(actor, { abilityId = null } = {}) {
   const sys = actor.system;
   // Each name rides along with its own die through the Max/Mid/Min sort, so the
   // label under a die always belongs to that die (fixed-order rows misaligned).
@@ -70,11 +70,23 @@ export async function TaskCheck(actor) {
   const render = await foundry.applications.handlebars.renderTemplate(
     'systems/runeterra/templates/chat/mainroll.hbs',
     { dice, mods, bonus, penalty, forgotPenalty, zoneColor });
-  await rollResult.toMessage({
+  // The last ability clicked rides on the roll card — its text goes above the dice.
+  let flavor = render;
+  const ability = abilityId ? actor.items.get(abilityId) : null;
+  if (ability) {
+    const gameText = await foundry.applications.ux.TextEditor.implementation
+      .enrichHTML(ability.system.gameText ?? ability.system.description ?? '');
+    flavor = (await foundry.applications.handlebars.renderTemplate(
+      'systems/runeterra/templates/chat/abilityroll.hbs', { item: ability, gameText })) + render;
+  }
+  const messageData = {
     speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: render,
+    flavor,
     flavorIsHTML: false
-  });
+  };
+  // toMessage drops messageData.whisper in v14 — GM secrecy goes through rollMode.
+  const options = actor.type === 'environment' ? { rollMode: 'blindroll' } : {};
+  await rollResult.toMessage(messageData, options);
   await consumeMods(actor);
   return rollResult;
 }
@@ -108,21 +120,6 @@ export async function SingleCheck(roll, rollType, rollName, actor) {
   });
   await consumeMods(actor);
   return rollResult;
-}
-
-/**
- * Ability card: no dice, just the rules text in chat.
- */
-export async function ItemRoll(item) {
-  const raw = item.system.gameText ?? item.system.description ?? '';
-  const gameText = await foundry.applications.ux.TextEditor.implementation.enrichHTML(raw);
-  const render = await foundry.applications.handlebars.renderTemplate(
-    'systems/runeterra/templates/chat/abilityroll.hbs', { item, gameText });
-  await ChatMessage.create({
-    user: game.user.id,
-    speaker: ChatMessage.getSpeaker({ actor: item.actor ?? undefined }),
-    content: render
-  });
 }
 
 /**

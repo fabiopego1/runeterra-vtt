@@ -6,7 +6,7 @@ import { RUNETERRA } from './module/config.js';
 import { catalog } from './module/data/catalog.js';
 import { RuneterraCharacterSheet } from './module/sheets/character-sheet.js';
 import { RuneterraItemSheet } from './module/sheets/item-sheet.js';
-import { importChampion, parseChampion } from './module/import.js';
+import { importChampion, parseChampion, pickChampionJson } from './module/import.js';
 import { setSceneColor, resetScene } from './module/scene.js';
 import * as dice from './module/dice.js';
 import { rollSelected } from './module/dice.js';
@@ -17,6 +17,31 @@ const HB = foundry.applications.handlebars;
 Hooks.once('init', () => {
   globalThis.RUNETERRA = RUNETERRA;
   CONFIG.RUNETERRA = RUNETERRA;
+
+  // Chat notification cards (shown when the chat tab is not the active sidebar
+  // tab) linger 20s instead of the core's 5s — the ticker reads this value every
+  // tick, so the runtime override applies without reload. Must run before the
+  // sidebar constructs ChatLog, so its debounce also picks up the new duration.
+  foundry.applications.sidebar.tabs.ChatLog.NOTIFY_DURATION = 20000;
+
+  // Actor & Item type labels (translated in creation dialogs).
+  CONFIG.Actor.typeLabels = {
+    champion: 'ACTOR.TypeChampion',
+    villain: 'ACTOR.TypeVillain',
+    minion: 'ACTOR.TypeMinion',
+    environment: 'ACTOR.TypeEnvironment',
+    scene: 'ACTOR.TypeScene'
+  };
+  CONFIG.Item.typeLabels = {
+    power: 'ITEM.TypePower',
+    quality: 'ITEM.TypeQuality',
+    ability: 'ITEM.TypeAbility',
+    principle: 'ITEM.TypePrinciple',
+    mod: 'ITEM.TypeMod',
+    twist: 'ITEM.TypeTwist',
+    minionForm: 'ITEM.TypeMinionForm',
+    villainStatus: 'ITEM.TypeVillainStatus'
+  };
 
   // Document sheets.
   const DSC = foundry.applications.apps.DocumentSheetConfig;
@@ -85,6 +110,10 @@ Hooks.once('ready', () => {
       const s = actor.system;
       const r = resolveStatusDie(s.character, s.play?.current, s.scene ?? 'green', s.derived);
       if (s.thirdDie !== r.die || s.thirdDieName !== r.name) HealthUpdate(actor);
+      // Re-render any open sheets for this actor so health/zone changes are visible.
+      for (const app of actor.apps ?? []) {
+        if (app.rendered) app.render(false);
+      }
     } catch (e) { /* dataset ainda carregando */ }
   });
 
@@ -109,27 +138,20 @@ Hooks.once('ready', () => {
     btn.type = 'button';
     btn.className = 'rt-import-btn';
     btn.innerHTML = `<i class="fas fa-file-import"></i> ${game.i18n.localize('RUNETERRA.ImportCharacter')}`;
-    btn.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'application/json,.json';
-      input.addEventListener('change', async () => {
-        const file = input.files?.[0];
-        if (!file) return;
-        const text = await file.text();
-        const res = await game.runeterra.importChampion(text);
-        if (res.ok) {
-          const msgs = [game.i18n.format('RUNETERRA.ImportSuccess', { name: res.actor.name })];
-          for (const w of res.warnings ?? []) msgs.push(w);
-          ui.notifications.info(msgs.join(' '), { permanent: true });
-          res.actor.sheet.render(true);
-        } else {
-          ui.notifications.error(
-            game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
-            { permanent: true });
-        }
-      });
-      input.click();
+    btn.addEventListener('click', async () => {
+      const text = await pickChampionJson();
+      if (text == null) return;
+      const res = await game.runeterra.importChampion(text);
+      if (res.ok) {
+        const msgs = [game.i18n.format('RUNETERRA.ImportSuccess', { name: res.actor.name })];
+        for (const w of res.warnings ?? []) msgs.push(w);
+        ui.notifications.info(msgs.join(' '), { permanent: true });
+        res.actor.sheet.render(true);
+      } else {
+        ui.notifications.error(
+          game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
+          { permanent: true });
+      }
     });
     return btn;
   };

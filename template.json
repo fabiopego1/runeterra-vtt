@@ -127,6 +127,7 @@
         },
         "environment": {
             "templates": ["dice"],
+            "scene": "green",
             "description": ""
         },
         "scene": {

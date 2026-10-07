@@ -1,0 +1,9 @@
+{{!-- Runeterra Foundry — blank champion: hand-building is not allowed, import only. --}}
+<form class="{{cssClass}}" autocomplete="off">
+  <div class="rt-import-pending">
+    <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'ACTOR.TypeChampion'}}" /></h1>
+    <p class="rt-import-hint">{{localize "RUNETERRA.ImportPendingHint"}}</p>
+    <button type="button" class="rt-import-json"><i class="fas fa-file-import"></i> {{localize "RUNETERRA.ImportCharacter"}}</button>
+  </div>
+</form>

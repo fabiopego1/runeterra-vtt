@@ -202,13 +202,75 @@
   flex: 0 0 auto;
 }
 .runeterra .rt-rollbar button:hover { color: var(--gold-hi); border-color: var(--gold); }
+/* !important: the runeterra-theme module resets every button (background/font)
+   from layer(modules), which beats layer(system) regardless of specificity. */
 .runeterra .rt-rollbar button.make-roll {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: #17130b;
-  font-weight: 600;
+  background: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: #17130b !important;
+  font-weight: 700 !important;
+  font-size: .92rem;
+  padding: 7px 12px;
+  box-shadow: 0 0 10px rgba(200, 164, 94, .30);
 }
-.runeterra .rt-rollbar button.make-roll:hover { background: var(--gold-hi); border-color: var(--gold-hi); color: #17130b; }
+.runeterra .rt-rollbar button.make-roll:hover { background: var(--gold-hi) !important; border-color: var(--gold-hi) !important; color: #17130b !important; box-shadow: 0 0 14px rgba(236, 212, 156, .55); }
+/* Primed by an ability use: glows until any panel roll is clicked. */
+.runeterra .rt-rollbar button.rt-ready {
+  border-color: var(--gold-hi) !important;
+  color: var(--gold-hi) !important;
+  box-shadow: 0 0 9px rgba(236, 212, 156, .55) !important;
+}
+.runeterra .rt-rollbar button.make-roll.rt-ready {
+  color: #17130b !important;
+  box-shadow: 0 0 16px rgba(236, 212, 156, .85) !important;
+}
+/* Dropdowns primed by an ability use: light gold tint until picked or rolled.
+   !important: the theme module styles selects from layer(modules), which beats
+   layer(system) regardless of specificity. */
+.runeterra .rt-roll-config select.trait-select.rt-primed {
+  border-color: var(--gold) !important;
+  color: var(--gold-hi) !important;
+  background: rgba(200, 164, 94, .12) !important;
+}
+
+/* ---------- Pinned action panel: health, dice and rolls stay visible on every tab.
+   The layout fills the window height; only .sheet-body scrolls — the panel and the
+   tab bar never move. ---------- */
+.rt-layout { display: flex; gap: 14px; flex: 1 1 auto; min-height: 0; }
+.rt-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.rt-panel {
+  flex: 0 0 234px;
+  width: 234px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  overflow-y: auto;
+}
+.rt-panel-block h4 {
+  margin: 0 0 6px;
+  font: 500 .62rem 'IBM Plex Mono', monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rt-panel .rt-health { margin-top: 0; justify-content: center; }
+.rt-panel .rt-roll-config {
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.rt-panel .rt-roll-config label { flex: none; }
+.rt-panel .rt-roll-config .trait-select { max-width: none; width: 100%; }
+.rt-panel .rt-status-auto { align-self: flex-start; }
+.rt-panel .rt-rollbar { flex-direction: column; align-items: stretch; margin-top: 0; }
+.rt-panel .rt-rollbar button { width: 100%; text-align: center; }
 
 /* ---------- Tabs: understated, active marked by gold underline ---------- */
 .runeterra .sheet-tabs { border-bottom: 1px solid var(--line); gap: 4px; margin-bottom: 10px; flex: none; }
@@ -444,6 +506,29 @@
 .rt-status-auto.rt-status-red { background: var(--zone-r); }
 .rt-status-auto.rt-status-out { background: var(--ink-3); color: var(--text-3); }
 
+/* Environment help box: what the actor is in SCRPG and how to run it. */
+.rt-env-help {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--ink-2);
+  border: 1px dotted var(--line-2);
+}
+.rt-env-help h4 {
+  margin: 0 0 6px;
+  font-family: 'Marcellus', serif;
+  font-size: 1rem;
+  color: var(--gold);
+}
+.rt-env-help p { margin: 4px 0; color: var(--text-2); font-size: .88rem; line-height: 1.45; }
+.rt-env-help strong {
+  color: var(--text-3);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .66rem;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+
 /* ---------- Chat cards ---------- */
 .runeterra.chat-card {
   background: var(--ink-1);
@@ -517,6 +602,29 @@
 
 /* ---------- Sidebar import button ---------- */
 .runeterra button.rt-import-btn { margin: 0; align-self: center; white-space: nowrap; }
+
+/* ---------- Blank champion: import-only shell ---------- */
+.rt-import-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 70px 24px 90px;
+}
+.rt-import-pending .rt-portrait { width: 96px; height: 96px; border: 1px solid var(--gold-lo); object-fit: cover; }
+.rt-import-pending h1 input { text-align: center; }
+.rt-import-pending .rt-import-hint { max-width: 48ch; margin: 0; color: var(--text-2); font-size: .95rem; line-height: 1.5; }
+.rt-import-pending .rt-import-json {
+  padding: 10px 22px;
+  background: var(--gold);
+  border: 1px solid var(--gold);
+  color: #17130b;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rt-import-pending .rt-import-json:hover { background: var(--gold-hi); border-color: var(--gold-hi); }
 
 /* ---------- Chat: dark ink theme everywhere (sidebar, popouts, dice popups) ---------- */
 .chat-message {

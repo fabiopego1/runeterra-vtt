@@ -11,27 +11,14 @@
           <em>{{localize "RUNETERRA.NoCharacterData"}}</em>
         {{/if}}
       </div>
-      {{#if derived}}
-      <div class="rt-health rt-health-header">
-        <label>{{localize "RUNETERRA.Health"}}</label>
-        <button type="button" class="health-step" data-delta="-1">−</button>
-        <input class="health-update {{statusBgClass}}" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
-        <span>/ {{derived.health.max}}</span>
-        <button type="button" class="health-step" data-delta="1">+</button>
-      </div>
-      {{/if}}
-      <div class="rt-rollbar">
-        <button type="button" class="make-roll" title="{{localize 'RUNETERRA.RollCombined'}}"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
-        <button type="button" class="roll-slot" data-slot="first" data-kind="{{firstKind}}">{{localize "RUNETERRA.Roll"}} {{firstTypeLabel}}</button>
-        <button type="button" class="roll-slot" data-slot="second" data-kind="{{secondKind}}">{{localize "RUNETERRA.Roll"}} {{secondTypeLabel}}</button>
-        <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
-      </div>
     </div>
   </header>
 
+  <div class="rt-layout">
+    <div class="rt-main">
   <nav class="sheet-tabs tabs" data-group="primary">
-    <a class="item" data-tab="champ">{{localize "RUNETERRA.Tabs.info"}}</a>
     <a class="item" data-tab="powers">{{localize "RUNETERRA.Tabs.powers"}}</a>
+    <a class="item" data-tab="champ">{{localize "RUNETERRA.Tabs.info"}}</a>
     <a class="item" data-tab="auxiliary">{{localize "RUNETERRA.Tabs.auxiliary"}}</a>
   </nav>
 
@@ -68,7 +55,7 @@
         <label>{{localize "RUNETERRA.Build"}}</label><input name="system.character.info.build" type="text" value="{{info.build}}" />
       </div>
       <label class="rt-block-label">{{localize "RUNETERRA.Costume"}}</label>
-      <textarea name="system.character.info.costume" rows="4">{{info.costume}}</textarea>
+      <textarea name="system.character.info.costume" rows="7">{{info.costume}}</textarea>
 
       {{#if principles}}
       <h3>{{localize "RUNETERRA.Principles"}}</h3>
@@ -85,20 +72,6 @@
         <button type="button" class="divide-mode {{#if (eq dividedMode 'civilian')}}rt-active{{/if}}" data-mode="civilian">{{localize "RUNETERRA.CivilianForm"}}</button>
       </div>
       {{/if}}
-      <div class="rt-roll-config">
-        <label>{{firstTypeLabel}}</label>
-        <select class="trait-select" data-slot="first">
-          <option value="">—</option>
-          {{#select firstKey}}{{#each firstRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
-        </select>
-        <label>{{secondTypeLabel}}</label>
-        <select class="trait-select" data-slot="second">
-          <option value="">—</option>
-          {{#select secondKey}}{{#each secondRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
-        </select>
-        <label>{{localize "RUNETERRA.DiceStatus"}}</label>
-        <span class="rt-status-auto {{statusZoneClass}}" title="{{localize 'RUNETERRA.DiceStatusAuto'}}">{{statusDie}} · {{statusAutoLabel}}</span>
-      </div>
 
       {{#if derived}}
       <div class="rt-twocol">
@@ -133,25 +106,6 @@
       {{/if}}
 
       {{> "systems/runeterra/templates/partials/abilities.hbs" tables=zoneTables.tables out=zoneTables.out outActive=zoneTables.outActive }}
-
-      <h3>{{localize "RUNETERRA.Mods"}}</h3>
-      <table class="rt-abilities rt-mods">
-        <tbody>
-          {{#each mods}}
-          <tr data-item-id="{{id}}">
-            <td><input type="checkbox" class="mod-select" {{checked selected}} title="{{localize 'RUNETERRA.RollCombined'}}" /></td>
-            <td class="rt-ability-name">{{name}}</td>
-            <td class="rt-die">{{#if persistent}}<i class="fas fa-hourglass-half"></i> {{/if}}{{#if exclusive}}<i class="fas fa-lock"></i> {{/if}}{{value}}</td>
-            <td class="rt-ability-actions">
-              <button type="button" class="item-edit" title="{{localize 'RUNETERRA.Edit'}}"><i class="fas fa-pen"></i></button>
-              <button type="button" class="item-delete" title="{{localize 'RUNETERRA.Delete'}}"><i class="fas fa-trash"></i></button>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-      <button type="button" class="item-create" data-type="mod">+ {{localize "RUNETERRA.Create"}} {{localize "ITEM.TypeMod"}}</button>
-      <p class="rt-hint"><em>{{localize "RUNETERRA.ModsHint"}}</em></p>
     </div>
 
     {{!-- ------------------------------------------------ page 3: auxiliary --}}
@@ -168,10 +122,54 @@
       </div>
       {{/if}}
       <h3>{{localize "RUNETERRA.Biography"}}</h3>
-      <textarea name="system.character.info.notes" rows="10">{{info.notes}}</textarea>
+      <textarea name="system.character.info.notes" rows="16">{{info.notes}}</textarea>
       <h3>{{localize "RUNETERRA.Notes"}}</h3>
       <textarea name="system.play.notes" rows="4">{{#each system.play.notes}}{{this}}
 {{/each}}</textarea>
     </div>
   </section>
+    </div>{{!-- /rt-main --}}
+
+    <aside class="rt-panel">
+      {{#if derived}}
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.Health"}}</h4>
+        <div class="rt-health">
+          <button type="button" class="health-step" data-delta="-1" title="−1">−</button>
+          <input class="health-update {{statusBgClass}}" type="number" value="{{currentHealth}}" min="0" max="{{derived.health.max}}" />
+          <span>/ {{derived.health.max}}</span>
+          <button type="button" class="health-step" data-delta="1" title="+1">+</button>
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.PanelDice"}}</h4>
+        <div class="rt-roll-config rt-panel-dice">
+          <label>{{firstTypeLabel}}</label>
+          <select class="trait-select" data-slot="first">
+            <option value="">—</option>
+            {{#select firstKey}}{{#each firstRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
+          </select>
+          <label>{{secondTypeLabel}}</label>
+          <select class="trait-select" data-slot="second">
+            <option value="">—</option>
+            {{#select secondKey}}{{#each secondRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
+          </select>
+          <label>{{localize "RUNETERRA.DiceStatus"}}</label>
+          <span class="rt-status-auto {{statusZoneClass}}" title="{{localize 'RUNETERRA.DiceStatusAuto'}}">{{statusDie}} · {{statusAutoLabel}}</span>
+        </div>
+      </div>
+
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.PanelRolls"}}</h4>
+        <div class="rt-rollbar">
+          <button type="button" class="make-roll" title="{{localize 'RUNETERRA.RollCombined'}}"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
+          <button type="button" class="roll-slot" data-slot="first" data-kind="{{firstKind}}">{{localize "RUNETERRA.Roll"}} {{firstTypeLabel}}</button>
+          <button type="button" class="roll-slot" data-slot="second" data-kind="{{secondKind}}">{{localize "RUNETERRA.Roll"}} {{secondTypeLabel}}</button>
+          <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
+        </div>
+      </div>
+    </aside>
+  </div>{{!-- /rt-layout --}}
 </form>

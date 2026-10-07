@@ -13,20 +13,17 @@
   <section class="sheet-body">
     <div class="rt-roll-config">
       <label>{{localize "RUNETERRA.DicePower"}}</label>
-      <select class="die-select" data-field="firstDie">
+      <select class="die-select" name="system.firstDie">
         {{#select system.firstDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
       </select>
       <input type="text" name="system.firstDieName" value="{{system.firstDieName}}" />
       <label>{{localize "RUNETERRA.DiceQuality"}}</label>
-      <select class="die-select" data-field="secondDie">
+      <select class="die-select" name="system.secondDie">
         {{#select system.secondDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
       </select>
       <input type="text" name="system.secondDieName" value="{{system.secondDieName}}" />
       <label>{{localize "RUNETERRA.DiceStatus"}}</label>
-      <select class="die-select" data-field="thirdDie">
-        {{#select system.thirdDie}}{{#each dieTypes}}<option value="{{this}}">{{this}}</option>{{/each}}{{/select}}
-      </select>
-      <input type="text" name="system.thirdDieName" value="{{system.thirdDieName}}" />
+      <span class="rt-status-auto {{statusZoneClass}}" title="{{localize 'RUNETERRA.EnvStatusAuto'}}">{{system.thirdDie}} · {{statusZoneLabel}}</span>
     </div>
 
     <h3>{{localize "ITEM.TypeTwistPl"}}</h3>
@@ -48,5 +45,11 @@
 
     <h3>{{localize "RUNETERRA.Notes"}}</h3>
     <textarea name="system.description" rows="6">{{system.description}}</textarea>
+
+    <div class="rt-env-help">
+      <h4>{{localize "RUNETERRA.EnvHelpTitle"}}</h4>
+      <p><strong>{{localize "RUNETERRA.EnvHelpWhatLabel"}}:</strong> {{localize "RUNETERRA.EnvHelpWhat"}}</p>
+      <p><strong>{{localize "RUNETERRA.EnvHelpUseLabel"}}:</strong> {{localize "RUNETERRA.EnvHelpUse"}}</p>
+    </div>
   </section>
 </form>

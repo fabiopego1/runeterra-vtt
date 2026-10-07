@@ -106,6 +106,15 @@
     "DiceQuality": "Quality",
     "DiceStatus": "Status",
     "DiceStatusAuto": "Automatic from Health and Scene — follows the health zone and the scene color.",
+    "PanelDice": "Dice",
+    "PanelRolls": "Rolls",
+    "EnvStatusAuto": "Automatic from the Scene — follows the scene color (d6 Green · d8 Yellow · d10 Red). Rolls are whispered to the GM.",
+    "EnvHelpTitle": "The Environment in SCRPG",
+    "EnvHelpWhatLabel": "What it is",
+    "EnvHelpWhat": "the living setting of the scene — the place where the battle happens. Like heroes, it has Power and Quality dice, and its Status die automatically follows the Scene color. It has no Health: it lasts until the end of the scene and cannot be defeated.",
+    "EnvHelpUseLabel": "How to use",
+    "EnvHelpUse": "set the setting's dice (e.g. d10 Time distortion · d8 Mist) and create Twists — events the GM triggers to shake up the scene. Whenever the setting acts (a hazard, an obstacle, the fury of the place itself), click Roll; the result is visible to the GM only.",
+    "ImportPendingHint": "This Champion is empty: the sheet is not filled by hand. Export your character's JSON from the Forja de Campeões website and import it here to build the sheet.",
     "Mods": "Mods",
     "Bonus": "Bonus",
     "Penalty": "Penalty",
@@ -121,6 +130,7 @@
     "Knockout": "Knocked Out",
     "NoCharacterData": "This champion has no creation data yet — import a character from the Champion Forge website (Phase 7) or fill the data manually.",
     "ZoneLocked": "Unlocked when your Health reaches this zone",
+    "NeedsTrait": "Choose {type} before rolling",
     "SettingsColoredDice": "Colored dice in results",
     "SettingsColoredDiceHint": "Colors the d4–d12 dice in chat messages.",
     "BonusOne": "+1 or higher",
@@ -160,6 +170,7 @@
     "SpecialPowerless": "Powerless Mode",
     "SpecialMinionMaker": "Minion Forms",
     "SpecialFormChanger": "Forms",
+    "TypeMinionPl": "Minions",
     "ImportSuccess": "Champion \"{name}\" imported!",
     "ImportFailed": "Import failed:",
     "ClickTraitHint": "Click to use this trait in the roll (the Status die follows Health and the Scene automatically).",
@@ -167,6 +178,7 @@
     "NoTokensSelected": "No champion/villain token selected.",
     "VillainStatusAuto": "The Status die is automatic (Temperament + Health + Scene) — Villain Status items do not change the die.",
     "AbilitiesHint": "Abilities and their custom names are managed by the Champion Forge creator and arrive via import.",
-    "SceneSteps": "Steps"
+    "SceneSteps": "Steps",
+    "Type": "Type"
   }
 }

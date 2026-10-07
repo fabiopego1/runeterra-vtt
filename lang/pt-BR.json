@@ -106,6 +106,15 @@
     "DiceQuality": "Qualidade",
     "DiceStatus": "Status",
     "DiceStatusAuto": "Automático pela Vida e pela Cena — segue a zona de Vida e a cor da Cena.",
+    "PanelDice": "Dados",
+    "PanelRolls": "Rolagens",
+    "EnvStatusAuto": "Automático pela Cena — segue a cor da Cena (d6 Verde · d8 Amarela · d10 Vermelha). Rolagens sussurradas ao Mestre.",
+    "EnvHelpTitle": "O Ambiente no SCRPG",
+    "EnvHelpWhatLabel": "O que é",
+    "EnvHelpWhat": "o cenário vivo da cena — o lugar onde a batalha acontece. Como os heróis, ele tem dados de Poder e Qualidade, e seu dado de Status segue automaticamente a cor da Cena. Ele não tem Vida: dura até o fim da cena e não pode ser derrotado.",
+    "EnvHelpUseLabel": "Como usar",
+    "EnvHelpUse": "defina os dados do cenário (ex.: d10 Distorção temporal · d8 Neblina) e crie Reviravoltas — eventos que o Mestre desencadeia para agitar a cena. Quando o cenário age (um perigo, um obstáculo, a fúria do próprio lugar), clique em Rolar; o resultado fica visível somente para o Mestre.",
+    "ImportPendingHint": "Este Campeão está vazio: a ficha não é preenchida à mão. Exporte o JSON do seu personagem no site Forja de Campeões e importe-o aqui para montar a ficha.",
     "Mods": "Modificadores",
     "Bonus": "Bônus",
     "Penalty": "Penalidade",
@@ -121,6 +130,7 @@
     "Knockout": "Nocaute",
     "NoCharacterData": "Este campeão ainda não tem dados de criação — importe um personagem do site Forja de Campeões (Fase 7) ou preencha os dados manualmente.",
     "ZoneLocked": "Liberada quando sua Vida chegar a esta zona",
+    "NeedsTrait": "Escolha {type} antes de rolar",
     "SettingsColoredDice": "Dados coloridos nos resultados",
     "SettingsColoredDiceHint": "Colore os dados de d4 a d12 nas mensagens de chat.",
     "BonusOne": "+1 ou mais",
@@ -160,6 +170,7 @@
     "SpecialPowerless": "Modo Sem-Poder",
     "SpecialMinionMaker": "Formas de Lacaio",
     "SpecialFormChanger": "Formas",
+    "TypeMinionPl": "Lacaios",
     "ImportSuccess": "Campeão \"{name}\" importado!",
     "ImportFailed": "Falha na importação:",
     "ClickTraitHint": "Clique para usar este traço na rolagem (o dado de Status segue a Vida e a Cena automaticamente).",
@@ -167,6 +178,7 @@
     "NoTokensSelected": "Nenhum token de campeão/vilão selecionado.",
     "VillainStatusAuto": "O dado de Status é automático (Temperamento + Vida + Cena) — itens de Status de Vilão não alteram o dado.",
     "AbilitiesHint": "As habilidades e seus nomes personalizados são gerenciados pelo criador da Forja de Campeões e chegam pela importação.",
-    "SceneSteps": "Passos"
+    "SceneSteps": "Passos",
+    "Type": "Tipo"
   }
 }
