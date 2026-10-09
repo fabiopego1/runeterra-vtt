@@ -464,6 +464,13 @@
 .rt-scene-spaces button:hover { border-color: var(--gold); }
 .rt-scene-spaces button.filled { color: var(--gold); border-color: var(--gold-lo); background: var(--ink-3); }
 .rt-scene-count { color: var(--text-3); margin-left: 8px; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; }
+.rt-scene-status { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; padding: 4px 8px; margin: 6px 0; border-left: 4px solid var(--line-2); color: var(--text-2); }
+.rt-scene-status-green { border-left-color: var(--zone-g); }
+.rt-scene-status-yellow { border-left-color: var(--zone-y); }
+.rt-scene-status-red { border-left-color: var(--zone-r); }
+.rt-scene-ended { color: var(--zone-r); font-weight: 700; }
+.rt-scene-alert { color: var(--zone-r); font-weight: 700; margin: 8px 0; }
+.rt-scene-msg { margin: 6px 0 0; font-size: .85rem; }
 .rt-scene-counts { display: flex; gap: 16px; font-family: 'IBM Plex Mono', monospace; font-size: .85rem; }
 
 /* ---------- Roll config (manual dice) ---------- */

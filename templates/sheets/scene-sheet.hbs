@@ -5,7 +5,10 @@
     <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
     <div class="rt-header-fields">
       <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'RUNETERRA.SceneTracker'}}" /></h1>
+      <div class="rt-scene-status rt-scene-status-{{sceneColor}}{{#if sceneEnded}} rt-scene-ended{{/if}}">{{sceneLabel}}</div>
       <div class="rt-rollbar">
+        <button type="button" class="scene-advance"{{#if sceneEnded}} disabled{{/if}}>{{localize "RUNETERRA.SceneAdvance"}}</button>
+        <button type="button" class="scene-rewind"{{#if sceneAtStart}} disabled{{/if}}>{{localize "RUNETERRA.SceneRewind"}}</button>
         <button type="button" class="scene-reset">{{localize "RUNETERRA.SceneReset"}}</button>
         <select class="scene-preset">
           <option value="">{{localize "RUNETERRA.ScenePreset"}}</option>
@@ -23,14 +26,14 @@
       <div class="rt-scene-spaces">
         {{#each spaces}}
         {{#if filled}}
-        <button type="button" class="scene-click filled" data-zone="{{../zone}}" title="{{localize 'RUNETERRA.SceneSpaceClick'}}"><i class="fas fa-star"></i></button>
+        <button type="button" class="scene-click filled" data-zone="{{../zone}}" data-i="{{i}}" title="{{localize 'RUNETERRA.SceneSpaceClick'}}"><i class="fas fa-star"></i></button>
         {{else}}
-        <button type="button" class="scene-click" data-zone="{{../zone}}" title="{{localize 'RUNETERRA.SceneSpaceClick'}}"><i class="far fa-star"></i></button>
+        <button type="button" class="scene-click" data-zone="{{../zone}}" data-i="{{i}}" title="{{localize 'RUNETERRA.SceneSpaceClick'}}"><i class="far fa-star"></i></button>
         {{/if}}
         {{/each}}
         <span class="rt-scene-count">{{current}}/{{setting}}</span>
         <label class="rt-scene-steps">{{localize "RUNETERRA.SceneSteps"}}</label>
-        <input type="number" class="scene-setting" data-zone="{{zone}}" value="{{setting}}" min="1" max="12" />
+        <input type="number" class="scene-setting" data-zone="{{zone}}" value="{{setting}}" min="1" max="8" />
       </div>
     </div>
     {{/each}}
@@ -71,6 +74,8 @@
       <p class="rt-hint"><em>{{localize "RUNETERRA.TwistHint"}}</em></p>
     </div>
     {{/if}}
+    {{#if sceneEnded}}<p class="rt-scene-alert">{{localize "RUNETERRA.SceneEnd"}}</p>{{/if}}
     <p class="rt-hint"><em>{{localize "RUNETERRA.SceneHint"}}</em></p>
+    <p class="rt-hint"><em>{{localize "RUNETERRA.SceneTurnHint"}}</em></p>
   </section>
 </form>

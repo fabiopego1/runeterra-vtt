@@ -1,13 +1,20 @@
-// Runeterra Foundry — Scene Tracker logic (ported from the SCRPG foundation's scene.js).
-// The scene actor holds per-zone space settings/currents; filling a zone's spaces advances
-// the scene color, which broadcasts to every champion and shifts their status die.
+// Runeterra Foundry — Scene Tracker logic.
+// The Cena actor holds the marker's sizes and fills; the rules live in tracker.js (one row of spaces, like the
+// Screen). Marking a space can change the scene colour, which broadcasts to every champion, antagonist and
+// environment and shifts their status die. The table is told when the colour changes and when the marker ends.
 import { HealthUpdate, EnvironmentUpdate } from './status.js';
+import {
+  trackerSizes, trackerMarked, trackerTotal, trackerClamp, trackerColor, trackerEnded, trackerUpdate,
+  trackerClick, MAX_STEPS, ZONES, DEFAULT_SIZES
+} from './tracker.js';
 
 const CHAT_TEMPLATE = 'systems/runeterra/templates/chat/scenestatus.hbs';
+const COLOR_KEY = { green: 'RUNETERRA.SceneNowGreen', yellow: 'RUNETERRA.SceneNowYellow', red: 'RUNETERRA.SceneNowRed' };
 
-async function sceneStatus(gc, yc, rc, gt, yt, rt) {
+async function sceneStatus(actor, message = '') {
+  const s = actor.system, [gt, yt, rt] = trackerSizes(s);
   const content = await foundry.applications.handlebars.renderTemplate(CHAT_TEMPLATE, {
-    gc, yc, rc, gt, yt, rt
+    gc: s.greenSpace.current, yc: s.yellowSpace.current, rc: s.redSpace.current, gmax: gt, ymax: yt, rmax: rt, message
   });
   await ChatMessage.create({ user: game.user.id, content, flavor: 'Scene' });
 }
@@ -28,23 +35,34 @@ export function findSceneActor() {
 }
 
 /**
- * Macro/API entry: jump straight to a scene color (like the old SCRPG macros).
- * Actors always follow; the tracker's spaces are lined up to match when one exists.
+ * Move the marker to `marked` filled spaces (sizes optional): saves the zones' fills, broadcasts the colour when it
+ * changed (or when `force`), and posts the status card — with a line when the colour changed or the marker ended.
+ */
+export async function setMarked(actor, marked, { sizes = null, force = false, silent = false } = {}) {
+  const old = trackerSizes(actor.system), oldMarked = trackerMarked(actor.system);
+  const next = sizes ?? old;
+  const m = trackerClamp(marked, next);
+  const before = trackerColor(oldMarked, old), color = trackerColor(m, next);
+  await actor.update(trackerUpdate(m, next));
+  const changed = color !== before;
+  if (changed || force) await broadcastScene(color);
+  if (silent) return { color, ended: trackerEnded(m, next), changed };
+  const ended = trackerEnded(m, next);
+  const message = ended ? game.i18n.localize('RUNETERRA.SceneEnd') : (changed ? game.i18n.localize(COLOR_KEY[color]) : '');
+  await sceneStatus(actor, message);
+  return { color, ended, changed };
+}
+
+/**
+ * Macro/API entry: jump straight to a scene color. Actors always follow; the tracker's spaces are lined up to
+ * match when one exists (Verde = nothing marked, Amarela = the green spaces, Vermelha = green + yellow).
  */
 export async function setSceneColor(color) {
-  if (!['green', 'yellow', 'red'].includes(color)) return;
-  await broadcastScene(color);
+  if (!ZONES.includes(color)) return;
   const sc = findSceneActor();
-  if (!sc) return;
-  const g = sc.system.greenSpace?.setting ?? 0;
-  const y = sc.system.yellowSpace?.setting ?? 0;
-  if (color === 'green') {
-    await sc.update({ 'system.greenSpace.current': 0, 'system.yellowSpace.current': 0, 'system.redSpace.current': 0 });
-  } else if (color === 'yellow') {
-    await sc.update({ 'system.greenSpace.current': g, 'system.yellowSpace.current': 0, 'system.redSpace.current': 0 });
-  } else {
-    await sc.update({ 'system.greenSpace.current': g, 'system.yellowSpace.current': y, 'system.redSpace.current': 0 });
-  }
+  if (!sc) { await broadcastScene(color); return; }
+  const [g, y] = trackerSizes(sc.system);
+  await setMarked(sc, color === 'green' ? 0 : color === 'yellow' ? g : g + y, { force: true, silent: true });
 }
 
 /** Macro/API entry: back to green, tracker included when one exists. */
@@ -55,67 +73,41 @@ export async function resetScene() {
 }
 
 export async function SceneReset(actor) {
-  await actor.update({
-    'system.greenSpace.current': 0,
-    'system.yellowSpace.current': 0,
-    'system.redSpace.current': 0
-  });
-  await broadcastScene('green');
+  await setMarked(actor, 0, { force: true, silent: true });
 }
 
 export async function SetGreen() { await broadcastScene('green'); }
 export async function SetYellow() { await broadcastScene('yellow'); }
 export async function SetRed() { await broadcastScene('red'); }
 
-/**
- * Click state machine for the tracker (ported from SCRPGCharacterSheet._onSetScene).
- * Clicking a space fills it; clicking the already-current last space toggles it back.
- * Returns a short status string for the caller.
- */
-export async function onSetScene(actor, zone) {
-  const key = `${zone}Space`;
-  const space = actor.system[key];
-  const next = space.current + 1;
-
-  if (space.current >= space.setting) {
-    // Zone already full: clicking it rewinds one step and resets to this color.
-    await actor.update({ [`system.${key}.current`]: space.current - 1 });
-    if (zone === 'green') await SetGreen();
-    if (zone === 'yellow') await SetYellow();
-    if (zone === 'red') await SetRed();
-    return 'rewind';
-  }
-
-  await actor.update({ [`system.${key}.current`]: next });
-
-  if (zone === 'green' && next >= space.setting) {
-    await SetYellow();
-    return 'yellow';
-  }
-  if (zone === 'yellow' && next >= space.setting) {
-    await SetRed();
-    return 'red';
-  }
-  if (zone === 'red' && next >= space.setting) {
-    return 'final';
-  }
-
-  const s = actor.system;
-  await sceneStatus(
-    s.greenSpace.current, s.yellowSpace.current, s.redSpace.current,
-    s.greenSpace.setting, s.yellowSpace.setting, s.redSpace.setting);
-  return 'step';
+/** A space of the tracker was clicked: zone + index inside the zone. Filled → rewind to it; empty → fill up to it. */
+export async function onSetScene(actor, zone, index = null) {
+  const sizes = trackerSizes(actor.system), marked = trackerMarked(actor.system);
+  const z = ZONES.indexOf(zone);
+  if (z < 0) return null;
+  const offset = sizes.slice(0, z).reduce((a, b) => a + b, 0);
+  // No space given (macro/API): advance one space, like the "Avançar" button.
+  const target = index == null ? Math.min(trackerTotal(sizes), marked + 1) : trackerClick(marked, offset + Number(index));
+  return setMarked(actor, target);
 }
 
-/** Post a summary card of remaining spaces. */
-export async function postSceneStatus(actor) {
-  const s = actor.system;
-  await sceneStatus(
-    s.greenSpace.current, s.yellowSpace.current, s.redSpace.current,
-    s.greenSpace.setting, s.yellowSpace.setting, s.redSpace.setting);
+/** "Avançar um espaço" / "Voltar um" (the marker's turn). */
+export const advanceScene = actor => setMarked(actor, trackerMarked(actor.system) + 1);
+export const rewindScene = actor => setMarked(actor, trackerMarked(actor.system) - 1);
+
+/** Change one zone's size (1–8): keeps what is marked (within the row), re-lines the zones and the colour. */
+export async function setSceneSize(actor, zone, value) {
+  const z = ZONES.indexOf(zone);
+  if (z < 0) return;
+  const sizes = trackerSizes(actor.system);
+  sizes[z] = Math.max(1, Math.min(MAX_STEPS, Math.trunc(Number(value)) || 1));
+  await setMarked(actor, trackerMarked(actor.system), { sizes, force: true, silent: true });
 }
 
-/** Standard scene presets (SCRPG defaults). */
+/** Post a summary card of the marker. */
+export async function postSceneStatus(actor) { await sceneStatus(actor); }
+
+/** Standard scene presets (the rulebook's: Padrão, Prolongado, Épico). */
 export const SCENE_PRESETS = {
   standard: [2, 4, 2],
   prolonged: [3, 5, 3],
@@ -123,11 +115,6 @@ export const SCENE_PRESETS = {
 };
 
 export async function applyPreset(actor, preset) {
-  const [g, y, r] = SCENE_PRESETS[preset] ?? SCENE_PRESETS.standard;
-  await actor.update({
-    'system.greenSpace.setting': g, 'system.greenSpace.current': 0,
-    'system.yellowSpace.setting': y, 'system.yellowSpace.current': 0,
-    'system.redSpace.setting': r, 'system.redSpace.current': 0
-  });
-  await SetGreen();
+  const sizes = SCENE_PRESETS[preset] ?? DEFAULT_SIZES;
+  await setMarked(actor, 0, { sizes: [...sizes], force: true, silent: true });
 }

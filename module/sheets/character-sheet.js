@@ -6,7 +6,8 @@ import { derive, effectiveZone, dividedModeOf, slotKinds, effectivePrincipleId }
 import * as dice from '../dice.js';
 import { actionIcons, actionIconsPt, decorateRulesHtml } from '../rules-text.js';
 import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentStatusDie } from '../status.js';
-import { onSetScene, SceneReset, applyPreset } from '../scene.js';
+import { onSetScene, SceneReset, applyPreset, advanceScene, rewindScene, setSceneSize } from '../scene.js';
+import { trackerSizes, trackerMarked, trackerColor, trackerEnded } from '../tracker.js';
 import { importIntoChampion, pickChampionJson, isBuiltImport } from '../import.js';
 import { AntagonistUpdate } from '../antagonist.js';
 import { rollTwist } from '../twists.js';
@@ -362,18 +363,25 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.twistRegions = catalog.regions().map(r => ({ id: r.id, name: r.name }));
       data.twistRegion = sys.twistRegion ?? 'any';
       data.challenges = (sys.challenges ?? []).map(challengeView);
-      const mk = (zone, def) => ({
-        zone,
-        label: game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`),
-        setting: def.setting,
-        current: def.current,
-        spaces: Array.from({ length: def.setting }, (_, i) => ({ filled: i < def.current }))
+      // One row of spaces (like the Screen's marker): every zone's fill comes from the single count of marked spaces.
+      const sizes = trackerSizes(sys), marked = trackerMarked(sys);
+      let left = marked;
+      data.zones = ['green', 'yellow', 'red'].map((zone, k) => {
+        const setting = sizes[k], current = Math.min(setting, left);
+        left -= current;
+        return {
+          zone,
+          label: game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`),
+          setting,
+          current,
+          spaces: Array.from({ length: setting }, (_, i) => ({ filled: i < current, i }))
+        };
       });
-      data.zones = [
-        mk('green', sys.greenSpace ?? {}),
-        mk('yellow', sys.yellowSpace ?? {}),
-        mk('red', sys.redSpace ?? {})
-      ];
+      const color = trackerColor(marked, sizes), ended = trackerEnded(marked, sizes);
+      data.sceneEnded = ended;
+      data.sceneColor = color;
+      data.sceneLabel = game.i18n.localize(ended ? 'RUNETERRA.SceneEndLabel' : `RUNETERRA.SceneIs${color.charAt(0).toUpperCase()}${color.slice(1)}`);
+      data.sceneAtStart = marked === 0;
     }
 
     // Environment: twist cards owned by this actor + scene-driven status die.
@@ -752,17 +760,14 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
 
     // Scene tracker: per-zone step count (1–12).
     html.find('.scene-setting').change(async ev => {
-      const zone = ev.currentTarget.dataset.zone;
-      const setting = Math.max(1, Math.min(12, parseInt(ev.currentTarget.value, 10) || 1));
-      await this.actor.update({
-        [`system.${zone}Space.setting`]: setting,
-        [`system.${zone}Space.current`]: 0
-      });
+      await setSceneSize(this.actor, ev.currentTarget.dataset.zone, ev.currentTarget.value);
       this.render(false);
     });
 
     // Scene tracker.
-    html.find('.scene-click').click(ev => onSetScene(this.actor, ev.currentTarget.dataset.zone));
+    html.find('.scene-click').click(ev => onSetScene(this.actor, ev.currentTarget.dataset.zone, ev.currentTarget.dataset.i));
+    html.find('.scene-advance').click(() => advanceScene(this.actor));
+    html.find('.scene-rewind').click(() => rewindScene(this.actor));
     // Scene challenges (Desafios): successes to reach, optional timer; the list lives on the Cena actor.
     const challenges = () => foundry.utils.deepClone(this.actor.system.challenges ?? []);
     const chId = ev => ev.currentTarget.closest('.rt-ch')?.dataset.id;

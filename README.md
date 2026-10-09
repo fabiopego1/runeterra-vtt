@@ -20,7 +20,7 @@ independente sobre a base técnica do sistema SCRPG não-oficial
   Troca-Formas).
 - **Rolagens** Poder + Qualidade + Status (Máx/Méd/Mín), modificadores persistentes/
   exclusivos com aviso de penalidade esquecida.
-- **Gestor de Cena** com passos configuráveis por zona que mudam o cenário para todos
+- **Gestor de Cena** (marcador do Escudo): uma fileira só de espaços (Verde, Amarelo, Vermelho; 1–8 cada), com *Avançar um espaço*, *Voltar um*, *Zerar* e as predefinições Padrão/Prolongada/Épica. A cor da cena (e o dado de Status de todos) deriva dos espaços marcados; a mesa é avisada no chat quando a cena muda de cor e quando o último Vermelho é marcado. Lógica pura em `module/tracker.js` (testada)
   os campeões.
 - Antagonistas (ex-Vilões; mesma construção de campeões), Lacaios e Ambientes com reviravoltas.
 - Interface própria (tinta/hextech), Português (Brasil) como idioma principal.
@@ -138,4 +138,4 @@ Na ficha da **Cena**, o bloco **Desafios** (sem cofre; visível a quem vê a fic
 opcional (0–8). Clique numa caixa para marcar até ela (clicar numa já marcada volta até ali). Sucessos
 completos = *Resolvido*; contador cheio antes disso = *Disparou!*. Um Superar de 12+ vale dois sucessos
 (regra do Escudo). Mesmo modelo do Escudo, então os desafios de um backup do Escudo importam como estão
-(viram uma Cena "Cena do Escudo (desafios)").
+(viram uma Cena "Cena do Escudo (marcador e desafios)", já com o marcador (tamanhos e espaços marcados) do Escudo).

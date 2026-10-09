@@ -11,6 +11,7 @@
 import { ensureVaultModules, loadVault, keptKey, openBoxWithRawKey } from './vault.js';
 import { registerForgeFormat, parseJson } from './forge.js';
 import { challengesFromTable } from './challenges.js';
+import { trackerIsCustom, trackerFromScreen, trackerSystem } from './tracker.js';
 
 export const FOE_KINDS = ['minion', 'lieutenant'];
 const DICE = ['d4', 'd6', 'd8', 'd10', 'd12'];
@@ -83,11 +84,13 @@ export async function importGmBackup(json) {
   if (!data) return { ok: false, errors: ['Não foi possível abrir o backup: senha diferente ou arquivo danificado.'] };
   const { actors, warnings } = foesFromTable(data.table);
   const challenges = challengesFromTable(data.table, () => foundry.utils.randomID());
-  if (!actors.length && !challenges.length) return { ok: false, errors: ['O backup não tem lacaios, tenentes nem desafios em cena.'] };
+  const tracker = trackerIsCustom(data.table?.tracker) ? trackerFromScreen(data.table.tracker) : null;
+  if (!actors.length && !challenges.length && !tracker) return { ok: false, errors: ['O backup não tem lacaios, tenentes, desafios nem marcador de cena.'] };
   const created = [];
   for (const g of actors) created.push(...await createFoeGroup({ folderName: `${KIND_LABEL[g.kind]}s: ${g.name}`, datas: g.data }));
-  if (challenges.length) {
-    const [scene] = await Actor.createDocuments([{ name: game.i18n.localize('RUNETERRA.BackupSceneName'), type: 'scene', system: { challenges } }]);
+  if (challenges.length || tracker) {
+    const system = { challenges, ...(tracker ? trackerSystem(tracker.marked, tracker.sizes) : {}) };
+    const [scene] = await Actor.createDocuments([{ name: game.i18n.localize('RUNETERRA.BackupSceneName'), type: 'scene', system }]);
     created.push(scene);
   }
   return {
