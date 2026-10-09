@@ -116,7 +116,7 @@
     "EnvHelpUseLabel": "How to use",
     "EnvHelpUse": "set the setting's dice (e.g. d10 Time distortion · d8 Mist) and create Twists — events the GM triggers to shake up the scene. Whenever the setting acts (a hazard, an obstacle, the fury of the place itself), click Roll; the result is visible to the GM only.",
     "ImportPendingHint": "This Champion is empty: the sheet is not filled by hand. Export your character's JSON from the Forja de Campeões website and import it here to build the sheet.",
-    "MinionPendingExport": "Minions, Lieutenants and Environments cannot be created in Foundry: they wait for the Forja import (a Bullpen export from the site), which is not implemented yet.",
+    "MinionPendingExport": "This sheet waits for the Forja import (a Bullpen export from the site), which is not implemented yet. Nothing is filled in by hand.",
     "Mods": "Mods",
     "Bonus": "Bonus",
     "Penalty": "Penalty",

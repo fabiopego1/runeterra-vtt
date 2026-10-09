@@ -4,8 +4,8 @@
 //  • A future Forja export of minions/lieutenants plugs in by registering a format (forge.js) and mapping its
 //    entries to { n, d, t, a, tac } (name, die, summary, ability, tactics — the Screen's model) for buildFoeActors().
 // TODO (open on purpose): the Forja export of minions/lieutenants does not exist yet. When the site defines it,
-// register the format here. Until then there is NO way to create a minion (or an environment) in Foundry (runeterra.js blocks manual
-// creation; imports pass { runeterraImport: true }).
+// register the format here and flag what it creates with flags.runeterra.fromExport. Until then a minion/environment made
+// by hand only shows the "not implemented" notice on its sheet (RUNETERRA.MinionPendingExport).
 // The pure functions (no Foundry globals) are unit-tested in Node.
 
 import { ensureVaultModules, loadVault, keptKey, openBoxWithRawKey } from './vault.js';
@@ -32,7 +32,8 @@ export function foeActorData({ name, kind, dice, group = name, description = '' 
   return list.map((die, i) => ({
     name: list.length > 1 ? `${name} ${i + 1}` : name,
     type: 'minion',
-    system: { group, dieType: die, formName: KIND_LABEL[kind] ?? KIND_LABEL.minion, description }
+    system: { group, dieType: die, formName: KIND_LABEL[kind] ?? KIND_LABEL.minion, description },
+    flags: { runeterra: { fromExport: true } }
   }));
 }
 
@@ -68,7 +69,7 @@ export function foesFromTable(table) {
 /** Create the folder and the actors of a group. Returns the created actors. */
 export async function createFoeGroup({ folderName, datas }) {
   const folder = await Folder.create({ name: folderName, type: 'Actor' });
-  return Actor.createDocuments(datas.map(d => ({ ...d, folder: folder.id })), { runeterraImport: true });
+  return Actor.createDocuments(datas.map(d => ({ ...d, folder: folder.id })));
 }
 
 /** Forja format "gm-backup": the Screen's encrypted table backup → minion/lieutenant actors. */

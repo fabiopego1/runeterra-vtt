@@ -4,13 +4,14 @@
     <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
     <div class="rt-header-fields">
       <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'ACTOR.TypeEnvironment'}}" /></h1>
-      <div class="rt-rollbar">
+      {{#unless exportPending}}<div class="rt-rollbar">
         <button type="button" class="make-roll"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
         <button type="button" class="item-create" data-type="twist">+ {{localize "ITEM.TypeTwist"}}</button>
-      </div>
+      </div>{{/unless}}
     </div>
   </header>
   <section class="sheet-body">
+    {{#if exportPending}}<p class="rt-import-hint rt-pending-export">{{localize "RUNETERRA.MinionPendingExport"}}</p>{{else}}
     <div class="rt-roll-config">
       <label>{{localize "RUNETERRA.DicePower"}}</label>
       <select class="die-select" name="system.firstDie">
@@ -51,5 +52,6 @@
       <p><strong>{{localize "RUNETERRA.EnvHelpWhatLabel"}}:</strong> {{localize "RUNETERRA.EnvHelpWhat"}}</p>
       <p><strong>{{localize "RUNETERRA.EnvHelpUseLabel"}}:</strong> {{localize "RUNETERRA.EnvHelpUse"}}</p>
     </div>
+    {{/if}}
   </section>
 </form>

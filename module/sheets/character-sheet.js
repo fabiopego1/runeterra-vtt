@@ -389,6 +389,10 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.statusZoneLabel = game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`);
     }
 
+    // Minion/Environment made by hand: no fields, only the notice — they come by export from the Forja (not built yet).
+    data.exportPending = ['minion', 'environment'].includes(this.actor.type) && !this.actor.getFlag('runeterra', 'fromExport')
+      && !sys.description && !this.actor.items.size;
+
     if (this._isImportPending(this.actor)) {
       const villain = this.actor.type === 'villain';
       data.importHint = game.i18n.localize(villain ? 'RUNETERRA.ImportPendingHintAntagonist' : 'RUNETERRA.ImportPendingHint');
