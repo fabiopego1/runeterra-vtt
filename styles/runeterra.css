@@ -1503,3 +1503,24 @@ body.game .application button.default, body.game .application .form-footer butto
   color: var(--text-2);
   margin: 10px 0 4px;
 }
+
+/* ---------- Hotbar & players: solid ink (core ships them 75–90% transparent) ---------- */
+body.game #hotbar #action-bar > li {
+  background: var(--ink-1);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  box-shadow: none;
+}
+body.game #hotbar #action-bar > li:hover { border-color: var(--gold); }
+body.game #hotbar button.ui-control, body.game #hotbar .hotbar-page-control {
+  background: var(--ink-1);
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  color: var(--text-2);
+}
+body.game #hotbar button.ui-control:hover, body.game #hotbar .hotbar-page-control:hover { border-color: var(--gold); color: var(--gold-hi); }
+body.game #players .players-list { background: var(--ink-1); border: 1px solid var(--line-2); border-radius: 0; }
+body.game #players-active, body.game #players-inactive { background: var(--ink-1); }
+body.game #navigation li.scene { background: var(--ink-1); border: 1px solid var(--line-2); border-radius: 0; }
+/* Core fades idle interface parts (chat box, hotbar…): keep them fully opaque. */
+body.game .faded-ui { opacity: 1; }
