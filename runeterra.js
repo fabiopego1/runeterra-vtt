@@ -119,11 +119,17 @@ Hooks.once('ready', () => {
     } catch (e) { /* dataset ainda carregando */ }
   });
 
-  // Lacaios/Tenentes: the import from the Forja is still to be implemented. Warn the GM who makes one by hand.
-  Hooks.on('createActor', (actor, options, userId) => {
-    if (actor.type === 'minion' && userId === game.user.id && !actor.system.description) {
-      ui.notifications.warn(game.i18n.localize('RUNETERRA.MinionPendingExport'));
-    }
+  // Lacaios/Tenentes cannot be made by hand: they only arrive by import (Forja export / Escudo backup), which
+  // creates them with { runeterraImport: true }. Until the Forja export exists, there is simply no way to create one.
+  Hooks.on('preCreateActor', (actor, data, options) => {
+    if (actor.type !== 'minion' || options?.runeterraImport) return;
+    ui.notifications.warn(game.i18n.localize('RUNETERRA.MinionPendingExport'));
+    return false;
+  });
+  // ...and the type is not offered in the "Create Actor" dialog.
+  Hooks.on('renderDialogV2', (app, html) => {
+    const root = html instanceof HTMLElement ? html : html?.[0];
+    root?.querySelectorAll?.('select[name="type"] option[value="minion"]').forEach(o => o.remove());
   });
 
   /** Add the "Importar personagem Runeterra" button to the Actors directory header. */

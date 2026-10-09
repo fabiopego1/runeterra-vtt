@@ -4,8 +4,8 @@
 //  • A future Forja export of minions/lieutenants plugs in by registering a format (forge.js) and mapping its
 //    entries to { n, d, t, a, tac } (name, die, summary, ability, tactics — the Screen's model) for buildFoeActors().
 // TODO (open on purpose): the Forja export of minions/lieutenants does not exist yet. When the site defines it,
-// register the format here; until then the minion sheet and a manual create show a "not implemented" notice
-// (RUNETERRA.MinionPendingExport).
+// register the format here. Until then there is NO way to create a minion in Foundry (runeterra.js blocks manual
+// creation; imports pass { runeterraImport: true }).
 // The pure functions (no Foundry globals) are unit-tested in Node.
 
 import { ensureVaultModules, loadVault, keptKey, openBoxWithRawKey } from './vault.js';
@@ -68,7 +68,7 @@ export function foesFromTable(table) {
 /** Create the folder and the actors of a group. Returns the created actors. */
 export async function createFoeGroup({ folderName, datas }) {
   const folder = await Folder.create({ name: folderName, type: 'Actor' });
-  return Actor.createDocuments(datas.map(d => ({ ...d, folder: folder.id })));
+  return Actor.createDocuments(datas.map(d => ({ ...d, folder: folder.id })), { runeterraImport: true });
 }
 
 /** Forja format "gm-backup": the Screen's encrypted table backup → minion/lieutenant actors. */
