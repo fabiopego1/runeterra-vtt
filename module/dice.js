@@ -66,7 +66,9 @@ export async function TaskCheck(actor, { abilityId = null } = {}) {
 
   const { mods, bonus, penalty, forgotPenalty } = collectMods(actor);
 
-  const st = resolveStatusDie(sys.character, sys.play?.current, sys.scene ?? 'green', sys.derived);
+  const st = sys.antagonist?.state?.ap
+    ? { zone: sys.antagonist.zone ?? 'green' }
+    : resolveStatusDie(sys.character, sys.play?.current, sys.scene ?? 'green', sys.derived);
   const zoneColor = st.zone === 'out' ? 'red' : st.zone;
   const render = await foundry.applications.handlebars.renderTemplate(
     'systems/runeterra/templates/chat/mainroll.hbs',

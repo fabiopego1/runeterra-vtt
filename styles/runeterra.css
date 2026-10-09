@@ -725,3 +725,17 @@
 .rt-hr-green { border-left-color: #5aa469 !important; }
 .rt-hr-yellow { border-left-color: #d6b24a !important; }
 .rt-hr-red { border-left-color: #c8504a !important; }
+
+/* --- antagonist sheet (Forge import) --- */
+.rt-ant-status { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
+.rt-ant-status li {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  padding: 4px 8px; border: 1px solid var(--line); border-left: 3px solid var(--line-2, var(--line));
+  font-size: .78rem; color: var(--text-2); cursor: pointer;
+}
+.rt-ant-status.rt-locked li { cursor: default; }
+.rt-ant-status li.rt-active { border-color: var(--gold); border-left-color: var(--gold-hi); color: var(--text); background: rgba(200, 170, 110, .08); }
+.rt-ant-status-die { font-family: 'IBM Plex Mono', monospace; color: var(--gold-hi); font-weight: 600; white-space: nowrap; }
+.rt-ant-note { white-space: pre-wrap; color: var(--text-2); }
+.rt-ant-list { margin: 0 0 8px 1.1em; padding: 0; color: var(--text-2); font-size: .88rem; }
+.rt-zone-table-ant h4 { border-left: 3px solid var(--gold); padding-left: 6px; }

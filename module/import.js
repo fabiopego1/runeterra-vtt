@@ -6,6 +6,8 @@
 import { catalog } from './data/catalog.js';
 import { derive, effectivePrincipleId } from './rules.js';
 import { HealthUpdate } from './status.js';
+import { buildAntagonistImport, isAntagonistJson, AntagonistUpdate } from './antagonist.js';
+import { ensureVillainData, villainData } from './vault.js';
 
 /** Bracket-token pt-BR labels (from the web app). */
 const TOKEN_PT = {
@@ -298,6 +300,7 @@ export async function buildChampionImport(json) {
  * Returns { ok, actor?, errors?, warnings? }.
  */
 export async function importChampion(json) {
+  if (isAntagonistJson(json)) return importAntagonist(json);
   const built = await buildChampionImport(json);
   if (!built.ok) return built;
 
@@ -321,22 +324,119 @@ export function isBuiltChampion(actor) {
   return !!(c?.bg?.id || c?.ps?.id || c?.arch?.id || c?.pers?.id);
 }
 
+/** Is this actor an antagonist built from a Forge JSON? */
+export function isBuiltAntagonist(actor) {
+  return !!actor?.system?.antagonist?.state?.ap;
+}
+
+/** Built from an import, either kind (the sheet offers "Atualizar do JSON" for these). */
+export const isBuiltImport = actor => isBuiltChampion(actor) || isBuiltAntagonist(actor);
+
+/**
+ * Nested "-=key" payload removing, at each dotted path, the keys the actor has but the new data
+ * lacks. Foundry merges objects on update, so without this a trait/ability/rename that is gone
+ * from the re-imported JSON would linger in the actor.
+ */
+export function staleDeletes(oldSys, newSys, paths) {
+  const get = (o, p) => p.split('.').reduce((a, k) => (a && typeof a === 'object' ? a[k] : undefined), o);
+  const out = {};
+  for (const p of paths) {
+    const o = get(oldSys, p), n = get(newSys, p);
+    if (!o || typeof o !== 'object' || Array.isArray(o)) continue;
+    const gone = Object.keys(o).filter(k => !(n && Object.prototype.hasOwnProperty.call(n, k)));
+    if (!gone.length) continue;
+    let node = out;
+    for (const k of p.split('.')) node = node[k] ??= {};
+    for (const k of gone) node['-=' + k] = null;
+  }
+  return out;
+}
+
+const CHAMPION_MAPS = ['derived.powers', 'derived.qualities', 'character.sel', 'character.renames', 'character.traitNames', 'character.pch',
+  'character.bg.assign', 'character.ps.assign', 'character.ps.extra', 'character.arch.assign', 'character.arch.extra',
+  'character.evo.traits', 'character.evo.principles', 'character.evo.abilities'];
+const ANTAGONIST_MAPS = ['derived.powers', 'derived.qualities', 'character.traitNames', 'antagonist.state.P', 'antagonist.state.Q',
+  'antagonist.state.ab', 'antagonist.state.tk', 'antagonist.state.up', 'antagonist.state.renames', 'antagonist.state.traitNames'];
+
+/** Clamp the held current Health (a Foundry-side fact) into the new max; unknown → full. */
+function heldHealth(actor, max) {
+  const held = Number.parseInt(actor.system?.play?.current ?? actor.system?.health?.value, 10);
+  return Number.isFinite(held) ? Math.max(0, Math.min(held, max)) : max;
+}
+
 /**
  * Pure: the update payload for importing INTO an existing actor. A first fill takes everything
  * from the JSON; a re-import (actor already built) keeps what only Foundry knows — current Health
- * (clamped to the new max) — and the actor's portrait unless the JSON carries one.
+ * (clamped to the new max) — and the actor's portrait unless the JSON carries one, and drops the
+ * map entries the new JSON no longer has.
  */
 export function mergeForReimport(built, actor, reimport) {
   const { name, img, system } = built.actorData;
   const out = { name, system: foundry.utils.deepClone(system) };
   if (!reimport) return { ...out, img };
   if (built.hasPortrait) out.img = img;
-  const max = system.health.max;
-  const held = Number.parseInt(actor.system?.play?.current ?? actor.system?.health?.value, 10);
-  const value = Number.isFinite(held) ? Math.max(0, Math.min(held, max)) : max;
-  out.system.health = { value, max };
+  const value = heldHealth(actor, system.health.max);
+  out.system.health = { value, max: system.health.max };
   out.system.play.current = String(value);
+  foundry.utils.mergeObject(out.system, staleDeletes(actor.system, system, CHAMPION_MAPS));
   return out;
+}
+
+/** Same idea for an antagonist: keep Health and the GM's scene-driven Status row. */
+export function mergeAntagonistReimport(built, actor, reimport) {
+  const { name, img, system } = built.actorData;
+  const out = { name, system: foundry.utils.deepClone(system) };
+  if (!reimport) return { ...out, img };
+  if (built.portrait) out.img = img;
+  const value = heldHealth(actor, system.health.max);
+  out.system.health = { value, max: system.health.max };
+  out.system.play = { current: String(value) };
+  const old = actor.system.antagonist;
+  if (!system.antagonist.zoned && old?.state?.arch === system.antagonist.state.arch && Number.isInteger(old.statusIndex)) {
+    out.system.antagonist.statusIndex = Math.max(0, Math.min(system.antagonist.status.length - 1, old.statusIndex));
+  }
+  foundry.utils.mergeObject(out.system, staleDeletes(actor.system, system, ANTAGONIST_MAPS));
+  return out;
+}
+
+/** Open the vault (asking the GM for the password once per tab) and build the antagonist import. */
+async function prepareAntagonist(json) {
+  const un = await ensureVillainData();
+  if (!un.ok) return { ok: false, errors: [un.error] };
+  const built = buildAntagonistImport(json, villainData());
+  if (!built.ok) return built;
+  if (built.portrait) {
+    const base = (built.actorData.name || 'antagonista').replace(/[^\w-]+/g, '_');
+    const up = await uploadPortrait(built.portrait, base);
+    if (up.img) built.actorData.img = up.img;
+    if (up.warning) built.warnings.push(up.warning);
+  }
+  return built;
+}
+
+/** Import an Antagonist Forge JSON as a NEW villain actor (GM only; needs the vault). */
+export async function importAntagonist(json) {
+  const built = await prepareAntagonist(json);
+  if (!built.ok) return built;
+  const [actor] = await Actor.createDocuments([built.actorData]);
+  if (built.items.length) await actor.createEmbeddedDocuments('Item', built.items);
+  try { await AntagonistUpdate(actor); } catch (e) { /* sheet render-time sync covers it */ }
+  return { ok: true, actor, warnings: built.warnings };
+}
+
+/** Fill an existing villain actor (empty shell or re-import) from an Antagonist Forge JSON. */
+export async function importIntoAntagonist(actor, json) {
+  if (actor.type !== 'villain') return { ok: false, errors: ['Este arquivo é de um Antagonista: importe-o numa ficha de Antagonista (ou pelo botão do diretório de Atores).'] };
+  const built = await prepareAntagonist(json);
+  if (!built.ok) return built;
+  const reimport = isBuiltAntagonist(actor);
+  const update = mergeAntagonistReimport(built, actor, reimport);
+  const staleIds = actor.items.filter(i => i.type === 'ability' && (!reimport || String(i.system.iid).startsWith('ant:'))).map(i => i.id);
+  if (staleIds.length) await actor.deleteEmbeddedDocuments('Item', staleIds);
+  await actor.update(update);
+  if (built.items.length) await actor.createEmbeddedDocuments('Item', built.items);
+  try { await AntagonistUpdate(actor); } catch (e) { /* sheet render-time sync covers it */ }
+  return { ok: true, actor, warnings: built.warnings, reimport };
 }
 
 /**
@@ -344,8 +444,11 @@ export function mergeForReimport(built, actor, reimport) {
  * takes everything from the JSON; on an already-built champion it is a RE-import: abilities that
  * came from an import (iid set) are rebuilt, hand-made ones, mods, scene/mode state and the current
  * Health are kept. Items are only touched after the JSON validated (all-or-nothing).
+ * An Antagonist JSON is routed to importIntoAntagonist.
  */
 export async function importIntoChampion(actor, json) {
+  if (isAntagonistJson(json)) return importIntoAntagonist(actor, json);
+  if (actor.type === 'villain') return { ok: false, errors: ['Este arquivo é de um Campeão: importe-o numa ficha de Campeão.'] };
   const built = await buildChampionImport(json);
   if (!built.ok) return built;
   const reimport = isBuiltChampion(actor);

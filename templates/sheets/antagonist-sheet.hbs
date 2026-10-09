@@ -1,0 +1,165 @@
+{{!-- Runeterra Foundry — Antagonist sheet: the GM's villain built in the web app's Antagonist Forge (import only). --}}
+<form class="{{cssClass}} rt-antagonist" autocomplete="off">
+  <header class="sheet-header rt-header">
+    <img class="rt-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="rt-header-fields">
+      <h1><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'ACTOR.TypeVillain'}}" /></h1>
+      <div class="rt-subline">
+        {{#if ant.alias}}{{ant.alias}} — {{/if}}{{ant.approach}} / {{ant.archetype}}{{#if ant.upgrades}} + {{ant.upgrades}}{{/if}}{{#if ant.mastery}} · {{ant.mastery.n}}{{/if}}
+      </div>
+    </div>
+  </header>
+
+  <div class="rt-layout">
+    <div class="rt-main">
+      <nav class="sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="powers">{{localize "RUNETERRA.Tabs.powers"}}</a>
+        <a class="item" data-tab="champ">{{localize "ACTOR.TypeVillain"}}</a>
+        <a class="item" data-tab="auxiliary">{{localize "RUNETERRA.Tabs.auxiliary"}}</a>
+      </nav>
+
+      <section class="sheet-body">
+        {{!-- ------------------------------------------------ identity --}}
+        <div class="tab" data-tab="champ">
+          <div class="rt-grid">
+            <label>{{localize "RUNETERRA.Alias"}}</label><span>{{ant.alias}}</span>
+            <label>{{localize "RUNETERRA.AntConcept"}}</label><span>{{ant.concept}}</span>
+            <label>{{localize "RUNETERRA.Approach"}}</label><span>{{ant.approach}}</span>
+            <label>{{localize "RUNETERRA.AntArchetype"}}</label><span>{{ant.archetype}}</span>
+            <label>{{localize "RUNETERRA.AntUpgrades"}}</label><span>{{#if ant.upgrades}}{{ant.upgrades}}{{else}}—{{/if}}</span>
+            <label>{{localize "RUNETERRA.AntMastery"}}</label><span>{{#if ant.mastery}}{{ant.mastery.n}}{{else}}—{{/if}}</span>
+            <label>{{localize "RUNETERRA.Health"}}</label><span>{{ant.hpFormula}}</span>
+          </div>
+          {{#if ant.note}}
+          <h3>{{localize "RUNETERRA.AntAppearance"}}</h3>
+          <p class="rt-ant-note">{{ant.note}}</p>
+          {{/if}}
+        </div>
+
+        {{!-- ------------------------------------------------ dice + abilities --}}
+        <div class="tab" data-tab="powers">
+          <div class="rt-twocol">
+            <div>
+              <h3>{{localize "RUNETERRA.Powers"}}</h3>
+              <table class="rt-traits">
+                <tbody>
+                  {{#each powers}}
+                  <tr class="trait-row" data-trait-key="{{key}}" data-trait-die="{{die}}" data-trait-kind="power" title="{{localize 'RUNETERRA.ClickTraitHint'}}">
+                    <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
+                    <td class="rt-die">{{die}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h3>{{localize "RUNETERRA.Qualities"}}</h3>
+              <table class="rt-traits">
+                <tbody>
+                  {{#each qualities}}
+                  <tr class="trait-row" data-trait-key="{{key}}" data-trait-die="{{die}}" data-trait-kind="quality" title="{{localize 'RUNETERRA.ClickTraitHint'}}">
+                    <td>{{name}}{{#if renamed}} <span class="rt-orig">{{orig}}</span>{{/if}}</td>
+                    <td class="rt-die">{{die}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {{#each antGroups}}
+          <div class="rt-zone-table rt-zone-table-ant">
+            <h4>{{src}}</h4>
+            <table class="rt-abilities">
+              <tbody>
+                {{#each rows}}
+                <tr data-item-id="{{id}}">
+                  <td class="rt-ability-icons">{{#each icons}}<span class="rt-act rt-act-{{cls}}" data-tooltip="{{tip}}">{{code}}</span>{{/each}}</td>
+                  <td class="rt-ability-name">{{name}}{{#if renamed}} <span class="rt-orig">{{base}}</span>{{/if}}</td>
+                  <td class="rt-ability-type rt-type-{{type}}">{{type}}</td>
+                  <td class="rt-ability-text">{{{text}}}</td>
+                  <td class="rt-ability-actions">
+                    <button type="button" class="roll-item" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>
+                    <button type="button" class="item-edit" title="{{localize 'RUNETERRA.Edit'}}"><i class="fas fa-pen"></i></button>
+                  </td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          {{/each}}
+          <p class="rt-hint"><em>{{localize "RUNETERRA.AbilitiesHint"}}</em></p>
+        </div>
+
+        {{!-- ------------------------------------------------ plans and table notes --}}
+        <div class="tab" data-tab="auxiliary">
+          {{#if antPlans.length}}
+          <h3>{{localize "RUNETERRA.AntPlans"}}</h3>
+          <ul class="rt-ant-list">{{#each antPlans}}<li>{{this}}</li>{{/each}}</ul>
+          {{/if}}
+          {{#if antNotes.length}}
+          <h3>{{localize "RUNETERRA.AntForgeNotes"}}</h3>
+          <ul class="rt-ant-list">{{#each antNotes}}<li>{{this}}</li>{{/each}}</ul>
+          {{/if}}
+          <h3>{{localize "RUNETERRA.Notes"}}</h3>
+          <textarea name="system.antagonist.notes" rows="12">{{system.antagonist.notes}}</textarea>
+        </div>
+      </section>
+    </div>{{!-- /rt-main --}}
+
+    <aside class="rt-panel">
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.Health"}}</h4>
+        <div class="rt-health">
+          <button type="button" class="health-step" data-delta="-1" title="−1">−</button>
+          <input class="health-update {{statusBgClass}}" type="number" value="{{currentHealth}}" min="0" max="{{healthMax}}" />
+          <span>/ {{healthMax}}</span>
+          <button type="button" class="health-step" data-delta="1" title="+1">+</button>
+        </div>
+        {{#if antRanges}}
+        <ul class="rt-health-ranges">
+          {{#each antRanges}}<li class="rt-hr-{{zone}}"><span>{{label}}</span><b>{{range}}</b></li>{{/each}}
+        </ul>
+        {{/if}}
+      </div>
+
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.PanelDice"}}</h4>
+        <div class="rt-roll-config rt-panel-dice">
+          <label>{{firstTypeLabel}}</label>
+          <select class="trait-select" data-slot="first">
+            <option value="">—</option>
+            {{#select firstKey}}{{#each firstRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
+          </select>
+          <label>{{secondTypeLabel}}</label>
+          <select class="trait-select" data-slot="second">
+            <option value="">—</option>
+            {{#select secondKey}}{{#each secondRows}}<option value="{{key}}" data-die="{{die}}">{{name}} ({{die}})</option>{{/each}}{{/select}}
+          </select>
+        </div>
+      </div>
+
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.DiceStatus"}}</h4>
+        <ul class="rt-ant-status {{#if statusLocked}}rt-locked{{/if}}">
+          {{#each statusRows}}
+          <li class="ant-status-pick {{#if active}}rt-active{{/if}}" data-idx="{{idx}}" {{#unless ../statusLocked}}role="button" tabindex="0"{{/unless}}>
+            <span class="rt-ant-status-label">{{label}}</span><b class="rt-ant-status-die">{{die}}</b>
+          </li>
+          {{/each}}
+        </ul>
+        <p class="rt-hint"><em>{{#if statusLocked}}{{localize "RUNETERRA.AntStatusAuto"}}{{else}}{{localize "RUNETERRA.AntStatusPick"}}{{/if}}</em></p>
+      </div>
+
+      <div class="rt-panel-block">
+        <h4>{{localize "RUNETERRA.PanelRolls"}}</h4>
+        <div class="rt-rollbar">
+          <button type="button" class="make-roll" title="{{localize 'RUNETERRA.RollCombined'}}"><i class="fas fa-dice-d20"></i> {{localize "RUNETERRA.RollCombined"}}</button>
+          <button type="button" class="roll-slot" data-slot="first" data-kind="{{firstKind}}">{{localize "RUNETERRA.Roll"}} {{firstTypeLabel}}</button>
+          <button type="button" class="roll-slot" data-slot="second" data-kind="{{secondKind}}">{{localize "RUNETERRA.Roll"}} {{secondTypeLabel}}</button>
+          <button type="button" class="roll-status">{{localize "RUNETERRA.RollStatus"}}</button>
+        </div>
+      </div>
+    </aside>
+  </div>{{!-- /rt-layout --}}
+</form>

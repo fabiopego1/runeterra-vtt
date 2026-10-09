@@ -4,10 +4,11 @@
 import { catalog } from '../data/catalog.js';
 import { derive, effectiveZone, dividedModeOf, slotKinds, effectivePrincipleId } from '../rules.js';
 import * as dice from '../dice.js';
-import { actionIcons, decorateRulesHtml } from '../rules-text.js';
+import { actionIcons, actionIconsPt, decorateRulesHtml } from '../rules-text.js';
 import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
-import { importIntoChampion, pickChampionJson, isBuiltChampion } from '../import.js';
+import { importIntoChampion, pickChampionJson, isBuiltImport } from '../import.js';
+import { AntagonistUpdate } from '../antagonist.js';
 
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
 const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
@@ -26,15 +27,21 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
 
   /** A champion with nothing chosen (fresh from the create dialog) is an import shell only. */
   _isImportPending(actor) {
-    if (actor.type !== 'champion') return false;
+    if (actor.type !== 'champion' && actor.type !== 'villain') return false;
+    if (actor.system?.antagonist?.state?.ap) return false;   // a built antagonist
     const c = actor.system?.character;
     return !c?.bg?.id && !c?.ps?.id && !c?.arch?.id && !c?.pers?.id;
+  }
+
+  /** A villain actor that carries an Antagonist Forge build. */
+  _isAntagonist(actor) {
+    return actor.type === 'villain' && !!actor.system?.antagonist?.state?.ap;
   }
 
   /** A built champion gets a header button to update it from a newer JSON (keeps Health, mods…). */
   _getHeaderButtons() {
     const buttons = super._getHeaderButtons();
-    if (this.actor.type === 'champion' && this.actor.isOwner && isBuiltChampion(this.actor)) {
+    if ((this.actor.type === 'champion' || this.actor.type === 'villain') && this.actor.isOwner && isBuiltImport(this.actor)) {
       buttons.unshift({
         label: game.i18n.localize('RUNETERRA.Reimport'),
         class: 'rt-reimport',
@@ -77,6 +84,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     if (this._isImportPending(this.actor)) {
       return 'systems/runeterra/templates/sheets/champion-import.hbs';
     }
+    if (this._isAntagonist(this.actor)) return 'systems/runeterra/templates/sheets/antagonist-sheet.hbs';
     // Champions and villains share the ficha layout (Runeterra builds villains like champions).
     if (this.actor.type === 'champion' || this.actor.type === 'villain') {
       return 'systems/runeterra/templates/sheets/champion-sheet.hbs';
@@ -274,7 +282,9 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     // environment/minion templates read `system.*` (die selects, notes) directly.
     data.system = sys;
 
-    if (this.actor.type === 'champion' || this.actor.type === 'villain') {
+    if (this._isAntagonist(this.actor)) {
+      await this._antagonistData(data, sys);
+    } else if (this.actor.type === 'champion' || this.actor.type === 'villain') {
       const ch = sys.character ?? {};
       const derived = derive(ch, sys.play?.current);
       data.isVillain = this.actor.type === 'villain';
@@ -373,9 +383,73 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.statusZoneLabel = game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`);
     }
 
+    if (this._isImportPending(this.actor)) {
+      const villain = this.actor.type === 'villain';
+      data.importHint = game.i18n.localize(villain ? 'RUNETERRA.ImportPendingHintAntagonist' : 'RUNETERRA.ImportPendingHint');
+      data.importType = game.i18n.localize(villain ? 'ACTOR.TypeVillain' : 'ACTOR.TypeChampion');
+    }
+
     data.config = CONFIG.RUNETERRA;
     data.dieTypes = ['d4', 'd6', 'd8', 'd10', 'd12'];
     return data;
+  }
+
+  /** Sheet data for a built antagonist (Forge import): dice, Health, Status rows, abilities by source. */
+  async _antagonistData(data, sys) {
+    const ant = sys.antagonist, st = ant.state ?? {}, derived = sys.derived ?? {}, ch = sys.character ?? {};
+    data.isVillain = true;
+    data.isAntagonist = true;
+    data.derived = derived;
+    data.powers = this._traitRows(derived.powers ?? {}, ch);
+    data.qualities = this._traitRows(derived.qualities ?? {}, ch);
+    data.firstKind = 'power';
+    data.secondKind = 'quality';
+    data.firstTypeLabel = game.i18n.localize('RUNETERRA.DicePower');
+    data.secondTypeLabel = game.i18n.localize('RUNETERRA.DiceQuality');
+    data.firstRows = data.powers;
+    data.secondRows = data.qualities;
+    const matchKey = (rows, die, name) => rows.find(r => r.die === die && r.name === name)?.key ?? '';
+    data.firstKey = matchKey(data.firstRows, sys.firstDie, sys.firstDieName);
+    data.secondKey = matchKey(data.secondRows, sys.secondDie, sys.secondDieName);
+
+    const max = derived.healthMax ?? sys.health?.max ?? 0;
+    const cur = parseInt(sys.play?.current, 10);
+    data.healthMax = max;
+    data.currentHealth = Number.isFinite(cur) ? cur : max;
+    data.antRanges = ant.zoned ? ['green', 'yellow', 'red'].map(zone => ({
+      zone, label: game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`), range: ant.ranges?.[zone] ?? ''
+    })) : null;
+    data.statusLocked = !!ant.zoned;
+    data.statusRows = (ant.status ?? []).map((r, idx) => ({ idx, label: r.label, die: r.die, active: idx === ant.statusIndex }));
+    data.statusDie = sys.thirdDie || '—';
+    data.statusBgClass = ant.zoned ? `rt-zonebg-${ant.zone}` : '';
+    data.ant = {
+      alias: st.alias, concept: st.concept, note: st.note, approach: ant.approach, archetype: ant.archetype,
+      upgrades: (ant.upgrades ?? []).join(', '), mastery: ant.mastery, hpFormula: ant.hpFormula
+    };
+    data.antPlans = (st.play?.plans ?? []).filter(Boolean);
+    data.antNotes = (st.play?.notes ?? []).filter(Boolean);
+    data.antGroups = await this._antagonistGroups(this.actor);
+  }
+
+  /** Ability items of an antagonist grouped by where they come from (approach, archetype, upgrades…). */
+  async _antagonistGroups(actor) {
+    const enrich = async (s) => decorateRulesHtml(await foundry.applications.ux.TextEditor.implementation.enrichHTML(s ?? ''));
+    const groups = [];
+    for (const i of actor.items.filter(it => it.type === 'ability').sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))) {
+      const imported = String(i.system.iid ?? '').startsWith('ant:');
+      const src = imported ? (i.system.source || game.i18n.localize('RUNETERRA.AntSourceOther')) : game.i18n.localize('RUNETERRA.AntManual');
+      let g = groups.find(x => x.src === src);
+      if (!g) groups.push(g = { src, rows: [] });
+      g.rows.push({
+        id: i.id,
+        name: i.name,
+        type: i.system.type ?? 'A',
+        icons: actionIconsPt(i.system.gameText),
+        text: await enrich(i.system.gameText)
+      });
+    }
+    return groups;
   }
 
   /* ------------------------------------------------------------ roll priming */
@@ -419,7 +493,8 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .toLowerCase().replace(/\s+/g, ' ');
     const hay = norm(item.system.gameText);
-    const derived = derive(sys.character, sys.play?.current);
+    // An antagonist keeps its dice in the stored snapshot (it has no champion build to derive from).
+    const derived = this._isAntagonist(this.actor) ? sys.derived : derive(sys.character, sys.play?.current);
     if (!derived) return;
     const found = [];
     for (const [kind, map] of [['power', derived.powers], ['quality', derived.qualities]]) {
@@ -572,6 +647,15 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
         [`system.${slot}Die`]: die,
         [`system.${slot}DieName`]: catalog.traitName(key, this.actor.system.character)
       });
+    });
+
+    // Antagonist: pick the Status row that matches the scene (zone-driven archetypes lock it).
+    html.find('.ant-status-pick').click(async ev => {
+      const ant = this.actor.system.antagonist;
+      if (!ant || ant.zoned) return;
+      await this.actor.update({ 'system.antagonist.statusIndex': Number(ev.currentTarget.dataset.idx) });
+      await AntagonistUpdate(this.actor);
+      this.render(false);
     });
 
     html.find('.health-update').change(async ev => {

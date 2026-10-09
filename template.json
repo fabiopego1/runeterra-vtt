@@ -120,7 +120,8 @@
         },
         "villain": {
             "templates": ["dice", "championdata"],
-            "approach": ""
+            "approach": "",
+            "antagonist": {}
         },
         "minion": {
             "group": "",
@@ -175,7 +176,8 @@
             "zone": "green",
             "traits": [],
             "choices": {},
-            "gameText": ""
+            "gameText": "",
+            "source": ""
         },
         "principle": {
             "slot": "bg",

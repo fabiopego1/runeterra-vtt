@@ -64,3 +64,14 @@ export function decorateRulesHtml(html) {
     });
   }).join('');
 }
+
+const ICON_RE_PT = [['Attack', /\bAta[cq]\w*/], ['Defend', /\bDefe[ns]\w*/], ['Overcome', /\bSuper\w*/], ['Boost', /\bFortale\w*/], ['Hinder', /\bAtrapalh\w*/], ['Recover', /\bRecuper\w*/]];
+
+/** Action icons read from PORTUGUESE rules text (antagonist abilities exist only in pt; same as the Forge's ICON_RE). */
+export function actionIconsPt(ptText) {
+  const text = String(ptText ?? '').replace(/<[^>]+>/g, ' ');
+  return ICON_RE_PT.filter(([, re]) => re.test(text)).map(([a]) => ({
+    action: a, cls: a.toLowerCase(), code: ACTION_ICONS[a][0], label: ACTION_ICONS[a][1],
+    tip: `<h5>Ícone ${ACTION_ICONS[a][1]}</h5>${window.GLOSSARY?.[a] ?? ''}`
+  }));
+}

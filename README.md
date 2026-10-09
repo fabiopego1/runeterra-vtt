@@ -76,4 +76,22 @@ Os catálogos em `data/` são cópias dos arquivos do site (`js/`). Para não di
 (`git pull --ff-only` no clone do site antes) e `--test` (roda os testes depois). O caminho do
 clone vem de `--web <dir>` ou da variável `WEB_REPO`. Testes de lógica (Node puro):
 `test-retcon`, `test-import-fixture`, `test-zone-locks`, `test-divided` em `scripts/`.
-O material do Mestre do site (cofre cifrado) não é copiado.
+O cofre cifrado do Mestre (`data/gm-vault.js`) é copiado como está, sem abrir.
+
+## Antagonistas (Forja do Antagonista)
+
+O JSON exportado pela Forja do Antagonista (Escudo do Mestre do site) é importado pelo mesmo botão
+**"Importar personagem Runeterra"**: o sistema reconhece o arquivo e cria um ator do tipo
+**Antagonista** (`villain`). Também funciona na ficha vazia e em **"Atualizar do JSON"** (mantém a
+Vida atual e a situação de Status escolhida).
+
+- O arquivo guarda só as **escolhas**; dados, Vida (abordagem + arquétipo + 5 × campeões + melhorias),
+  habilidades e linhas de Status são recalculados com os blocos de construção do livro, que ficam no
+  **cofre cifrado** (`data/gm-vault.js`, o mesmo do site). O repositório é público, então o material
+  nunca vai em texto puro.
+- Na primeira importação da aba o Mestre digita a **senha do cofre**. Ela não é gravada: só a chave
+  derivada fica no `sessionStorage` da aba (some ao fechá-la). Só o Mestre importa antagonistas.
+- Brutamontes e Frágil têm o Status preso à zona de Vida; os demais arquétipos dependem da cena, então
+  a ficha mostra as linhas de Status e o Mestre clica na que vale agora.
+- Testes: `GM_PASSWORD='…' node scripts/test-antagonist.mjs` (a senha nunca vai para o repositório;
+  sem ela só rodam as checagens do cofre fechado).

@@ -6,6 +6,7 @@
 // (import, health change, scene broadcast) and the sheet re-syncs on render.
 
 import { derive, zoneOf, effectiveZone } from './rules.js';
+import { AntagonistUpdate } from './antagonist.js';
 
 const ZONE_INDEX = { green: 0, yellow: 1, red: 2 };
 
@@ -71,6 +72,7 @@ export async function EnvironmentUpdate(actor) {
  */
 export async function HealthUpdate(actor) {
   if (actor.type !== 'champion' && actor.type !== 'villain') return;
+  if (actor.system.antagonist?.state?.ap) return AntagonistUpdate(actor);   // antagonists: Status row, not Temperament
   const sys = actor.system;
   const current = sys.play?.current;
   const scene = sys.scene ?? 'green';

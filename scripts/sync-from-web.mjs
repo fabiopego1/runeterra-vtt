@@ -8,8 +8,8 @@
 //   node scripts/sync-from-web.mjs --test     run the Node test suite afterwards
 //   --web <dir> (or env WEB_REPO) overrides the clone path.
 //
-// Not copied: files the system does not load (see system.json "scripts") and the web's sealed
-// GM vault (js/gm-vault.js) — antagonist data is out of scope here.
+// Not copied: files the system does not load (see system.json "scripts"). The web's sealed GM vault
+// (js/gm-vault.js) IS copied as-is — encrypted; it is only opened at run time by the GM's password.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -45,7 +45,8 @@ try {
 }
 
 // Files the system loads as data (system.json scripts under data/), mapped to the web's js/ tree.
-const targets = manifest.scripts.filter(s => s.startsWith('data/'));
+// The sealed GM vault is carried too (ciphertext: it is loaded on demand, not listed in system.json).
+const targets = [...manifest.scripts.filter(s => s.startsWith('data/')), 'data/gm-vault.js'];
 let changed = 0;
 const lines = t => t.split('\n');
 for (const t of targets) {
@@ -73,7 +74,7 @@ if (!flag('--check')) {
 }
 
 if (flag('--test')) {
-  for (const t of ['test-retcon', 'test-import-fixture', 'test-rules-text', 'test-zone-locks', 'test-divided']) {
+  for (const t of ['test-retcon', 'test-import-fixture', 'test-rules-text', 'test-antagonist', 'test-zone-locks', 'test-divided']) {
     console.log(`\n▶ ${t}`);
     try { execFileSync('node', [path.join(root, 'scripts', `${t}.mjs`)], { stdio: 'inherit' }); }
     catch { console.error(`✗ ${t} falhou`); process.exitCode = 5; }
