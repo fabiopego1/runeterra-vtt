@@ -116,7 +116,7 @@
     "EnvHelpUseLabel": "Como usar",
     "EnvHelpUse": "defina os dados do cenário (ex.: d10 Distorção temporal · d8 Neblina) e crie Reviravoltas — eventos que o Mestre desencadeia para agitar a cena. Quando o cenário age (um perigo, um obstáculo, a fúria do próprio lugar), clique em Rolar; o resultado fica visível somente para o Mestre.",
     "ImportPendingHint": "Este Campeão está vazio: a ficha não é preenchida à mão. Exporte o JSON do seu personagem no site Forja de Campeões e importe-o aqui para montar a ficha.",
-    "MinionPendingExport": "Lacaios e Tenentes não podem ser criados no Foundry: aguardam a importação da Forja (export da Bancada do site), que ainda não foi implementada.",
+    "MinionPendingExport": "Lacaios, Tenentes e Ambientes não podem ser criados no Foundry: aguardam a importação da Forja (export da Bancada do site), que ainda não foi implementada.",
     "Mods": "Modificadores",
     "Bonus": "Bônus",
     "Penalty": "Penalidade",

@@ -107,7 +107,7 @@ Usam o mesmo **cofre cifrado** dos antagonistas (senha pedida uma vez por aba; s
   **backup do Escudo** (abaixo) e, no futuro, por um export da Forja (formato a registrar, ver "Abertura à Forja").
   Cada lacaio vira um ator do tipo Lacaio (mesmo `group`, então a rolagem de grupo funciona), numa pasta.
   **Pendente (em aberto de propósito):** o export de lacaios/tenentes da Forja ainda **não foi implementado**.
-  Enquanto isso **não há como criar lacaio no Foundry**: o tipo some do diálogo "Criar Ator" e a criação manual é bloqueada com um aviso (só as importações passam).
+  Enquanto isso **não há como criar lacaio nem ambiente no Foundry** (ambientes também aguardam o export da Bancada): o tipo some do diálogo "Criar Ator" e a criação manual é bloqueada com um aviso (só as importações passam).
 - **Backup do Escudo** — o arquivo *Exportar backup* do Escudo (`runeterra-gm-backup`) é importado
   pelo botão "Importar personagem Runeterra": os lacaios e tenentes da mesa viram atores (desafios e
   antagonistas simples da mesa são avisados, não importados).

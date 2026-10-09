@@ -4,7 +4,7 @@
 //  • A future Forja export of minions/lieutenants plugs in by registering a format (forge.js) and mapping its
 //    entries to { n, d, t, a, tac } (name, die, summary, ability, tactics — the Screen's model) for buildFoeActors().
 // TODO (open on purpose): the Forja export of minions/lieutenants does not exist yet. When the site defines it,
-// register the format here. Until then there is NO way to create a minion in Foundry (runeterra.js blocks manual
+// register the format here. Until then there is NO way to create a minion (or an environment) in Foundry (runeterra.js blocks manual
 // creation; imports pass { runeterraImport: true }).
 // The pure functions (no Foundry globals) are unit-tested in Node.
 
