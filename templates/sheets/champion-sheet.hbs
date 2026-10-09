@@ -140,6 +140,11 @@
           <span>/ {{derived.health.max}}</span>
           <button type="button" class="health-step" data-delta="1" title="+1">+</button>
         </div>
+        {{#if healthRanges}}
+        <ul class="rt-health-ranges">
+          {{#each healthRanges}}<li class="rt-hr-{{zone}}"><span>{{label}}</span><b>{{range}}</b></li>{{/each}}
+        </ul>
+        {{/if}}
       </div>
       {{/if}}
 

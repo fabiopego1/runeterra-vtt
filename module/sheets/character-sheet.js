@@ -4,6 +4,7 @@
 import { catalog } from '../data/catalog.js';
 import { derive, effectiveZone, dividedModeOf, slotKinds, effectivePrincipleId } from '../rules.js';
 import * as dice from '../dice.js';
+import { actionIcons, decorateRulesHtml } from '../rules-text.js';
 import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
 import { importIntoChampion, pickChampionJson, isBuiltChampion } from '../import.js';
@@ -122,6 +123,16 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     return out;
   }
 
+  /** Zone ranges of the Health track (web ficha: "Faixas de Vida"): Verde máx–greenLow, etc. */
+  _healthRanges(h) {
+    if (!h) return null;
+    return [
+      { zone: 'green', label: game.i18n.localize('RUNETERRA.ZoneGreen'), range: `${h.max}–${h.greenLow}` },
+      { zone: 'yellow', label: game.i18n.localize('RUNETERRA.ZoneYellow'), range: `${h.yellowHigh}–${h.yellowLow}` },
+      { zone: 'red', label: game.i18n.localize('RUNETERRA.ZoneRed'), range: `${h.redHigh}–1` }
+    ];
+  }
+
   /** The Temperament's Out (knocked out) ability, translated and with the trait chip filled. */
   async _outRow(character) {
     const pers = character?.pers?.id ? catalog.personality(character.pers.id) : null;
@@ -132,7 +143,8 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     return {
       name: game.i18n.localize('RUNETERRA.Knockout'),
       type: 'A',
-      text: await foundry.applications.ux.TextEditor.implementation.enrichHTML(text)
+      icons: actionIcons(pers.out),
+      text: decorateRulesHtml(await foundry.applications.ux.TextEditor.implementation.enrichHTML(text))
     };
   }
 
@@ -141,7 +153,13 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     const zones = ['green', 'yellow', 'red'];
     // Knocked out: rank below every table so green+yellow+red all lock (only Out stays usable).
     const curRank = currentZone === 'out' ? -1 : (ZONE_RANK[currentZone] ?? 0);
-    const enrich = (s) => foundry.applications.ux.TextEditor.implementation.enrichHTML(s ?? '');
+    const enrich = async (s) => decorateRulesHtml(await foundry.applications.ux.TextEditor.implementation.enrichHTML(s ?? ''));
+    // English rules text of an item (source of the ICON column): ability def, or the principle's green ability.
+    const englishText = (i) => {
+      const iid = i.system.iid ?? '';
+      if (iid.startsWith('pr:')) return catalog.principle(effectivePrincipleId(character, iid.slice(3)))?.ability ?? '';
+      return catalog.ability(i.system.canonicalName || '')?.text ?? '';
+    };
     const tables = await Promise.all(zones.map(async zone => {
       const items = actor.items.filter(i => i.type === 'ability' && (i.system.zone ?? 'green') === zone);
       const rows = await Promise.all(items.map(async i => {
@@ -155,6 +173,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
           base,
           renamed: !!base && base !== name,
           type: i.system.type ?? 'A',
+          icons: actionIcons(englishText(i)),
           text: await enrich(i.system.gameText ?? '')
         };
       }));
@@ -261,6 +280,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.isVillain = this.actor.type === 'villain';
 
       data.derived = derived;
+      data.healthRanges = this._healthRanges(derived.health);
       data.powers = derived ? this._traitRows(derived.powers, ch) : [];
       data.qualities = derived ? this._traitRows(derived.qualities, ch) : [];
       data.principles = this._principles(ch);

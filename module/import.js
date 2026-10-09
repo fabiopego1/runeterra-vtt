@@ -56,6 +56,9 @@ export function parseChampion(json) {
     if (!state) return { state: null, errors: [...errors, 'wrapper sem "character".'] };
   }
 
+  // Saves from before the Confirm button: a named Signature Quality counts as confirmed (web upgradeState).
+  if (state.pers?.qname && state.pers.qok === undefined) state = { ...state, pers: { ...state.pers, qok: true } };
+
   if (state.v !== 1) errors.push(`versão de estado "${state.v}" não suportada (esperado 1) — não parece um JSON da Forja de Campeões.`);
   for (const req of [['bg', 'Origem'], ['ps', 'Fonte de Poder'], ['arch', 'Caminho'], ['pers', 'Temperamento']]) {
     if (!state[req[0]]?.id) errors.push(`"${req[0]}" ausente ou incompleto (${req[1]} não escolhido(a)).`);

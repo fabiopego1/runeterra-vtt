@@ -10,6 +10,7 @@
       {{#each rows}}
       <tr data-item-id="{{id}}">
         <td class="rt-ability-type rt-type-{{type}}">{{type}}</td>
+        <td class="rt-ability-icons">{{#each icons}}<span class="rt-act rt-act-{{cls}}" data-tooltip="{{tip}}">{{code}}</span>{{/each}}</td>
         <td class="rt-ability-name">{{name}}{{#if renamed}} <span class="rt-orig">{{base}}</span>{{/if}}</td>
         <td class="rt-ability-text">{{{text}}}</td>
         <td class="rt-ability-actions">{{#unless ../locked}}<button type="button" class="roll-item" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>
@@ -28,6 +29,7 @@
     <tbody>
       <tr>
         <td class="rt-ability-type rt-type-A">{{out.type}}</td>
+        <td class="rt-ability-icons">{{#each out.icons}}<span class="rt-act rt-act-{{cls}}" data-tooltip="{{tip}}">{{code}}</span>{{/each}}</td>
         <td class="rt-ability-name">{{out.name}}</td>
         <td class="rt-ability-text">{{{out.text}}}</td>
         <td class="rt-ability-actions">{{#if outActive}}<button type="button" class="roll-out" title="{{localize 'RUNETERRA.UseAbility'}}"><i class="fas fa-dice-d20"></i></button>{{/if}}</td>

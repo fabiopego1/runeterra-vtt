@@ -696,3 +696,31 @@
   margin-left: 10px;
 }
 .rt-scene-spaces input.scene-setting { width: 46px; text-align: center; }
+
+/* --- rules text: action icons, glossary terms, dice chips, health ranges (ported from the web ficha) --- */
+.rt-ability-icons { width: 44px; white-space: nowrap; }
+.rt-act {
+  display: inline-block; margin: 0 2px 2px 0; padding: 0 4px;
+  font: 600 .62rem/1.5 'IBM Plex Mono', monospace; letter-spacing: .04em;
+  border: 1px solid currentColor; border-radius: 2px; cursor: help;
+}
+.rt-act-attack { color: #d9695f; }
+.rt-act-defend { color: #6fa8dc; }
+.rt-act-overcome { color: #7bc47f; }
+.rt-act-boost { color: var(--gold-hi); }
+.rt-act-hinder { color: #c58fe0; }
+.rt-act-recover { color: #5fc9c0; }
+.rt-term { border-bottom: 1px dotted var(--gold); cursor: help; }
+.rt-die {
+  display: inline-block; padding: 0 5px; font: 600 .8em/1.4 'IBM Plex Mono', monospace;
+  color: var(--gold-hi); border: 1px solid var(--gold); border-radius: 3px;
+}
+.rt-health-ranges { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; }
+.rt-health-ranges li {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 2px 8px; border-left: 3px solid var(--line); font-size: .78rem; color: var(--text-2);
+}
+.rt-health-ranges b { font-family: 'Marcellus', serif; font-size: .95rem; color: var(--text); font-weight: 400; }
+.rt-hr-green { border-left-color: #5aa469 !important; }
+.rt-hr-yellow { border-left-color: #d6b24a !important; }
+.rt-hr-red { border-left-color: #c8504a !important; }
