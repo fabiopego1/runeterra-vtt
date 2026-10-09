@@ -2,8 +2,7 @@
    Forja de Campeões · Runeterra — Foundry VTT system styles.
    Design language taken directly from the Runeterra web app:
    ink surfaces, hextech gold, chamfered corners, hairline dividers,
-   dotted editable fields, mono eyebrows. Radius 0, sharp and dense;
-   since the skin pass (end of file) surfaces are translucent ink glass over the site's contour lines.
+   dotted editable fields, mono eyebrows. Solid colours, radius 0 — sharp and dense.
    ============================================================ */
 
 @font-face { font-family: 'Marcellus'; src: url('../assets/fonts/Marcellus-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
@@ -149,16 +148,16 @@ body.theme-dark {
   --color-shadow-primary: rgba(0, 0, 0, .5);
   --color-shadow-highlight: rgba(0, 0, 0, .35);
   --color-level-info: var(--rt-hex);
-  --color-level-info-bg: rgba(18, 20, 25, .92);
+  --color-level-info-bg: var(--rt-ink-2);
   --color-level-info-border: var(--rt-hex);
   --color-level-success: var(--rt-zone-g);
-  --color-level-success-bg: rgba(18, 20, 25, .92);
+  --color-level-success-bg: var(--rt-ink-2);
   --color-level-success-border: var(--rt-zone-g);
   --color-level-warning: var(--rt-zone-y);
-  --color-level-warning-bg: rgba(18, 20, 25, .92);
+  --color-level-warning-bg: var(--rt-ink-2);
   --color-level-warning-border: var(--rt-zone-y);
   --color-level-error: var(--rt-zone-r);
-  --color-level-error-bg: rgba(18, 20, 25, .92);
+  --color-level-error-bg: var(--rt-ink-2);
   --color-level-error-border: var(--rt-zone-r);
   --color-ownership-none: var(--rt-text-3);
   --color-ownership-observer: var(--rt-gold);
@@ -822,9 +821,9 @@ body.theme-dark {
 .rt-zone-out { background: var(--ink-3); color: var(--text-3); }
 
 /* Header health number: tinted only behind the value that changes. */
-.rt-health input.health-update.rt-zonebg-green { background: rgba(121, 176, 106, .20); }
-.rt-health input.health-update.rt-zonebg-yellow { background: rgba(217, 171, 69, .20); }
-.rt-health input.health-update.rt-zonebg-red { background: rgba(196, 88, 76, .22); }
+.rt-health input.health-update.rt-zonebg-green { background: #263329; }
+.rt-health input.health-update.rt-zonebg-yellow { background: #3a3222; }
+.rt-health input.health-update.rt-zonebg-red { background: #392324; }
 .rt-rollbar { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; flex: none; }
 .runeterra .rt-rollbar button, .runeterra .rt-rollbar .scene-preset {
   background: transparent;
@@ -838,34 +837,32 @@ body.theme-dark {
   flex: 0 0 auto;
 }
 .runeterra .rt-rollbar button:hover { color: var(--gold-hi); border-color: var(--gold); }
-/* !important: kept from when a separate theme module reset every button from layer(modules). */
+/*: kept from when a separate theme module reset every button from layer(modules). */
 .runeterra .rt-rollbar button.make-roll {
-  background: var(--gold) !important;
-  border-color: var(--gold) !important;
-  color: #17130b !important;
-  font-weight: 700 !important;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #17130b;
+  font-weight: 700;
   font-size: .92rem;
   padding: 7px 12px;
   box-shadow: 0 0 10px rgba(200, 164, 94, .30);
 }
-.runeterra .rt-rollbar button.make-roll:hover { background: var(--gold-hi) !important; border-color: var(--gold-hi) !important; color: #17130b !important; box-shadow: 0 0 14px rgba(236, 212, 156, .55); }
+.runeterra .rt-rollbar button.make-roll:hover { background: var(--gold-hi); border-color: var(--gold-hi); color: #17130b; box-shadow: 0 0 14px rgba(236, 212, 156, .55); }
 /* Primed by an ability use: glows until any panel roll is clicked. */
 .runeterra .rt-rollbar button.rt-ready {
-  border-color: var(--gold-hi) !important;
-  color: var(--gold-hi) !important;
-  box-shadow: 0 0 9px rgba(236, 212, 156, .55) !important;
+  border-color: var(--gold-hi);
+  color: var(--gold-hi);
+  box-shadow: 0 0 9px rgba(236, 212, 156, .55);
 }
 .runeterra .rt-rollbar button.make-roll.rt-ready {
-  color: #17130b !important;
-  box-shadow: 0 0 16px rgba(236, 212, 156, .85) !important;
+  color: #17130b;
+  box-shadow: 0 0 16px rgba(236, 212, 156, .85);
 }
-/* Dropdowns primed by an ability use: light gold tint until picked or rolled.
-   !important: the theme module styles selects from layer(modules), which beats
-   layer(system) regardless of specificity. */
+/* Dropdowns primed by an ability use: gold tint until picked or rolled. */
 .runeterra .rt-roll-config select.trait-select.rt-primed {
-  border-color: var(--gold) !important;
-  color: var(--gold-hi) !important;
-  background: rgba(200, 164, 94, .12) !important;
+  border-color: var(--gold);
+  color: var(--gold-hi);
+  background: #2e2c29;
 }
 
 /* ---------- Pinned action panel: health, dice and rolls stay visible on every tab.
@@ -1364,9 +1361,9 @@ body.theme-dark {
   padding: 2px 8px; border-left: 3px solid var(--line); font-size: .78rem; color: var(--text-2);
 }
 .rt-health-ranges b { font-family: 'Marcellus', serif; font-size: .95rem; color: var(--text); font-weight: 400; }
-.rt-hr-green { border-left-color: #5aa469 !important; }
-.rt-hr-yellow { border-left-color: #d6b24a !important; }
-.rt-hr-red { border-left-color: #c8504a !important; }
+.rt-hr-green { border-left-color: #5aa469; }
+.rt-hr-yellow { border-left-color: #d6b24a; }
+.rt-hr-red { border-left-color: #c8504a; }
 
 /* --- antagonist sheet (Forge import) --- */
 .rt-ant-status { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
@@ -1376,7 +1373,7 @@ body.theme-dark {
   font-size: .78rem; color: var(--text-2); cursor: pointer;
 }
 .rt-ant-status.rt-locked li { cursor: default; }
-.rt-ant-status li.rt-active { border-color: var(--gold); border-left-color: var(--gold-hi); color: var(--text); background: rgba(200, 170, 110, .08); }
+.rt-ant-status li.rt-active { border-color: var(--gold); border-left-color: var(--gold-hi); color: var(--text); background: #1f2023; }
 .rt-ant-status-die { font-family: 'IBM Plex Mono', monospace; color: var(--gold-hi); font-weight: 600; white-space: nowrap; }
 .rt-ant-note { white-space: pre-wrap; color: var(--text-2); }
 .rt-ant-list { margin: 0 0 8px 1.1em; padding: 0; color: var(--text-2); font-size: .88rem; }
@@ -1401,44 +1398,30 @@ body.theme-dark {
 .rt-ch-head .ch-del { flex: 0 0 auto; width: 22px; height: 22px; padding: 0; line-height: 1; }
 .rt-ch-line { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: .78rem; color: var(--text-2); }
 .rt-ch-line > span { min-width: 64px; }
-.runeterra .rt-scene-challenges button.rt-ch-box { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; border: 1px solid var(--gold) !important; background: transparent; cursor: pointer; flex: 0 0 auto; }
-.runeterra .rt-scene-challenges button.rt-ch-s.on { background: #5aa469 !important; border-color: #5aa469 !important; }
-.runeterra .rt-scene-challenges button.rt-ch-t.on { background: #c8504a !important; border-color: #c8504a !important; }
+.runeterra .rt-scene-challenges button.rt-ch-box { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; border: 1px solid var(--gold); background: transparent; cursor: pointer; flex: 0 0 auto; }
+.runeterra .rt-scene-challenges button.rt-ch-s.on { background: #5aa469; border-color: #5aa469; }
+.runeterra .rt-scene-challenges button.rt-ch-t.on { background: #c8504a; border-color: #c8504a; }
 .rt-ch-add { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
 .rt-ch-add .ch-new-name { flex: 1 1 180px; }
 .rt-ch-add label { display: flex; align-items: center; gap: 4px; font-size: .78rem; color: var(--text-2); }
 .rt-ch-add input[type=number] { width: 52px; }
 
 /* ============================================================
-   Runeterra · skin pass — the site's look on top of runeterra.css:
-   translucent "ink glass" surfaces over Foundry's canvas, the site's cartographer's contour lines,
-   chamfered frames with a gold corner line, callout notices, consistent fields.
-   Sheet-level skin. The global Foundry skin (ex-runeterra-theme module) lives above, scoped with :where().
-   Some `!important`s remain from when the module competed from layer(modules).
+   Runeterra · skin pass — solid site colours (ink surfaces, hextech gold), no translucency.
+   Chamfered frames with a gold corner line, callout notices, consistent fields.
+   The global Foundry skin (ex-runeterra-theme module) lives above, scoped with :where().
    ============================================================ */
 
-:root {
-  --glass: rgba(14, 15, 19, .72);
-  --glass-2: rgba(25, 28, 34, .55);
-  --glass-3: rgba(255, 255, 255, .03);
-  --glass-line: rgba(200, 164, 94, .30);
-  --blur: blur(10px) saturate(1.15);
-  /* the site's contour lines (css/style.css body), a touch stronger so they read through the glass */
-  --contour: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' fill='none' stroke='%23c8a45e' stroke-opacity='.075' stroke-width='1'%3E%3Cpath d='M-20 90c80-40 140 30 230 10s150-70 330-20'/%3E%3Cpath d='M-20 120c90-40 150 36 240 14s160-70 320-16'/%3E%3Cpath d='M-20 300c60 30 130-40 220-20s120 90 200 70 100-50 140-40'/%3E%3Cpath d='M-20 330c70 30 140-36 226-16s124 88 206 66 98-46 128-36'/%3E%3Cpath d='M-20 360c80 30 150-30 232-12s128 86 212 62 96-42 116-32'/%3E%3Cpath d='M300 460c30-40 90-40 120 0s-30 70-60 60-90-20-60-60z'/%3E%3Cpath d='M320 462c20-24 60-24 80 0s-20 44-40 38-60-12-40-38z'/%3E%3C/svg%3E");
-}
-
-/* ---------- Window: translucent glass + contour map, chamfered frame with gold corner lines ---------- */
+/* ---------- Sheet windows: solid ink, chamfered frame, gold corner lines ---------- */
 .window-app.runeterra {
-  background: var(--contour), var(--glass) !important;
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--glass-line) !important;
+  background: var(--ink-1);
+  border: 1px solid var(--gold-lo);
   clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
-  box-shadow: none !important;
+  box-shadow: none;
 }
 .window-app.runeterra .window-content,
 .window-app.runeterra .window-content > form,
-.window-app.runeterra .sheet-body { background: transparent !important; }
+.window-app.runeterra .sheet-body { background: var(--ink-1); }
 .window-app.runeterra .window-content > form { clip-path: none; }   /* the frame carries the chamfer now */
 .window-app.runeterra::before,
 .window-app.runeterra::after {
@@ -1447,50 +1430,31 @@ body.theme-dark {
 }
 .window-app.runeterra::before { top: 0; left: 0; }
 .window-app.runeterra::after { bottom: 0; right: 0; }
-.window-app.runeterra .window-header { background: rgba(8, 9, 12, .55) !important; border-bottom: 1px solid var(--glass-line) !important; }
+.window-app.runeterra .window-header { background: var(--ink-2); border-bottom: 1px solid var(--gold-lo); }
+.rt-abilities tbody tr:hover { background: var(--ink-2); }
 
-/* ---------- Panels, rows, blocks: layered glass instead of flat fills ---------- */
-.rt-panel {
-  background: var(--glass-2);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  border: 1px solid var(--glass-line);
-}
-.rt-roll-config, .rt-scene-zone, .rt-ch, .rt-env-help { background: var(--glass-3); }
-.rt-abilities tbody tr:nth-child(odd) { background: var(--glass-3); }
-.rt-abilities tbody tr:hover { background: rgba(200, 164, 94, .07); }
-.window-app.runeterra .rt-header { border-bottom-color: var(--glass-line); }
-.window-app.runeterra .rt-portrait { box-shadow: inset 0 0 0 1px var(--gold-lo), 0 0 18px rgba(0, 0, 0, .45); }
-
-/* Default (placeholder) portraits: tinted into the palette instead of a white block. */
-.window-app.runeterra .rt-portrait[src*="mystery-man"], .window-app.runeterra .rt-portrait[src$=".svg"] { filter: sepia(1) saturate(.55) brightness(.62) hue-rotate(-8deg); }
-
-/* ---------- Fields: always the dotted underline of the ficha (module form styles would box them) ---------- */
+/* ---------- Fields: always the dotted underline of the ficha ---------- */
 .window-app.runeterra .rt-header h1 input[type="text"] {
-  background: transparent !important;
-  border: none !important;
-  border-bottom: 1px dotted var(--line-2) !important;
-  box-shadow: none !important;
-  padding: 0 0 2px !important;
-  height: auto !important;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted var(--line-2);
+  box-shadow: none;
+  padding: 0 0 2px;
+  height: auto;
 }
-.window-app.runeterra .rt-header h1 input[type="text"]:focus { border-bottom: 1px solid var(--gold) !important; }
-.window-app.runeterra input[type="text"], .window-app.runeterra input[type="number"], .window-app.runeterra textarea,
-.window-app.runeterra select { background-color: rgba(8, 9, 12, .35); }
-.window-app.runeterra input[type="text"], .window-app.runeterra input[type="number"] { background-color: transparent; }
+.window-app.runeterra .rt-header h1 input[type="text"]:focus { border-bottom: 1px solid var(--gold); }
 
 /* ---------- Notices: a callout like the site's, with the gold diamond ---------- */
-.runeterra .rt-pending-export,
-.runeterra .rt-hint em:only-child { font-style: normal; }
 .runeterra .rt-pending-export {
   position: relative;
   margin: 14px 0;
   padding: 12px 16px 12px 40px;
   border-left: 2px solid var(--gold);
-  background: linear-gradient(90deg, rgba(200, 164, 94, .12), rgba(200, 164, 94, 0) 75%);
+  background: var(--ink-2);
   color: var(--text-2);
   font-size: .98rem;
   line-height: 1.5;
+  font-style: normal;
 }
 .runeterra .rt-pending-export::before {
   content: ''; position: absolute; left: 15px; top: 50%; width: 9px; height: 9px;
@@ -1508,36 +1472,16 @@ body.theme-dark {
   letter-spacing: .04em;
 }
 
-/* ---------- Chat: glass cards, the roll sits on the canvas like on the site ---------- */
-.runeterra.chat-card {
-  background: var(--contour), rgba(14, 15, 19, .45);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border: none;
-  box-shadow: inset 0 0 0 1px var(--glass-line);
-}
-li.chat-message, .chat-message {
-  background: rgba(14, 15, 19, .82) !important;
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border-color: var(--glass-line) !important;
-}
-
-/* ============================================================
-   Global glass — the same translucent ink + contour language for Foundry's own interface.
-   ============================================================ */
-/* AppV2 windows (dialogs, settings, configuration sheets…): glass, chamfered frame, gold corner lines. */
+/* ---------- Foundry's own windows (AppV2: dialogs, settings…): same solid frame ---------- */
 body.game .application:has(> .window-header) {
-  background: var(--contour), var(--glass);
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--glass-line);
+  background: var(--ink-1);
+  border: 1px solid var(--gold-lo);
   border-radius: 0;
   box-shadow: none;
   clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
 }
-body.game .application:has(> .window-header) > .window-header { background: rgba(8, 9, 12, .55); border-bottom: 1px solid var(--glass-line); }
-body.game .application:has(> .window-header) > .window-content { background: transparent; }
+body.game .application:has(> .window-header) > .window-header { background: var(--ink-2); border-bottom: 1px solid var(--gold-lo); }
+body.game .application:has(> .window-header) > .window-content { background: var(--ink-1); }
 body.game .application:has(> .window-header)::before,
 body.game .application:has(> .window-header)::after {
   content: ''; position: absolute; width: var(--chamfer); height: var(--chamfer); pointer-events: none; z-index: 5;
@@ -1550,33 +1494,12 @@ body.game .application button.default, body.game .application .form-footer butto
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 
-/* Sidebar & chat: translucent panels over the canvas. */
-body.game #sidebar { background: rgba(14, 15, 19, .74); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-left: 1px solid var(--glass-line); }
-body.game #sidebar-tabs { background: rgba(8, 9, 12, .55); }
-body.game #chat { background: transparent; }
-body.game #chat-controls { background: rgba(8, 9, 12, .45); }
-body.game #chat-form textarea, body.game .sidebar-tab input[type="search"] { background: rgba(8, 9, 12, .5); }
-body.game .sidebar-tab .directory-list .folder > .folder-header { background: rgba(255, 255, 255, .035); }
-body.game .chat-message.whisper { background: rgba(25, 28, 34, .82) !important; }
-body.game .chat-message.blind { background: rgba(40, 22, 22, .82) !important; }
-
-/* Floating controls, scene tabs, hotbar, notifications, tooltips, menus. */
-body.game #scene-list .scene,
-body.game #scene-controls-layers button, body.game #scene-controls-tools button,
-body.game #hotbar .macro, body.game #hotbar .bar-toggle {
-  background: rgba(18, 20, 25, .62);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border-color: var(--glass-line);
-  box-shadow: none;
+/* Scene sub-sections (Desafios, Reviravolta): mono eyebrows like the zone headings. */
+.runeterra .rt-scene-challenges h4, .runeterra .rt-scene-twist h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin: 10px 0 4px;
 }
-body.game #scene-controls-layers button[aria-pressed="true"], body.game #scene-controls-tools button[aria-pressed="true"],
-body.game #scene-list .scene.view { box-shadow: inset 0 -2px 0 var(--gold-lo); }
-body.game .notification, body.game #tooltip, body.game .tooltip, body.game .context-menu, body.game .menu {
-  background: rgba(14, 15, 19, .90);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border-color: var(--glass-line);
-}
-body.game #players .players-list, body.game #players > div { background: rgba(14, 15, 19, .60); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-body.game #combat { background: rgba(14, 15, 19, .74); }
