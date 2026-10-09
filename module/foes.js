@@ -8,6 +8,7 @@
 
 import { ensureVaultModules, loadVault, keptKey, openBoxWithRawKey } from './vault.js';
 import { registerForgeFormat, parseJson } from './forge.js';
+import { challengesFromTable } from './challenges.js';
 
 export const FOE_KINDS = ['minion', 'lieutenant'];
 const DICE = ['d4', 'd6', 'd8', 'd10', 'd12'];
@@ -71,7 +72,6 @@ export function foesFromTable(table) {
   const warnings = [];
   const skipped = (n, what) => { if (n) warnings.push(`${n} ${what} da mesa não ${n > 1 ? 'foram importados' : 'foi importado'}.`); };
   skipped(table?.villains?.length ?? 0, 'antagonista(s) simples');
-  skipped(table?.challenges?.length ?? 0, 'desafio(s)');
   if (actors.length && (table?.villains?.length ?? 0)) warnings.push('Para antagonistas completos, importe o JSON da Forja do Antagonista.');
   return { actors, warnings };
 }
@@ -126,12 +126,17 @@ export async function importGmBackup(json) {
   const data = await openBoxWithRawKey(keptKey(), file);
   if (!data) return { ok: false, errors: ['Não foi possível abrir o backup: senha diferente ou arquivo danificado.'] };
   const { actors, warnings } = foesFromTable(data.table);
-  if (!actors.length) return { ok: false, errors: ['O backup não tem lacaios nem tenentes em cena.'] };
+  const challenges = challengesFromTable(data.table, () => foundry.utils.randomID());
+  if (!actors.length && !challenges.length) return { ok: false, errors: ['O backup não tem lacaios, tenentes nem desafios em cena.'] };
   const created = [];
   for (const g of actors) created.push(...await createFoeGroup({ folderName: `${KIND_LABEL[g.kind]}s: ${g.name}`, datas: g.data }));
+  if (challenges.length) {
+    const [scene] = await Actor.createDocuments([{ name: game.i18n.localize('RUNETERRA.BackupSceneName'), type: 'scene', system: { challenges } }]);
+    created.push(scene);
+  }
   return {
     ok: true, actor: created[0], actors: created, warnings,
-    message: game.i18n.format('RUNETERRA.BackupImported', { groups: actors.length, actors: created.length })
+    message: game.i18n.format('RUNETERRA.BackupImported', { groups: actors.length, actors: created.length, challenges: challenges.length })
   };
 }
 

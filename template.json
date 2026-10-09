@@ -148,7 +148,8 @@
                 "current": 0
             },
             "options": true,
-            "twistRegion": "any"
+            "twistRegion": "any",
+            "challenges": []
         }
     },
     "Item": {

@@ -8,6 +8,7 @@ const vault = await import('../module/vault.js');
 const forge = await import('../module/forge.js');
 const twists = await import('../module/twists.js');
 globalThis.foundry = { utils: { deepClone: structuredClone, mergeObject: () => {} } };
+const challenges = await import('../module/challenges.js');
 const foes = await import('../module/foes.js');       // registers the gm-backup format
 await import('../module/import.js');                    // registers champion + antagonist
 
@@ -52,8 +53,29 @@ check('group: bad die falls back to d8', foes.foeActorData({ name: 'x', kind: 'm
 const table = { foes: [{ name: 'Capangas', kind: 'minion', dice: ['d8', 'd6'], out: 1 }, { name: 'Chefe', kind: 'lieutenant', dice: ['d10'] }, { name: 'Vazio', kind: 'minion', dice: [] }], villains: [{ name: 'V' }], challenges: [{ name: 'C' }, { name: 'D' }], tracker: {} };
 const ft = foes.foesFromTable(table);
 check('backup table: groups with remaining dice only', ft.actors.length === 2 && ft.actors[0].data.map(a => a.system.dieType).join() === 'd8,d6' && ft.actors[1].kind === 'lieutenant');
-check('backup table: reports what it does not import', ft.warnings.some(w => /2 desafio/.test(w)) && ft.warnings.some(w => /antagonista/.test(w)), JSON.stringify(ft.warnings));
+check('backup table: reports the simple antagonists it does not import', ft.warnings.some(w => /antagonista/.test(w)) && !ft.warnings.some(w => /desafio/.test(w)), JSON.stringify(ft.warnings));
 check('backup table: nothing to import', foes.foesFromTable({}).actors.length === 0);
+
+// ---------------- challenges (Desafios): same rules as the Screen
+let n = 0; const ids = () => 'c' + (++n);
+let L = challenges.addChallenge([], { name: '  Vazamento de gás ', need: '3', timer: '4' }, ids);
+check('challenge: add trims the name and keeps need/timer', L.length === 1 && L[0].name === 'Vazamento de gás' && L[0].need === 3 && L[0].timer === 4 && L[0].done === 0 && L[0].ticks === 0, JSON.stringify(L));
+check('challenge: a nameless one is refused (list unchanged)', challenges.addChallenge(L, { name: '   ' }, ids) === L);
+check('challenge: limits (need 1–5, timer 0–8, defaults)', (() => { const c = challenges.normalizeChallenge({ name: 'x', need: 99, timer: -3, done: 50, ticks: 9 }, ids); return c.need === 5 && c.timer === 0 && c.done === 5 && c.ticks === 0; })());
+check('challenge: bad numbers fall back to 1 / 0', (() => { const c = challenges.normalizeChallenge({ name: 'x', need: 'abc', timer: 'zz' }, ids); return c.need === 1 && c.timer === 0; })());
+const id = L[0].id;
+L = challenges.toggleDone(L, id, 0); check('challenge: click box 0 → 1 success', L[0].done === 1);
+L = challenges.toggleDone(L, id, 2); check('challenge: click box 2 → fills up to 3', L[0].done === 3);
+check('challenge: three of three = resolved', challenges.challengeState(L[0]) === 'ok');
+L = challenges.toggleDone(L, id, 1); check('challenge: click a filled box undoes down to it', L[0].done === 1);
+L = challenges.toggleTick(L, id, 3); check('challenge: timer boxes fill the same way', L[0].ticks === 4);
+check('challenge: timer full before the successes = fired', challenges.challengeState(L[0]) === 'bad');
+L = challenges.toggleDone(L, id, 2); check('challenge: resolved wins over fired', challenges.challengeState(L[0]) === 'ok');
+check('challenge: timer 0 never fires', challenges.challengeState({ need: 2, done: 0, timer: 0, ticks: 0 }) === '');
+check('challenge: view has the boxes', (() => { const v = challenges.challengeView({ id: 'a', name: 'x', need: 3, done: 2, timer: 2, ticks: 1 }); return v.doneBoxes.map(b => +b.on).join('') === '110' && v.tickBoxes.map(b => +b.on).join('') === '10' && !v.resolved && !v.fired; })());
+check('challenge: remove', challenges.removeChallenge(L, id).length === 0);
+check('challenge: from a Screen table (nameless dropped)', challenges.challengesFromTable({ challenges: [{ id: 'z', name: 'A', need: 2, done: 1, timer: 3, ticks: 3 }, { name: '' }] }, ids).length === 1);
+check('challenge: Screen table with no challenges', challenges.challengesFromTable({}, ids).length === 0);
 
 // ---------------- the Bullpen patch is guarded
 check('bullpen patch adds one line before the export', vault.exposeBullpenData('const MINIONS=[];const LIEUTENANTS=[];\n  window.GM_BULLPEN = {x:1}').includes('window.GM_BULLPEN_DATA = { MINIONS, LIEUTENANTS };'));

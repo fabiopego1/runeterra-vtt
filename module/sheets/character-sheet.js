@@ -10,6 +10,7 @@ import { onSetScene, SceneReset, applyPreset } from '../scene.js';
 import { importIntoChampion, pickChampionJson, isBuiltImport } from '../import.js';
 import { AntagonistUpdate } from '../antagonist.js';
 import { rollTwist } from '../twists.js';
+import { addChallenge, toggleDone, toggleTick, removeChallenge, challengeView } from '../challenges.js';
 
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
 const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
@@ -360,6 +361,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.isGM = game.user.isGM;
       data.twistRegions = catalog.regions().map(r => ({ id: r.id, name: r.name }));
       data.twistRegion = sys.twistRegion ?? 'any';
+      data.challenges = (sys.challenges ?? []).map(challengeView);
       const mk = (zone, def) => ({
         zone,
         label: game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`),
@@ -757,6 +759,20 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
 
     // Scene tracker.
     html.find('.scene-click').click(ev => onSetScene(this.actor, ev.currentTarget.dataset.zone));
+    // Scene challenges (Desafios): successes to reach, optional timer; the list lives on the Cena actor.
+    const challenges = () => foundry.utils.deepClone(this.actor.system.challenges ?? []);
+    const chId = ev => ev.currentTarget.closest('.rt-ch')?.dataset.id;
+    const chSave = list => this.actor.update({ 'system.challenges': list });
+    html.find('.ch-done').click(ev => chSave(toggleDone(challenges(), chId(ev), Number(ev.currentTarget.dataset.i))));
+    html.find('.ch-tick').click(ev => chSave(toggleTick(challenges(), chId(ev), Number(ev.currentTarget.dataset.i))));
+    html.find('.ch-del').click(ev => chSave(removeChallenge(challenges(), chId(ev))));
+    html.find('.ch-add').click(() => {
+      const name = html.find('.ch-new-name').val();
+      const next = addChallenge(challenges(), { name, need: html.find('.ch-new-need').val(), timer: html.find('.ch-new-timer').val() }, () => foundry.utils.randomID());
+      if (next.length === challenges().length) { ui.notifications.warn(game.i18n.localize('RUNETERRA.ChNeedName')); return; }
+      chSave(next);
+    });
+
     // GM-only twist generator (the Screen's "Gerador de reviravoltas"): whispered to the GMs.
     html.find('.twist-region').change(ev => this.actor.update({ 'system.twistRegion': ev.currentTarget.value }));
     html.find('.twist-roll').click(async ev => {

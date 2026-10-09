@@ -131,3 +131,11 @@ Formatos atuais: `champion` e `antagonist` (`module/import.js`), `gm-backup` (`m
 modelos de lacaio/tenente usam o formato do Escudo (`{ n, d, t, a, tac }`), então um export futuro
 de lacaios da Forja entra pelo mesmo caminho (`foeActorData` / `buildFoeActors`).
 Testes: `GM_PASSWORD='…' node scripts/test-gm-tools.mjs`.
+
+### Desafios da cena
+
+Na ficha da **Cena**, o bloco **Desafios** (sem cofre; visível a quem vê a ficha): nome, sucessos (1–5) e contador
+opcional (0–8). Clique numa caixa para marcar até ela (clicar numa já marcada volta até ali). Sucessos
+completos = *Resolvido*; contador cheio antes disso = *Disparou!*. Um Superar de 12+ vale dois sucessos
+(regra do Escudo). Mesmo modelo do Escudo, então os desafios de um backup do Escudo importam como estão
+(viram uma Cena "Cena do Escudo (desafios)").

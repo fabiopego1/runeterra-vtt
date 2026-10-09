@@ -748,3 +748,23 @@
 .rt-scene-twist .rt-rollbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .rt-foe-builder { display: grid; gap: 8px; }
 .rt-foe-builder label { display: grid; gap: 3px; font-size: .8rem; color: var(--text-2); }
+
+/* --- scene challenges (Desafios) --- */
+.rt-scene-challenges { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); }
+.rt-ch { padding: 6px 8px; margin-bottom: 6px; border: 1px solid var(--line); border-left: 3px solid var(--line-2, var(--line)); }
+.rt-ch-ok { border-left-color: #5aa469; }
+.rt-ch-bad { border-left-color: #c8504a; }
+.rt-ch-head { display: flex; align-items: center; gap: 8px; }
+.rt-ch-head b { flex: 1; color: var(--text); }
+.rt-ch-tag { font: 600 .66rem/1.4 'IBM Plex Mono', monospace; padding: 0 5px; border: 1px solid currentColor; border-radius: 2px; text-transform: uppercase; }
+.rt-ch-tag-ok { color: #7bc47f; } .rt-ch-tag-bad { color: #d9695f; }
+.rt-ch-head .ch-del { flex: 0 0 auto; width: 22px; height: 22px; padding: 0; line-height: 1; }
+.rt-ch-line { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: .78rem; color: var(--text-2); }
+.rt-ch-line > span { min-width: 64px; }
+.runeterra .rt-scene-challenges button.rt-ch-box { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; border: 1px solid var(--gold) !important; background: transparent; cursor: pointer; flex: 0 0 auto; }
+.runeterra .rt-scene-challenges button.rt-ch-s.on { background: #5aa469 !important; border-color: #5aa469 !important; }
+.runeterra .rt-scene-challenges button.rt-ch-t.on { background: #c8504a !important; border-color: #c8504a !important; }
+.rt-ch-add { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.rt-ch-add .ch-new-name { flex: 1 1 180px; }
+.rt-ch-add label { display: flex; align-items: center; gap: 4px; font-size: .78rem; color: var(--text-2); }
+.rt-ch-add input[type=number] { width: 52px; }

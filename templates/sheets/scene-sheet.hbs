@@ -34,6 +34,30 @@
       </div>
     </div>
     {{/each}}
+    <div class="rt-scene-challenges">
+      <h4>{{localize "RUNETERRA.ChTitle"}}</h4>
+      {{#each challenges}}
+      <div class="rt-ch {{#if resolved}}rt-ch-ok{{/if}}{{#if fired}}rt-ch-bad{{/if}}" data-id="{{id}}">
+        <div class="rt-ch-head">
+          <b>{{name}}</b>
+          {{#if resolved}}<span class="rt-ch-tag rt-ch-tag-ok">{{localize "RUNETERRA.ChResolved"}}</span>{{/if}}
+          {{#if fired}}<span class="rt-ch-tag rt-ch-tag-bad">{{localize "RUNETERRA.ChFired"}}</span>{{/if}}
+          <button type="button" class="ch-del" title="{{localize 'RUNETERRA.ChDelete'}}"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="rt-ch-line"><span>{{localize "RUNETERRA.ChSuccesses"}}</span>{{#each doneBoxes}}<button type="button" class="rt-ch-box rt-ch-s ch-done {{#if on}}on{{/if}}" data-i="{{i}}"></button>{{/each}}</div>
+        {{#if timer}}<div class="rt-ch-line"><span>{{localize "RUNETERRA.ChTimer"}}</span>{{#each tickBoxes}}<button type="button" class="rt-ch-box rt-ch-t ch-tick {{#if on}}on{{/if}}" data-i="{{i}}"></button>{{/each}}</div>{{/if}}
+      </div>
+      {{else}}
+      <p class="rt-hint"><em>{{localize "RUNETERRA.ChEmpty"}}</em></p>
+      {{/each}}
+      <div class="rt-ch-add">
+        <input class="ch-new-name" type="text" maxlength="50" placeholder="{{localize 'RUNETERRA.ChPlaceholder'}}">
+        <label>{{localize "RUNETERRA.ChSuccesses"}} <input class="ch-new-need" type="number" min="1" max="5" value="1"></label>
+        <label>{{localize "RUNETERRA.ChTimer"}} <input class="ch-new-timer" type="number" min="0" max="8" value="0"></label>
+        <button type="button" class="ch-add">{{localize "RUNETERRA.ChAdd"}}</button>
+      </div>
+      <p class="rt-hint"><em>{{localize "RUNETERRA.ChHint"}}</em></p>
+    </div>
     {{#if isGM}}
     <div class="rt-scene-twist">
       <h4>{{localize "RUNETERRA.TwistTitle"}}</h4>
