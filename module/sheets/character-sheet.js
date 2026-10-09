@@ -19,6 +19,12 @@ const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
 const ABILITY_CARD_LEASE_MS = 20000;
 
 export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
+  /** Small sheets (minion, environment, Cena) open compact; champion/antagonist keep the full size. */
+  constructor(object = {}, options = {}) {
+    const size = { minion: [540, 360], environment: [640, 600], scene: [600, 680] }[object?.type];
+    super(object, size ? { width: size[0], height: size[1], ...options } : options);
+  }
+
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['runeterra', 'sheet', 'actor'],

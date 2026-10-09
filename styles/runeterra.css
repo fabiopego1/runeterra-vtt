@@ -2,8 +2,8 @@
    Forja de Campeões · Runeterra — Foundry VTT system styles.
    Design language taken directly from the Runeterra web app:
    ink surfaces, hextech gold, chamfered corners, hairline dividers,
-   dotted editable fields, mono eyebrows. No gradients, no glass,
-   radius 0 — sharp and dense.
+   dotted editable fields, mono eyebrows. Radius 0, sharp and dense;
+   since the skin pass (end of file) surfaces are translucent ink glass over the site's contour lines.
    ============================================================ */
 
 @font-face { font-family: 'Marcellus'; src: url('../assets/fonts/Marcellus-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
@@ -773,3 +773,117 @@
 .rt-ch-add .ch-new-name { flex: 1 1 180px; }
 .rt-ch-add label { display: flex; align-items: center; gap: 4px; font-size: .78rem; color: var(--text-2); }
 .rt-ch-add input[type=number] { width: 52px; }
+
+/* ============================================================
+   Runeterra · skin pass — the site's look on top of runeterra.css:
+   translucent "ink glass" surfaces over Foundry's canvas, the site's cartographer's contour lines,
+   chamfered frames with a gold corner line, callout notices, consistent fields.
+   Loaded after runeterra.css. `!important` is needed where the runeterra-theme module (layer: modules)
+   restyles the same property: module layers beat system layers regardless of specificity.
+   ============================================================ */
+
+:root {
+  --glass: rgba(14, 15, 19, .72);
+  --glass-2: rgba(25, 28, 34, .55);
+  --glass-3: rgba(255, 255, 255, .03);
+  --glass-line: rgba(200, 164, 94, .30);
+  --blur: blur(10px) saturate(1.15);
+  /* the site's contour lines (css/style.css body), a touch stronger so they read through the glass */
+  --contour: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' fill='none' stroke='%23c8a45e' stroke-opacity='.075' stroke-width='1'%3E%3Cpath d='M-20 90c80-40 140 30 230 10s150-70 330-20'/%3E%3Cpath d='M-20 120c90-40 150 36 240 14s160-70 320-16'/%3E%3Cpath d='M-20 300c60 30 130-40 220-20s120 90 200 70 100-50 140-40'/%3E%3Cpath d='M-20 330c70 30 140-36 226-16s124 88 206 66 98-46 128-36'/%3E%3Cpath d='M-20 360c80 30 150-30 232-12s128 86 212 62 96-42 116-32'/%3E%3Cpath d='M300 460c30-40 90-40 120 0s-30 70-60 60-90-20-60-60z'/%3E%3Cpath d='M320 462c20-24 60-24 80 0s-20 44-40 38-60-12-40-38z'/%3E%3C/svg%3E");
+}
+
+/* ---------- Window: translucent glass + contour map, chamfered frame with gold corner lines ---------- */
+.window-app.runeterra {
+  background: var(--contour), var(--glass) !important;
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line) !important;
+  clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+  box-shadow: none !important;
+}
+.window-app.runeterra .window-content,
+.window-app.runeterra .window-content > form,
+.window-app.runeterra .sheet-body { background: transparent !important; }
+.window-app.runeterra .window-content > form { clip-path: none; }   /* the frame carries the chamfer now */
+.window-app.runeterra::before,
+.window-app.runeterra::after {
+  content: ''; position: absolute; width: var(--chamfer); height: var(--chamfer); pointer-events: none; z-index: 5;
+  background: linear-gradient(to bottom right, transparent calc(50% - .6px), var(--gold-lo) calc(50% - .6px), var(--gold-lo) calc(50% + .6px), transparent calc(50% + .6px));
+}
+.window-app.runeterra::before { top: 0; left: 0; }
+.window-app.runeterra::after { bottom: 0; right: 0; }
+.window-app.runeterra .window-header { background: rgba(8, 9, 12, .55) !important; border-bottom: 1px solid var(--glass-line) !important; }
+
+/* ---------- Panels, rows, blocks: layered glass instead of flat fills ---------- */
+.rt-panel {
+  background: var(--glass-2);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-line);
+}
+.rt-roll-config, .rt-scene-zone, .rt-ch, .rt-env-help { background: var(--glass-3); }
+.rt-abilities tbody tr:nth-child(odd) { background: var(--glass-3); }
+.rt-abilities tbody tr:hover { background: rgba(200, 164, 94, .07); }
+.window-app.runeterra .rt-header { border-bottom-color: var(--glass-line); }
+.window-app.runeterra .rt-portrait { box-shadow: inset 0 0 0 1px var(--gold-lo), 0 0 18px rgba(0, 0, 0, .45); }
+
+/* Default (placeholder) portraits: tinted into the palette instead of a white block. */
+.window-app.runeterra .rt-portrait[src*="mystery-man"], .window-app.runeterra .rt-portrait[src$=".svg"] { filter: sepia(1) saturate(.55) brightness(.62) hue-rotate(-8deg); }
+
+/* ---------- Fields: always the dotted underline of the ficha (module form styles would box them) ---------- */
+.window-app.runeterra .rt-header h1 input[type="text"] {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px dotted var(--line-2) !important;
+  box-shadow: none !important;
+  padding: 0 0 2px !important;
+  height: auto !important;
+}
+.window-app.runeterra .rt-header h1 input[type="text"]:focus { border-bottom: 1px solid var(--gold) !important; }
+.window-app.runeterra input[type="text"], .window-app.runeterra input[type="number"], .window-app.runeterra textarea,
+.window-app.runeterra select { background-color: rgba(8, 9, 12, .35); }
+.window-app.runeterra input[type="text"], .window-app.runeterra input[type="number"] { background-color: transparent; }
+
+/* ---------- Notices: a callout like the site's, with the gold diamond ---------- */
+.runeterra .rt-pending-export,
+.runeterra .rt-hint em:only-child { font-style: normal; }
+.runeterra .rt-pending-export {
+  position: relative;
+  margin: 14px 0;
+  padding: 12px 16px 12px 40px;
+  border-left: 2px solid var(--gold);
+  background: linear-gradient(90deg, rgba(200, 164, 94, .12), rgba(200, 164, 94, 0) 75%);
+  color: var(--text-2);
+  font-size: .98rem;
+  line-height: 1.5;
+}
+.runeterra .rt-pending-export::before {
+  content: ''; position: absolute; left: 15px; top: 50%; width: 9px; height: 9px;
+  border: 1px solid var(--gold); transform: translateY(-50%) rotate(45deg);
+}
+.runeterra .rt-import-pending .rt-import-hint { border-left: none; background: none; padding: 0; }
+
+/* ---------- Primary action in the import shell: chamfered gold, like the site's .btn.primary ---------- */
+.runeterra .rt-import-pending .rt-import-json {
+  border: 0;
+  padding: 11px 26px 11px 22px;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  font-family: 'Marcellus', Georgia, serif;
+  font-size: 1.02rem;
+  letter-spacing: .04em;
+}
+
+/* ---------- Chat: glass cards, the roll sits on the canvas like on the site ---------- */
+.runeterra.chat-card {
+  background: var(--contour), rgba(14, 15, 19, .45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: none;
+  box-shadow: inset 0 0 0 1px var(--glass-line);
+}
+li.chat-message, .chat-message {
+  background: rgba(14, 15, 19, .82) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-color: var(--glass-line) !important;
+}
