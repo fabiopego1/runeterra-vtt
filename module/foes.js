@@ -1,9 +1,8 @@
-// Runeterra Foundry — minions ("lacaios") and lieutenants ("tenentes") from the GM Screen.
-//  • "Bancada" builder: one click creates a group from the ready examples of the Bullpen
-//    (the same {n, d, t, a, tac} models the Screen shows), N minions per champion in the scene,
-//    half as many lieutenants. Models come from the sealed vault, opened by the GM's password.
-//  • GM backup import: the Screen's "Exportar backup" file (kind: runeterra-gm-backup, sealed with the
-//    same vault key) becomes actors for the foes that were on the table — registered as a Forja format.
+// Runeterra Foundry — minions ("lacaios") and lieutenants ("tenentes") arrive ONLY by export from the Forja.
+//  • GM backup import: the Screen's "Exportar backup" file (kind: runeterra-gm-backup, sealed with the vault key)
+//    becomes actors for the foes on the table (and its challenges, see challenges.js) — a registered Forja format.
+//  • A future Forja export of minions/lieutenants plugs in by registering a format (forge.js) and mapping its
+//    entries to { n, d, t, a, tac } (name, die, summary, ability, tactics — the Screen's model) for buildFoeActors().
 // The pure functions (no Foundry globals) are unit-tested in Node.
 
 import { ensureVaultModules, loadVault, keptKey, openBoxWithRawKey } from './vault.js';
@@ -13,21 +12,6 @@ import { challengesFromTable } from './challenges.js';
 export const FOE_KINDS = ['minion', 'lieutenant'];
 const DICE = ['d4', 'd6', 'd8', 'd10', 'd12'];
 const KIND_LABEL = { minion: 'Lacaio', lieutenant: 'Tenente' };
-
-/** The Bullpen's ready examples, tagged by kind: { minion: [...], lieutenant: [...] } (window.GM_BULLPEN_DATA). */
-export function foeModels(data) {
-  if (!data?.MINIONS || !data?.LIEUTENANTS) throw new Error('A Bancada não trouxe lacaios e tenentes de exemplo.');
-  return {
-    minion: data.MINIONS.map(m => ({ ...m, kind: 'minion' })),
-    lieutenant: data.LIEUTENANTS.map(m => ({ ...m, kind: 'lieutenant' }))
-  };
-}
-
-/** How many actors a group has: one lacaio per champion; lieutenants are half as many (rounded up). */
-export const defaultCount = (kind, champions) => {
-  const n = Math.max(1, Math.min(12, Math.trunc(Number(champions)) || 1));
-  return kind === 'lieutenant' ? Math.max(1, Math.ceil(n / 2)) : n;
-};
 
 /** Plain-text description for the sheet: what it is, its abilities, its tactics. */
 export function foeDescription(model, kind) {
@@ -78,42 +62,10 @@ export function foesFromTable(table) {
 
 // ---------------------------------------------------------------- Foundry side
 
-const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
 /** Create the folder and the actors of a group. Returns the created actors. */
 export async function createFoeGroup({ folderName, datas }) {
   const folder = await Folder.create({ name: folderName, type: 'Actor' });
   return Actor.createDocuments(datas.map(d => ({ ...d, folder: folder.id })));
-}
-
-/** The "Bancada" dialog: pick a ready lacaio/tenente model, champions in the scene, optional group name. */
-export async function openFoeBuilder() {
-  const r = await ensureVaultModules(['gm-bullpen']);
-  if (!r.ok) { ui.notifications.warn(r.error); return null; }
-  let models;
-  try { models = foeModels(window.GM_BULLPEN_DATA); } catch (e) { ui.notifications.error(e.message); return null; }
-  const group = (kind, label) => `<optgroup label="${esc(label)}">${models[kind].map((m, i) => `<option value="${kind}:${i}">${esc(m.n)} (${esc(m.d)})</option>`).join('')}</optgroup>`;
-  const L = k => game.i18n.localize(k);
-  const content = `<div class="rt-foe-builder">
-    <label>${L('RUNETERRA.FoeModel')}<select name="model">${group('minion', L('RUNETERRA.FoeMinions'))}${group('lieutenant', L('RUNETERRA.FoeLieutenants'))}</select></label>
-    <label>${L('RUNETERRA.FoeChampions')}<input type="number" name="n" min="1" max="12" value="4"></label>
-    <label>${L('RUNETERRA.FoeGroup')}<input type="text" name="group" placeholder="${L('RUNETERRA.FoeGroupHint')}"></label>
-    <p class="rt-hint"><em>${L('RUNETERRA.FoeHint')}</em></p></div>`;
-  const out = await foundry.applications.api.DialogV2.prompt({
-    window: { title: L('RUNETERRA.FoeBuilderTitle') },
-    content,
-    ok: { label: L('RUNETERRA.FoeCreate'), callback: (ev, button) => Object.fromEntries(new FormData(button.form)) },
-    rejectClose: false
-  });
-  if (!out) return null;
-  const [kind, idx] = String(out.model).split(':');
-  const model = models[kind]?.[Number(idx)];
-  if (!model) return null;
-  const count = defaultCount(kind, out.n);
-  const datas = buildFoeActors({ model, kind, count, group: out.group });
-  const actors = await createFoeGroup({ folderName: `${KIND_LABEL[kind]}s: ${model.n}`, datas });
-  ui.notifications.info(game.i18n.format('RUNETERRA.FoeCreated', { count: actors.length, name: model.n }));
-  return actors;
 }
 
 /** Forja format "gm-backup": the Screen's encrypted table backup → minion/lieutenant actors. */

@@ -8,7 +8,7 @@ import { RuneterraCharacterSheet } from './module/sheets/character-sheet.js';
 import { RuneterraItemSheet } from './module/sheets/item-sheet.js';
 import { importChampion, parseChampion, pickChampionJson } from './module/import.js';
 import { rollTwist } from './module/twists.js';
-import { openFoeBuilder } from './module/foes.js';   // also registers the GM-backup Forja format
+import './module/foes.js';   // registers the GM-backup Forja format
 import { setSceneColor, resetScene } from './module/scene.js';
 import * as dice from './module/dice.js';
 import { rollSelected } from './module/dice.js';
@@ -98,7 +98,7 @@ Hooks.once('init', () => {
 
 Hooks.once('ready', () => {
   // Importer + table API (used by compendium macros and available for custom macros/tests).
-  game.runeterra = { importChampion, parseChampion, rollTwist, openFoeBuilder, setScene: setSceneColor, resetScene, rollSelected, rollMinionGroup: dice.rollMinionGroup, OutRoll: dice.OutRoll };
+  game.runeterra = { importChampion, parseChampion, rollTwist, setScene: setSceneColor, resetScene, rollSelected, rollMinionGroup: dice.rollMinionGroup, OutRoll: dice.OutRoll };
 
   // Rule safety net: Vida/Cena/criação mudados por qualquer via (macro, API, outra
   // ficha) recalculam o Status sozinho. HealthUpdate não escreve quando já está
@@ -157,23 +157,13 @@ Hooks.once('ready', () => {
     });
     return btn;
   };
-  // GM-only: build lacaios/tenentes from the Bullpen's ready examples (opens the vault on demand).
-  const createFoesButton = () => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'rt-import-btn rt-foes-btn';
-    btn.innerHTML = `<i class="fas fa-users"></i> ${game.i18n.localize('RUNETERRA.FoeBuilderButton')}`;
-    btn.addEventListener('click', () => openFoeBuilder());
-    return btn;
-  };
   const ensureImportButton = () => {
     try {
       const panel = findActorsPanel();
       if (!panel) return;
       const header = findHeader(panel);
       if (!header) return;
-      if (!panel.querySelector('.rt-import-btn:not(.rt-foes-btn)')) header.appendChild(createImportButton());
-      if (game.user.isGM && !panel.querySelector('.rt-foes-btn')) header.appendChild(createFoesButton());
+      if (!panel.querySelector('.rt-import-btn')) header.appendChild(createImportButton());
     } catch (e) {
       console.warn('RUNETERRA | botão de importação não pôde ser adicionado:', e);
     }

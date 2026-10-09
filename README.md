@@ -103,11 +103,9 @@ Usam o mesmo **cofre cifrado** dos antagonistas (senha pedida uma vez por aba; s
 - **Reviravolta do Mestre** — na ficha da **Cena**: escolha a região e clique em *Reviravolta menor*
   ou *maior*. O sorteio (mesmas regras do Escudo: lista da região + as 2 primeiras gerais, sem repetir
   o último) sai no chat **sussurrado só aos Mestres**. API: `game.runeterra.rollTwist({ region, kind })`.
-- **Lacaios e tenentes (Bancada)** — botão no diretório de Atores (só Mestre): escolha um modelo
-  pronto, quantos campeões estão na cena e, se quiser, o nome do grupo. Lacaios: um por campeão;
-  tenentes: metade, arredondando para cima. Cria os atores (tipo Lacaio, mesmo `group`, então a
-  rolagem de grupo funciona) numa pasta, com a descrição, habilidades e tática do modelo.
-  API: `game.runeterra.openFoeBuilder()`.
+- **Lacaios e tenentes** — **só por export**: o VTT não os lê do cofre nem tem botão de criação. Entram pelo
+  **backup do Escudo** (abaixo) e, no futuro, por um export da Forja (formato a registrar, ver "Abertura à Forja").
+  Cada lacaio vira um ator do tipo Lacaio (mesmo `group`, então a rolagem de grupo funciona), numa pasta.
 - **Backup do Escudo** — o arquivo *Exportar backup* do Escudo (`runeterra-gm-backup`) é importado
   pelo botão "Importar personagem Runeterra": os lacaios e tenentes da mesa viram atores (desafios e
   antagonistas simples da mesa são avisados, não importados).
@@ -129,7 +127,7 @@ registerForgeFormat({
 
 Formatos atuais: `champion` e `antagonist` (`module/import.js`), `gm-backup` (`module/foes.js`). Os
 modelos de lacaio/tenente usam o formato do Escudo (`{ n, d, t, a, tac }`), então um export futuro
-de lacaios da Forja entra pelo mesmo caminho (`foeActorData` / `buildFoeActors`).
+de lacaios da Forja só precisa mapear para ele e chamar `buildFoeActors` (`module/foes.js`).
 Testes: `GM_PASSWORD='…' node scripts/test-gm-tools.mjs`.
 
 ### Desafios da cena

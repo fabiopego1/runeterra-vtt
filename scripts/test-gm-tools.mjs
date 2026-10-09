@@ -39,7 +39,6 @@ check('twist: a pool of one may repeat', twists.pickTwist({ any: { minor: ['só'
 check('twist: bad kind throws', (() => { try { twists.pickTwist(T, 'any', 'huge'); return false; } catch (e) { return true; } })());
 
 // ---------------- foes (pure)
-check('count: lacaios = champions, tenentes = half rounded up', [foes.defaultCount('minion', 4), foes.defaultCount('lieutenant', 4), foes.defaultCount('lieutenant', 5), foes.defaultCount('minion', 0), foes.defaultCount('minion', 99)].join() === '4,2,3,1,12');
 const mModel = { n: 'Modelo Lacaio', d: 'd6', t: 'Resumo do modelo.', a: ['Habilidade A', 'Efeito A.'], tac: 'Tática do modelo.' };
 const lModel = { n: 'Modelo Tenente', d: 'd8', t: 'Resumo do tenente.', a: [['Habilidade B', 'Efeito B.'], ['Habilidade C', 'Efeito C.']], tac: 'Tática do tenente.' };
 check('description: lacaio (one ability)', foes.foeDescription(mModel, 'minion') === 'Resumo do modelo.\n\nHabilidade A: Efeito A.\n\nTática: Tática do modelo.');
@@ -77,9 +76,6 @@ check('challenge: remove', challenges.removeChallenge(L, id).length === 0);
 check('challenge: from a Screen table (nameless dropped)', challenges.challengesFromTable({ challenges: [{ id: 'z', name: 'A', need: 2, done: 1, timer: 3, ticks: 3 }, { name: '' }] }, ids).length === 1);
 check('challenge: Screen table with no challenges', challenges.challengesFromTable({}, ids).length === 0);
 
-// ---------------- the Bullpen patch is guarded
-check('bullpen patch adds one line before the export', vault.exposeBullpenData('const MINIONS=[];const LIEUTENANTS=[];\n  window.GM_BULLPEN = {x:1}').includes('window.GM_BULLPEN_DATA = { MINIONS, LIEUTENANTS };'));
-check('bullpen patch refuses a changed book', (() => { try { vault.exposeBullpenData('window.GM_BULLPEN = {}'); return false; } catch (e) { return /mudou de formato/.test(e.message); } })());
 
 if (!process.env.GM_PASSWORD) {
   console.log('SKIP vault-dependent tests (set GM_PASSWORD to run them)');
@@ -88,17 +84,13 @@ if (!process.env.GM_PASSWORD) {
 }
 
 // ---------------- with the vault open
-const ok = await vault.unlockModules(['gm-twists', 'gm-bullpen'], { password: process.env.GM_PASSWORD });
-check('vault opens twists + bullpen (and villain data it needs)', ok.ok === true && !!W.GM_TWISTS && !!W.GM_BULLPEN_DATA && !!W.GM_VDATA, JSON.stringify(ok));
+const ok = await vault.unlockModules(['gm-twists'], { password: process.env.GM_PASSWORD });
+check('vault opens the twist tables', ok.ok === true && !!W.GM_TWISTS, JSON.stringify(ok));
+check('foes are NOT read from the vault (export only): no Bullpen module is defined', !('gm-bullpen' in vault.VAULT_MODULES) && !('openFoeBuilder' in foes));
 check('twist tables: generic + every region has minor and major', Object.entries(W.GM_TWISTS).every(([, v]) => v.minor?.length && v.major?.length) && Object.keys(W.GM_TWISTS).length >= 15);
 check('every dataset region has its own twist list', W.REGIONS.every(r => W.GM_TWISTS[r.id]), W.REGIONS.filter(r => !W.GM_TWISTS[r.id]).map(r => r.id).join());
 check('twistRegions lists the regions with their pt names', twists.twistRegions(W.GM_TWISTS).length === W.REGIONS.length);
 check('twist: real tables give text for every region/kind', W.REGIONS.every(r => ['minor', 'major'].every(k => typeof twists.pickTwist(W.GM_TWISTS, r.id, k) === 'string')));
-const models = foes.foeModels(W.GM_BULLPEN_DATA);
-check('bullpen models: lacaios and tenentes with dice', models.minion.length >= 10 && models.lieutenant.length >= 4 && [...models.minion, ...models.lieutenant].every(m => ['d4', 'd6', 'd8', 'd10', 'd12'].includes(m.d) && m.n));
-check('bullpen: tenentes have ability pairs, lacaios at most one', models.lieutenant.every(m => Array.isArray(m.a) && m.a.every(p => p.length === 2)) && models.minion.every(m => m.a === null || m.a.length === 2));
-const real = foes.buildFoeActors({ model: models.minion[0], kind: 'minion', count: foes.defaultCount('minion', 4) });
-check('real model → 4 actors with the model die', real.length === 4 && real.every(a => a.system.dieType === models.minion[0].d));
 
 // The Screen's backup: sealed with the vault key, opened here, foes become actors' data.
 const raw = await vault.deriveRawKey(process.env.GM_PASSWORD);

@@ -11,20 +11,9 @@ const VAULT_URL = 'systems/runeterra/data/gm-vault.js';
 /** What each module defines, and which module must run before it. */
 export const VAULT_MODULES = {
   'gm-villain-data': { global: 'GM_VDATA', needs: [] },
-  'gm-twists': { global: 'GM_TWISTS', needs: [] },
-  // The Bullpen keeps its ready examples inside a closure; exposeBullpenData() adds one line (below)
-  // so they can be read. The sealed file itself is never modified.
-  'gm-bullpen': { global: 'GM_BULLPEN_DATA', needs: ['gm-villain-data'], patch: exposeBullpenData }
+  'gm-twists': { global: 'GM_TWISTS', needs: [] }
+  // Lacaios, tenentes, ambientes… are NOT read from the vault: they come by export from the Forja (forge.js).
 };
-
-/** Add a line to the Bullpen module's source that exposes its example lists. Throws if the book changed. */
-export function exposeBullpenData(src) {
-  const anchor = 'window.GM_BULLPEN = {';
-  if (!src.includes(anchor) || !/\bconst MINIONS\b/.test(src) || !/\bconst LIEUTENANTS\b/.test(src)) {
-    throw new Error('O módulo da Bancada mudou de formato: não foi possível ler os lacaios e tenentes de exemplo.');
-  }
-  return src.replace(anchor, `window.GM_BULLPEN_DATA = { MINIONS, LIEUTENANTS };\n  ${anchor}`);
-}
 
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const toB64 = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes)));
@@ -96,9 +85,8 @@ function runModule(name) {
   const def = VAULT_MODULES[name];
   if (!def) throw new Error(`Módulo "${name}" desconhecido.`);
   for (const dep of def.needs) runModule(dep);
-  let src = payload.modules?.[name];
+  const src = payload.modules?.[name];
   if (!src) throw new Error(`O cofre não tem o módulo "${name}".`);
-  if (def.patch) src = def.patch(src);
   new Function('window', src)(win());
   if (!win()[def.global]) throw new Error(`O módulo "${name}" abriu, mas não definiu ${def.global}.`);
   ran.add(name);
