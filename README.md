@@ -68,3 +68,12 @@ Exemplo — dano em área nos selecionados: selecione os tokens e rode
 - **O botão de importação sobrevive a re-renders** do diretório de Atores (re-injetado por
   observação de mutação); se algum dia desaparecer, `game.runeterra.importChampion(json)` na
   console faz a mesma coisa.
+
+## Manutenção dos dados (sincronizar com o site)
+
+Os catálogos em `data/` são cópias dos arquivos do site (`js/`). Para não divergirem:
+`node scripts/sync-from-web.mjs` (copia o que mudou), `--check` (só compara), `--pull`
+(`git pull --ff-only` no clone do site antes) e `--test` (roda os testes depois). O caminho do
+clone vem de `--web <dir>` ou da variável `WEB_REPO`. Testes de lógica (Node puro):
+`test-retcon`, `test-import-fixture`, `test-zone-locks`, `test-divided` em `scripts/`.
+O material do Mestre do site (cofre cifrado) não é copiado.
