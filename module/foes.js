@@ -3,6 +3,9 @@
 //    becomes actors for the foes on the table (and its challenges, see challenges.js) — a registered Forja format.
 //  • A future Forja export of minions/lieutenants plugs in by registering a format (forge.js) and mapping its
 //    entries to { n, d, t, a, tac } (name, die, summary, ability, tactics — the Screen's model) for buildFoeActors().
+// TODO (open on purpose): the Forja export of minions/lieutenants does not exist yet. When the site defines it,
+// register the format here; until then the minion sheet and a manual create show a "not implemented" notice
+// (RUNETERRA.MinionPendingExport).
 // The pure functions (no Foundry globals) are unit-tested in Node.
 
 import { ensureVaultModules, loadVault, keptKey, openBoxWithRawKey } from './vault.js';

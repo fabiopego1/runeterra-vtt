@@ -119,6 +119,13 @@ Hooks.once('ready', () => {
     } catch (e) { /* dataset ainda carregando */ }
   });
 
+  // Lacaios/Tenentes: the import from the Forja is still to be implemented. Warn the GM who makes one by hand.
+  Hooks.on('createActor', (actor, options, userId) => {
+    if (actor.type === 'minion' && userId === game.user.id && !actor.system.description) {
+      ui.notifications.warn(game.i18n.localize('RUNETERRA.MinionPendingExport'));
+    }
+  });
+
   /** Add the "Importar personagem Runeterra" button to the Actors directory header. */
   // Design: ONE re-injection mechanism (a body-level MutationObserver), not a pile of
   // hooks and timers. The button is appended DOM, so the directory header re-render

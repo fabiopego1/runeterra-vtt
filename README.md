@@ -106,6 +106,8 @@ Usam o mesmo **cofre cifrado** dos antagonistas (senha pedida uma vez por aba; s
 - **Lacaios e tenentes** — **só por export**: o VTT não os lê do cofre nem tem botão de criação. Entram pelo
   **backup do Escudo** (abaixo) e, no futuro, por um export da Forja (formato a registrar, ver "Abertura à Forja").
   Cada lacaio vira um ator do tipo Lacaio (mesmo `group`, então a rolagem de grupo funciona), numa pasta.
+  **Pendente (em aberto de propósito):** o export de lacaios/tenentes da Forja ainda **não foi implementado**.
+  Enquanto isso, a ficha do Lacaio criado à mão e o ato de criá-lo mostram um aviso no Foundry.
 - **Backup do Escudo** — o arquivo *Exportar backup* do Escudo (`runeterra-gm-backup`) é importado
   pelo botão "Importar personagem Runeterra": os lacaios e tenentes da mesa viram atores (desafios e
   antagonistas simples da mesa são avisados, não importados).

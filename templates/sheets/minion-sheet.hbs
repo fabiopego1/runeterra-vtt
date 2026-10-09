@@ -10,6 +10,7 @@
     </div>
   </header>
   <section class="sheet-body">
+    {{#unless system.description}}<p class="rt-import-hint rt-pending-export">{{localize "RUNETERRA.MinionPendingExport"}}</p>{{/unless}}
     <div class="rt-grid">
       <label>{{localize "RUNETERRA.Group"}}</label>
       <input name="system.group" type="text" value="{{system.group}}" />
