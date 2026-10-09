@@ -89,11 +89,14 @@ export async function TaskCheck(actor, { abilityId = null } = {}) {
     flavorIsHTML: false
   };
   // toMessage drops messageData.whisper in v14 — GM secrecy goes through rollMode.
-  const options = actor.type === 'environment' ? { rollMode: 'blindroll' } : {};
+  const options = isGmOnly(actor) ? { rollMode: 'blindroll' } : {};
   await rollResult.toMessage(messageData, options);
   await consumeMods(actor);
   return rollResult;
 }
+
+/** Enemies' rolls (antagonists, minions/lieutenants, environments) are for the GM's eyes only. */
+export const isGmOnly = actor => ['villain', 'minion', 'environment'].includes(actor?.type);
 
 /**
  * Single-die roll (power / quality / status).
@@ -121,7 +124,7 @@ export async function SingleCheck(roll, rollType, rollName, actor) {
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor: render,
     flavorIsHTML: false
-  });
+  }, isGmOnly(actor) ? { rollMode: 'blindroll' } : {});
   await consumeMods(actor);
   return rollResult;
 }
@@ -178,7 +181,8 @@ export async function rollMinionGroup(actor, groupName = null) {
   await ChatMessage.create({
     user: game.user.id,
     speaker: ChatMessage.getSpeaker({ actor }),
-    content: render
+    content: render,
+    ...(isGmOnly(actor) ? { whisper: ChatMessage.getWhisperRecipients('GM').map(u => u.id), blind: true } : {})
   });
   return rolls;
 }
