@@ -333,6 +333,7 @@ window.STEP_INTROS = {
   archetype: 'Your <b>Path</b> is how you fight and what role you play in a team. <span class="sc">Sentinels: <b>Step 3 – Archetype</b>. Assign the dice from your Power Source to powers/qualities, gain Green (and Yellow) abilities and your second principle.</span>',
   personality: 'Your <b>Temperament</b> is how you react under pressure. <span class="sc">Sentinels: <b>Step 4 – Personality</b>. Sets your Green/Yellow/Red status dice, your Out ability, and a d8 custom "roleplaying quality".</span>',
   red: 'Choose two <b>Ultimate techniques</b> — what you unleash when everything is on the line. <span class="sc">Sentinels: <b>Step 5 – Red Abilities</b>. Choose two from categories where you have a power or quality at d6 or higher.</span>',
+  retcon: 'A <b>Twist of Fate</b> lets you tweak your legend before it begins. <span class="sc">Sentinels: <b>Step 6 – Retcon</b>. Take exactly one option.</span>',
   health: 'How much punishment can you take? <span class="sc">Sentinels: <b>Step 7 – Health</b>. 8 + max of Red status die + max of one Athletic power or Mental quality (d4 if none) + d8 roll (or 4).</span>',
   finish: 'Name your champion, describe them, and give your abilities proper Runeterran names. <span class="sc">Sentinels: <b>Step 8 – Finishing Touches</b>.</span>'
 };

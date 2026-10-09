@@ -19,10 +19,10 @@
     military: ['Militar', 'Soldado, legionário, guerreiro de um bando de guerra.', 'Você sangrou numa guerra organizada, fosse numa muralha de escudos, numa legião em marcha ou num saque, e ainda se move como um soldado.'],
     retired: ['Aposentado', 'Você pendurou a espada há muito tempo. Agora ela te chama de novo.', 'Seus feitos são cantados em tavernas por toda parte, mas você deixou essa vida para trás. Algo te arrastou de volta para uma última luta.'],
     criminal: ['Criminoso', 'Contrabandista, pirata ou ladrão tentando virar a página.', 'Você passou tempo demais do lado errado da lei, nas docas, nos becos ou nos antros da cidade. Agora usa seus talentos para algo melhor... quase sempre.'],
-    medical: ['Médico', 'Cirurgião, herbalista, curandeiro ou alquimista.', 'Você remendou os feridos, seja com bisturi e remédios, com ervas e emplastros ou com magia de cura. Conhece o corpo como poucos.'],
+    medical: ['Curandeiro', 'Cirurgião, herbalista, médico ou alquimista.', 'Você remendou os feridos, seja com bisturi e remédios, com ervas e emplastros ou com magia de cura. Conhece o corpo como poucos.'],
     anachronistic: ['Anacrônico', 'Alguém de uma era antiga, ou perdido no tempo.', 'Você pertence a outra época, seja um império há muito caído, uma guerra de séculos atrás ou um futuro ainda não escrito. Este tempo não é o seu, mas você luta por ele mesmo assim.'],
     exile: ['Exilado', 'Expulso, fugitivo ou mandado para longe de casa.', 'Sua terra natal te marcou como traidor, desertor ou monstro. Você vaga longe de casa, abrindo o próprio caminho em terras que não confiam em você.'],
-    'former-villain': ['Ex-Vilão', 'Você já serviu ao crime, a uma cabala ou a algo mais sombrio.', 'Você já lutou contra os heróis a serviço de um chefão do crime, de uma sociedade secreta ou de uma força maligna. Mudou de lado, mas muita gente ainda não confia em você.'],
+    'former-villain': ['Ex-Antagonista', 'Você já serviu ao crime, a uma cabala ou a algo mais sombrio.', 'Você já lutou contra os heróis a serviço de um chefão do crime, de uma sociedade secreta ou de uma força maligna. Mudou de lado, mas muita gente ainda não confia em você.'],
     interstellar: ['Celestial', 'Visitante celestial, ser forjado nas estrelas ou mortal que tocou os céus.', 'Você vem de além do céu. Pode ser um ser celestial, uma estrela caída ou um mortal que voltou mudado depois de tocar as estrelas. Os costumes deste mundo te parecem estranhos.'],
     dynasty: ['Dinastia', 'Sua família produz campeões há gerações.', 'Seja descendente de imperadores, herdeiro de uma linhagem de heróis ou filho de uma família de magos, todos esperam heroísmo de você.'],
     otherworldly: ['Extraordinário', 'Tocado pelo sobrenatural. Humano, só em parte, se tanto.', 'Você carrega o sobrenatural no sangue: filho de um espírito, descendente de um semideus ou nascido de um povo mágico. Você nunca se encaixou por completo entre os mortais.'],
@@ -132,4 +132,14 @@
   };
   for (const list of [W.BACKGROUNDS, W.POWER_SOURCES, W.ARCHETYPES, W.PERSONALITIES]) for (const x of list) if (CHAMPS[x.champs]) x.champs = CHAMPS[x.champs];
 
+  // Reviravoltas do Destino: nome + descrição em pt (sc continua sendo a regra em inglês)
+  patch(W.RETCONS, {
+    'swap-powers': ['Dons Trocados', 'Troque dois dados quaisquer entre os seus poderes.'],
+    'swap-quals': ['Retreinado', 'Troque dois dados quaisquer entre as suas qualidades.'],
+    'change-ability': ['Nova Técnica', 'Muda o poder ou qualidade de uma habilidade da Fonte ou do Caminho. Supremas não entram.'],
+    'add-d6': ['Talento Oculto', 'Adicione um poder ou qualidade d6 de qualquer categoria.'],
+    'red-up': ['Vontade de Ferro', 'Aumente seu dado de status Vermelho em um tamanho (máximo d12).'],
+    'change-principle': ['Convicções Mudadas', 'Troque um dos seus princípios por qualquer outro princípio.'],
+    'extra-red': ['Reservas Ocultas', 'Ganhe uma habilidade Vermelha extra, como descrito no passo das Supremas.']
+  }, (x, v) => { x.rt = v[0]; x.desc = v[1]; });
 })();

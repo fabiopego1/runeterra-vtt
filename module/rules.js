@@ -119,6 +119,15 @@ export function computeTraits(character) {
     }
   }
 
+  // Twist of Fate (Retcon): swap two dice, or add a d6 trait. (red-up → computeStatus.)
+  const rc = character?.retcon;
+  if ((rc?.type === 'swap-powers' || rc?.type === 'swap-quals') && rc.a && rc.b && rc.a !== rc.b && T[rc.a] && T[rc.b]) {
+    const d = T[rc.a].die; T[rc.a].die = T[rc.b].die; T[rc.b].die = d;
+  }
+  if (rc?.type === 'add-d6' && rc.key && catalog.trait(rc.key) && !T[rc.key]) {
+    T[rc.key] = { key: rc.key, die: 'd6', src: ['Reviravolta do Destino'] };
+  }
+
   const powers = {}, qualities = {};
   for (const t of Object.values(T)) {
     (catalog.trait(t.key).kind === 'power' ? powers : qualities)[t.key] = t.die;
@@ -126,11 +135,26 @@ export function computeTraits(character) {
   return { powers, qualities };
 }
 
+/**
+ * Principle id of a slot ('bg'|'arch') after the evolution overlay and the Twist of Fate
+ * "Changed Convictions" (retcon.which = slot, retcon.principle = new id).
+ */
+export function effectivePrincipleId(character, slot) {
+  const base = character?.[slot]?.principle;
+  if (!base) return null;
+  const evo = character?.evo?.principles?.[slot];
+  if (evo) return evo;
+  const rc = character?.retcon;
+  return rc?.type === 'change-principle' && rc.which === slot && rc.principle ? rc.principle : base;
+}
+
 /** Status dice from the Temperament (green/yellow/red); second set for Divided heroes. */
 export function computeStatus(character) {
   const pers = character?.pers?.id ? catalog.personality(character.pers.id) : null;
   if (!pers) return { status: null, status2: null };
   const status = pers.status.slice();
+  // Twist of Fate "Iron Will": Red status die +1 size (max d12).
+  if (character.retcon?.type === 'red-up') status[2] = 'd' + Math.min(12, dn(status[2]) + 2);
   let status2 = null;
   if (character.pers.id2 && character.pers.id2 !== character.pers.id) {
     const pers2 = catalog.personality(character.pers.id2);

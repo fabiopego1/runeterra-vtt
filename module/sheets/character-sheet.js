@@ -2,7 +2,7 @@
 // The champion sheet follows the web app's playable ficha (ficha.html): identity + principles,
 // powers/qualities, status dice, health zones with per-zone abilities, and the auxiliary page.
 import { catalog } from '../data/catalog.js';
-import { derive, effectiveZone, dividedModeOf, slotKinds } from '../rules.js';
+import { derive, effectiveZone, dividedModeOf, slotKinds, effectivePrincipleId } from '../rules.js';
 import * as dice from '../dice.js';
 import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
@@ -60,7 +60,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
   _principles(character) {
     const out = [];
     for (const slot of ['bg', 'arch']) {
-      const id = character?.[slot]?.principle;
+      const id = effectivePrincipleId(character, slot);
       if (!id) continue;
       const def = catalog.principle(id);
       if (!def) continue;
@@ -128,6 +128,25 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     return { tables, out: await this._outRow(character), outActive: currentZone === 'out' };
   }
 
+  /** Twist of Fate (Retcon) the champion took: what it was and what it changed. */
+  _retconCard(ch) {
+    const rc = ch?.retcon;
+    const def = rc?.type ? (window.RETCONS ?? []).find(r => r.id === rc.type) : null;
+    if (!def) return null;
+    const tn = k => (k ? catalog.traitName(k, ch) : '—');
+    const detail = {
+      'swap-powers': () => `${tn(rc.a)} ⇄ ${tn(rc.b)}`,
+      'swap-quals': () => `${tn(rc.a)} ⇄ ${tn(rc.b)}`,
+      'add-d6': () => `${tn(rc.key)} (d6)`,
+      'change-principle': () => (rc.principle ? catalog.principleName(rc.principle) : ''),
+      'change-ability': () => (rc.trait ? tn(rc.trait) : '')
+    }[rc.type]?.();
+    return {
+      title: game.i18n.localize('RUNETERRA.Retcon'),
+      lines: [`${def.rt} — ${def.desc ?? def.sc}`, ...(detail ? [detail] : [])]
+    };
+  }
+
   /** Special archetype play cards, read from the character's own creation data. */
   _specialArchetype(ch) {
     const archDef = ch?.arch?.id ? catalog.archetype(ch.arch.id) : null;
@@ -182,6 +201,8 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       }
       out.cards.push({ title: game.i18n.localize('RUNETERRA.SpecialFormChanger'), lines });
     }
+    const retcon = this._retconCard(ch);
+    if (retcon) out.cards.push(retcon);
     if (ch.arch.notes) out.cards.push({ title: game.i18n.localize('RUNETERRA.Notes'), lines: [ch.arch.notes] });
     return out.cards.length ? out : null;
   }

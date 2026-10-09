@@ -4,7 +4,7 @@
 // created when validation passes. Derived values are always RECALCULATED, never trusted.
 
 import { catalog } from './data/catalog.js';
-import { derive } from './rules.js';
+import { derive, effectivePrincipleId } from './rules.js';
 import { HealthUpdate } from './status.js';
 
 /** Bracket-token pt-BR labels (from the web app). */
@@ -74,6 +74,29 @@ export function parseChampion(json) {
     }
   }
   return { state, errors };
+}
+
+/**
+ * Warnings (not errors) for state the importer would otherwise ignore silently:
+ * unknown principle ids and a Twist of Fate whose choices don't resolve in the dataset.
+ */
+export function stateWarnings(state) {
+  const w = [];
+  for (const slot of ['bg', 'arch']) {
+    const pid = effectivePrincipleId(state, slot);
+    if (pid && !catalog.principle(pid)) w.push(`princípio "${pid}" (${slot}) não existe no dataset — ignorado.`);
+  }
+  const rc = state.retcon;
+  if (rc?.type) {
+    const need = (ok, what) => { if (!ok) w.push(`Reviravolta "${rc.type}": ${what} — a escolha não foi aplicada.`); };
+    if (!(window.RETCONS ?? []).some(r => r.id === rc.type)) w.push(`Reviravolta "${rc.type}" desconhecida — ignorada.`);
+    else if (rc.type === 'swap-powers' || rc.type === 'swap-quals') need(catalog.trait(rc.a) && catalog.trait(rc.b) && rc.a !== rc.b, 'traços a/b inválidos');
+    else if (rc.type === 'add-d6') need(catalog.trait(rc.key) && !!rc.key, 'traço inválido');
+    else if (rc.type === 'change-principle') need(['bg', 'arch'].includes(rc.which) && catalog.principle(rc.principle), 'princípio/slot inválido');
+    else if (rc.type === 'change-ability') need(rc.ab && catalog.trait(rc.trait), 'habilidade/traço inválido');
+    else if (rc.type === 'extra-red') need((state.sel?.['red-extra'] ?? []).length > 0, 'nenhuma Suprema extra no JSON');
+  }
+  return w;
 }
 
 /**
@@ -149,7 +172,7 @@ export async function buildChampionImport(json) {
   const { state, errors } = parseChampion(json);
   if (!state || errors.length) return { ok: false, errors: errors ?? ['JSON inválido.'] };
 
-  const warnings = [];
+  const warnings = stateWarnings(state);
   const ch = state.info ?? {};
 
   // Derive (recalculate — never trust cached values).
@@ -187,6 +210,7 @@ export async function buildChampionImport(json) {
         sel: state.sel ?? {},
         renames: state.renames ?? {},
         traitNames: state.traitNames ?? {},
+        retcon: state.retcon ?? { type: null },
         evo: state.evo ?? { traits: {}, principles: {}, abilities: {}, log: [] },
         info: { ...ch, portrait: undefined }
       },
@@ -211,14 +235,22 @@ export async function buildChampionImport(json) {
 
   // Ability items from sel (+ principles as green abilities).
   const items = [];
-  for (const [gkey, list] of Object.entries(state.sel ?? {})) {
+  const rc = state.retcon ?? {};
+  for (const [srcKey, list] of Object.entries(state.sel ?? {})) {
     if (!Array.isArray(list)) continue;
+    // Twist of Fate "Hidden Reserves": the extra Ultimate is a Red ability (only with that retcon).
+    if (srcKey === 'red-extra' && rc.type !== 'extra-red') continue;
+    const gkey = srcKey === 'red-extra' ? 'red' : srcKey;
     const zone = GROUP_ZONE[gkey] ?? 'green';
-    for (const entry of list) {
+    for (let entry of list) {
       if (!entry?.name) continue;
       const def = catalog.ability(entry.name);
       if (!def) continue; // validation already reported it
       const iid = iidOf(gkey, entry);
+      // Twist of Fate "New Technique": this ability now uses another power/quality.
+      if (rc.type === 'change-ability' && rc.ab === iid && rc.trait && catalog.trait(rc.trait)) {
+        entry = { ...entry, trait: rc.trait };
+      }
       const srcText = window.I18N?.text?.[def.text] ?? def.text;
       items.push({
         name: state.renames?.[iid]?.trim() || catalog.abilityName(entry.name),
@@ -237,7 +269,8 @@ export async function buildChampionImport(json) {
       });
     }
   }
-  for (const [slot, pid] of [['bg', state.bg?.principle], ['arch', state.arch?.principle]]) {
+  for (const slot of ['bg', 'arch']) {
+    const pid = effectivePrincipleId(state, slot);
     const def = pid ? catalog.principle(pid) : null;
     if (!def) continue;
     const element = state.pch?.[slot];
