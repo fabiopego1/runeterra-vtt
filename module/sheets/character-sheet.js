@@ -280,7 +280,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.isVillain = this.actor.type === 'villain';
 
       data.derived = derived;
-      data.healthRanges = this._healthRanges(derived.health);
+      data.healthRanges = this._healthRanges(derived?.health);
       data.powers = derived ? this._traitRows(derived.powers, ch) : [];
       data.qualities = derived ? this._traitRows(derived.qualities, ch) : [];
       data.principles = this._principles(ch);
