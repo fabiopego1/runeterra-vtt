@@ -287,7 +287,7 @@ export async function buildChampionImport(json) {
     });
   }
 
-  return { ok: true, actorData, items, warnings };
+  return { ok: true, actorData, items, warnings, hasPortrait: !!ch.portrait };
 }
 
 /**
@@ -311,22 +311,51 @@ export async function importChampion(json) {
 }
 
 /**
- * Fill an existing empty champion actor in place (the sheet's import button).
- * Replaces name, portrait and system; ability items are rebuilt from scratch.
+ * Is this actor a champion that already has a built character (i.e. a re-import, not a first fill)?
+ */
+export function isBuiltChampion(actor) {
+  const c = actor?.system?.character;
+  return !!(c?.bg?.id || c?.ps?.id || c?.arch?.id || c?.pers?.id);
+}
+
+/**
+ * Pure: the update payload for importing INTO an existing actor. A first fill takes everything
+ * from the JSON; a re-import (actor already built) keeps what only Foundry knows — current Health
+ * (clamped to the new max) — and the actor's portrait unless the JSON carries one.
+ */
+export function mergeForReimport(built, actor, reimport) {
+  const { name, img, system } = built.actorData;
+  const out = { name, system: foundry.utils.deepClone(system) };
+  if (!reimport) return { ...out, img };
+  if (built.hasPortrait) out.img = img;
+  const max = system.health.max;
+  const held = Number.parseInt(actor.system?.play?.current ?? actor.system?.health?.value, 10);
+  const value = Number.isFinite(held) ? Math.max(0, Math.min(held, max)) : max;
+  out.system.health = { value, max };
+  out.system.play.current = String(value);
+  return out;
+}
+
+/**
+ * Fill an existing champion actor in place. On an empty shell (the sheet's import button) it
+ * takes everything from the JSON; on an already-built champion it is a RE-import: abilities that
+ * came from an import (iid set) are rebuilt, hand-made ones, mods, scene/mode state and the current
+ * Health are kept. Items are only touched after the JSON validated (all-or-nothing).
  */
 export async function importIntoChampion(actor, json) {
   const built = await buildChampionImport(json);
   if (!built.ok) return built;
-  const { name, img, system } = built.actorData;
+  const reimport = isBuiltChampion(actor);
+  const update = mergeForReimport(built, actor, reimport);
 
-  const staleIds = actor.items.filter(i => i.type === 'ability').map(i => i.id);
+  const staleIds = actor.items.filter(i => i.type === 'ability' && (!reimport || i.system.iid)).map(i => i.id);
   if (staleIds.length) await actor.deleteEmbeddedDocuments('Item', staleIds);
-  await actor.update({ name, img, system });
+  await actor.update(update);
   if (built.items.length) await actor.createEmbeddedDocuments('Item', built.items);
 
   try {
     await HealthUpdate(actor);
   } catch (e) { /* sheet render-time sync covers it as fallback */ }
 
-  return { ok: true, actor, warnings: built.warnings };
+  return { ok: true, actor, warnings: built.warnings, reimport };
 }

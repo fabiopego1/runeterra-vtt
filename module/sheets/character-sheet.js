@@ -6,7 +6,7 @@ import { derive, effectiveZone, dividedModeOf, slotKinds, effectivePrincipleId }
 import * as dice from '../dice.js';
 import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentStatusDie } from '../status.js';
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
-import { importIntoChampion, pickChampionJson } from '../import.js';
+import { importIntoChampion, pickChampionJson, isBuiltChampion } from '../import.js';
 
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
 const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
@@ -28,6 +28,47 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     if (actor.type !== 'champion') return false;
     const c = actor.system?.character;
     return !c?.bg?.id && !c?.ps?.id && !c?.arch?.id && !c?.pers?.id;
+  }
+
+  /** A built champion gets a header button to update it from a newer JSON (keeps Health, mods…). */
+  _getHeaderButtons() {
+    const buttons = super._getHeaderButtons();
+    if (this.actor.type === 'champion' && this.actor.isOwner && isBuiltChampion(this.actor)) {
+      buttons.unshift({
+        label: game.i18n.localize('RUNETERRA.Reimport'),
+        class: 'rt-reimport',
+        icon: 'fas fa-file-import',
+        onclick: () => this._onReimport()
+      });
+    }
+    return buttons;
+  }
+
+  async _onReimport() {
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: { title: game.i18n.localize('RUNETERRA.Reimport') },
+      content: `<p>${game.i18n.localize('RUNETERRA.ReimportConfirm')}</p>`
+    });
+    if (!ok) return;
+    const text = await pickChampionJson();
+    if (text == null) return;
+    await this._runImport(text);
+  }
+
+  /** Shared by the empty-sheet import and the re-import: run it and report. */
+  async _runImport(text) {
+    const res = await importIntoChampion(this.actor, text);
+    if (res.ok) {
+      const key = res.reimport ? 'RUNETERRA.ReimportSuccess' : 'RUNETERRA.ImportSuccess';
+      const msgs = [game.i18n.format(key, { name: res.actor.name })];
+      for (const w of res.warnings ?? []) msgs.push(w);
+      ui.notifications.info(msgs.join(' '), { permanent: true });
+      this.render(true);
+    } else {
+      ui.notifications.error(
+        game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
+        { permanent: true });
+    }
   }
 
   get template() {
@@ -469,17 +510,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
     html.find('.rt-import-json').click(async () => {
       const text = await pickChampionJson();
       if (text == null) return;
-      const res = await importIntoChampion(this.actor, text);
-      if (res.ok) {
-        const msgs = [game.i18n.format('RUNETERRA.ImportSuccess', { name: res.actor.name })];
-        for (const w of res.warnings ?? []) msgs.push(w);
-        ui.notifications.info(msgs.join(' '), { permanent: true });
-        this.render(true);
-      } else {
-        ui.notifications.error(
-          game.i18n.localize('RUNETERRA.ImportFailed') + ' ' + res.errors.join(' | '),
-          { permanent: true });
-      }
+      await this._runImport(text);
     });
     // Single-slot buttons follow the slot's current kind (Divided Psyche swaps kinds).
     html.find('.roll-slot').click(ev => {
