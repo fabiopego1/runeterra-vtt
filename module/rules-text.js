@@ -56,7 +56,7 @@ export function decorateRulesHtml(html) {
   return String(html ?? '').split(/(<[^>]+>)/).map(part => {
     if (!part || part.startsWith('<')) return part;
     return part.replace(TERM_RE_PT, (m, dsz, br, term) => {
-      if (dsz) return `<span class="rt-die">${dsz}</span>`;
+      if (dsz) return `<span class="rt-dchip">${dsz}</span>`;
       if (br) return m;                                  // other [tokens]: left as the importer wrote them
       const key = glossKey(term);
       const g = key ? gloss[key] : null;

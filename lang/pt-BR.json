@@ -2,8 +2,8 @@
   "ACTOR": {
     "TypeChampion": "Campeão",
     "TypeChampionPl": "Campeões",
-    "TypeVillain": "Vilão",
-    "TypeVillainPl": "Vilões",
+    "TypeVillain": "Antagonista",
+    "TypeVillainPl": "Antagonistas",
     "TypeMinion": "Lacaio",
     "TypeMinionPl": "Lacaios",
     "TypeEnvironment": "Ambiente",
@@ -26,8 +26,8 @@
     "TypeTwistPl": "Reviravoltas",
     "TypeMinionForm": "Forma de Lacaio",
     "TypeMinionFormPl": "Formas de Lacaio",
-    "TypeVillainStatus": "Status de Vilão",
-    "TypeVillainStatusPl": "Status de Vilão"
+    "TypeVillainStatus": "Status de Antagonista",
+    "TypeVillainStatusPl": "Status de Antagonista"
   },
   "RUNETERRA": {
     "SystemTitle": "Forja de Campeões · Runeterra",
@@ -144,7 +144,7 @@
     "TwistYellowMajor": "Reviravolta maior (Zona Amarela)",
     "TwistRedMinor": "Reviravolta menor (Zona Vermelha)",
     "TwistRedMajor": "Reviravolta maior (Zona Vermelha)",
-    "Villain": "Vilão",
+    "Villain": "Antagonista",
     "Approach": "Abordagem",
     "Environment": "Ambiente",
     "Minion": "Lacaio",
@@ -180,7 +180,7 @@
     "ClickTraitHint": "Clique para usar este traço na rolagem (o dado de Status segue a Vida e a Cena automaticamente).",
     "TraitSet": "{trait} ({die}) definido como dado de rolagem.",
     "NoTokensSelected": "Nenhum token de campeão/vilão selecionado.",
-    "VillainStatusAuto": "O dado de Status é automático (Temperamento + Vida + Cena) — itens de Status de Vilão não alteram o dado.",
+    "VillainStatusAuto": "O dado de Status é automático (Temperamento + Vida + Cena) — itens de Status de Antagonista não alteram o dado.",
     "AbilitiesHint": "As habilidades e seus nomes personalizados são gerenciados pelo criador da Forja de Campeões e chegam pela importação.",
     "SceneSteps": "Passos",
     "Type": "Tipo"

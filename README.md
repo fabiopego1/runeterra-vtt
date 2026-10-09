@@ -22,7 +22,7 @@ independente sobre a base técnica do sistema SCRPG não-oficial
   exclusivos com aviso de penalidade esquecida.
 - **Gestor de Cena** com passos configuráveis por zona que mudam o cenário para todos
   os campeões.
-- Vilões (mesma construção de campeões), Lacaios e Ambientes com reviravoltas.
+- Antagonistas (ex-Vilões; mesma construção de campeões), Lacaios e Ambientes com reviravoltas.
 - Interface própria (tinta/hextech), Português (Brasil) como idioma principal.
 
 ## Instalação

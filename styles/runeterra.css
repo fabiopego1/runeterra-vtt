@@ -550,7 +550,7 @@
   margin: 0 0 4px;
   padding: 0;
 }
-.rt-roll-dice { display: flex; gap: 14px; margin: 4px 0; }
+.rt-roll-dice { display: flex; gap: 8px; margin: 4px 0; }
 .rt-die { text-align: center; min-width: 44px; max-width: 120px; flex: 1 1 0; }
 .rt-die img { display: block; width: 34px; height: 34px; margin: 0 auto; opacity: .9; }
 .rt-die-total { display: block; font: 500 1.25rem 'IBM Plex Mono', monospace; color: var(--gold-hi); }
@@ -565,7 +565,8 @@
 .rt-die-name {
   display: block;
   margin-top: 2px;
-  font-size: .78rem;
+  font-family: 'Barlow Semi Condensed', sans-serif;  /* condensed: long trait names fit narrow chat cards */
+  font-size: .8rem;
   line-height: 1.25;
   color: var(--text-2);
   overflow-wrap: break-word;
@@ -711,7 +712,7 @@
 .rt-act-hinder { color: #c58fe0; }
 .rt-act-recover { color: #5fc9c0; }
 .rt-term { border-bottom: 1px dotted var(--gold); cursor: help; }
-.rt-die {
+.rt-dchip {
   display: inline-block; padding: 0 5px; font: 600 .8em/1.4 'IBM Plex Mono', monospace;
   color: var(--gold-hi); border: 1px solid var(--gold); border-radius: 3px;
 }

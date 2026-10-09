@@ -2,8 +2,8 @@
   "ACTOR": {
     "TypeChampion": "Champion",
     "TypeChampionPl": "Champions",
-    "TypeVillain": "Villain",
-    "TypeVillainPl": "Villains",
+    "TypeVillain": "Antagonist",
+    "TypeVillainPl": "Antagonists",
     "TypeMinion": "Minion",
     "TypeMinionPl": "Minions",
     "TypeEnvironment": "Environment",
@@ -26,8 +26,8 @@
     "TypeTwistPl": "Twists",
     "TypeMinionForm": "Minion Form",
     "TypeMinionFormPl": "Minion Forms",
-    "TypeVillainStatus": "Villain Status",
-    "TypeVillainStatusPl": "Villain Status"
+    "TypeVillainStatus": "Antagonist Status",
+    "TypeVillainStatusPl": "Antagonist Status"
   },
   "RUNETERRA": {
     "SystemTitle": "Champion Forge · Runeterra",
@@ -144,7 +144,7 @@
     "TwistYellowMajor": "Major twist (Yellow zone)",
     "TwistRedMinor": "Minor twist (Red zone)",
     "TwistRedMajor": "Major twist (Red zone)",
-    "Villain": "Villain",
+    "Villain": "Antagonist",
     "Approach": "Approach",
     "Environment": "Environment",
     "Minion": "Minion",
@@ -180,7 +180,7 @@
     "ClickTraitHint": "Click to use this trait in the roll (the Status die follows Health and the Scene automatically).",
     "TraitSet": "{trait} ({die}) set as the roll die.",
     "NoTokensSelected": "No champion/villain token selected.",
-    "VillainStatusAuto": "The Status die is automatic (Temperament + Health + Scene) — Villain Status items do not change the die.",
+    "VillainStatusAuto": "The Status die is automatic (Temperament + Health + Scene) — Antagonist Status items do not change the die.",
     "AbilitiesHint": "Abilities and their custom names are managed by the Champion Forge creator and arrive via import.",
     "SceneSteps": "Steps",
     "Type": "Type"

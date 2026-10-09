@@ -365,7 +365,7 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
       data.twists = await Promise.all(this.actor.items.filter(i => i.type === 'twist').map(async i => ({
         id: i.id,
         name: i.name,
-        text: await foundry.applications.ux.TextEditor.implementation.enrichHTML(i.system.description ?? '')
+        text: decorateRulesHtml(await foundry.applications.ux.TextEditor.implementation.enrichHTML(i.system.description ?? ''))
       })));
       const zone = ['green', 'yellow', 'red'].includes(sys.scene) ? sys.scene : 'green';
       data.statusZone = zone;

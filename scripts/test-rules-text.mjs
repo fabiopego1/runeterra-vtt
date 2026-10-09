@@ -26,7 +26,7 @@ const out = decorateRulesHtml('Ataque usando <strong>Cósmico</strong>, aplicand
 check('term gets a tooltip', /<span class="rt-term" data-tooltip="[^"]*Dado M/.test(out), out);
 check('dado Mín text preserved', />dado Mín<\/span>/.test(out));
 check('Zona Verde decorated', />Zona Verde<\/span>/.test(out));
-check('[d8] becomes a die chip', out.includes('<span class="rt-die">d8</span>') && !out.includes('[d8]'));
+check('[d8] becomes a die chip', out.includes('<span class="rt-dchip">d8</span>') && !out.includes('[d8]'));
 check('markup untouched', out.includes('<strong>Cósmico</strong>'));
 check('attributes are never decorated', decorateRulesHtml('<a title="dado Mín">x</a>') === '<a title="dado Mín">x</a>');
 check('"próximo turno" is not "nearby"', !/rt-term/.test(decorateRulesHtml('até o início do seu próximo turno')));

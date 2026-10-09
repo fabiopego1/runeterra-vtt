@@ -360,5 +360,15 @@ export async function importIntoChampion(actor, json) {
     await HealthUpdate(actor);
   } catch (e) { /* sheet render-time sync covers it as fallback */ }
 
-  return { ok: true, actor, warnings: built.warnings, reimport };
+  // Hand-made abilities are kept on a re-import; flag the ones that now duplicate an imported ability.
+  const warnings = [...built.warnings];
+  if (reimport) {
+    const imported = new Set(built.items.map(i => (i.system.canonicalName || i.name).toLowerCase()).concat(built.items.map(i => i.name.toLowerCase())));
+    for (const i of actor.items) {
+      if (i.type === 'ability' && !i.system.iid && (imported.has(i.name.toLowerCase()) || imported.has((i.system.canonicalName ?? '').toLowerCase()))) {
+        warnings.push(`A habilidade criada à mão "${i.name}" repete uma habilidade importada — apague uma das duas se for a mesma.`);
+      }
+    }
+  }
+  return { ok: true, actor, warnings, reimport };
 }

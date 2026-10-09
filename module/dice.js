@@ -2,6 +2,7 @@
 // Core mechanic preserved: three dice (Poder / Qualidade / Status) rolled as one pool
 // "{a,b,c}", sorted → Máx/Méd/Mín. Mods (bonus/penalty items) included.
 import { catalog } from './data/catalog.js';
+import { decorateRulesHtml } from './rules-text.js';
 import { resolveStatusDie } from './status.js';
 import { slotKinds } from './rules.js';
 
@@ -75,7 +76,8 @@ export async function TaskCheck(actor, { abilityId = null } = {}) {
   const ability = abilityId ? actor.items.get(abilityId) : null;
   if (ability) {
     const gameText = await foundry.applications.ux.TextEditor.implementation
-      .enrichHTML(ability.system.gameText ?? ability.system.description ?? '');
+      .enrichHTML(ability.system.gameText ?? ability.system.description ?? '')
+      .then(decorateRulesHtml);
     flavor = (await foundry.applications.handlebars.renderTemplate(
       'systems/runeterra/templates/chat/abilityroll.hbs', { item: ability, gameText })) + render;
   }
@@ -134,7 +136,7 @@ export async function OutRoll(actor) {
   const raw = window.I18N?.text?.[pers.out] ?? pers.out ?? '';
   const traitName = ch.pers.outTrait ? catalog.traitName(ch.pers.outTrait, ch) : '[…]';
   const text = raw.replace(/\[(power|quality)\]/g, `<strong>${traitName}</strong>`);
-  const gameText = await foundry.applications.ux.TextEditor.implementation.enrichHTML(text);
+  const gameText = decorateRulesHtml(await foundry.applications.ux.TextEditor.implementation.enrichHTML(text));
   const item = { name: game.i18n.localize('RUNETERRA.Knockout'), system: { zone: 'out' } };
   const render = await foundry.applications.handlebars.renderTemplate(
     'systems/runeterra/templates/chat/abilityroll.hbs', { item, gameText });
