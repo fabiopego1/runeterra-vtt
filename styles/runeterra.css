@@ -40,6 +40,642 @@
   --chamfer: 14px;
 }
 
+
+/* ============================================================
+   Global Foundry UI skin — ported from the (now unlinked) runeterra-theme module, so the system carries
+   its own look: windows, buttons, forms, sidebar, chat, notifications, scene controls, hotbar, journals…
+   Scoped with :where(body.game) = zero specificity, so every sheet rule above/below still wins.
+   --rt-* are aliases of the system tokens at the top of this file.
+   ============================================================ */
+:root {
+  --rt-ink-0: var(--ink-0); --rt-ink-1: var(--ink-1); --rt-ink-2: var(--ink-2); --rt-ink-3: var(--ink-3);
+  --rt-line: var(--line); --rt-line-2: var(--line-2);
+  --rt-text: var(--text); --rt-text-2: var(--text-2); --rt-text-3: var(--text-3);
+  --rt-gold: var(--gold); --rt-gold-hi: var(--gold-hi); --rt-gold-lo: var(--gold-lo); --rt-hex: var(--hex);
+  --rt-zone-g: var(--zone-g); --rt-zone-y: var(--zone-y); --rt-zone-r: var(--zone-r); --rt-chamfer: var(--chamfer);
+}
+
+/* ---------- Variable remaps (same scopes Foundry uses, loaded after core) ----------
+   Foundry V14 defines its theme variables on `body` and refines them in
+   `body.game .app` / `body.theme-light` / `body.theme-dark`. We redefine the
+   semantic layer so BOTH core themes resolve to the Runeterra palette. */
+body,
+body.game .app,
+body.game .themed,
+body.game .themed.theme-light,
+body.game .themed.theme-dark,
+body.theme-light,
+body.theme-dark {
+  /* primitives */
+  --color-warm-1: var(--rt-gold);
+  --color-warm-2: var(--rt-zone-r);
+  --color-warm-3: var(--rt-gold-lo);
+  --color-dark-1: var(--rt-ink-0);
+  --color-dark-2: var(--rt-ink-1);
+  --color-dark-3: var(--rt-ink-2);
+  --color-dark-4: var(--rt-ink-3);
+  --color-dark-5: #2e3340;
+  --color-dark-6: #3a3f47;
+  --color-light-1: var(--rt-text);
+  --color-light-2: var(--rt-text-2);
+  --color-light-3: #c9bfa4;
+  --color-light-4: var(--rt-text-3);
+  --color-light-5: #6d685d;
+  --color-light-6: #55514a;
+  --color-cool-3: #303540;
+  --color-cool-4: #1c2028;
+  --color-cool-5: var(--rt-ink-0);
+  --color-cool-5-25: rgba(12, 13, 16, .25);
+  --color-cool-5-50: rgba(12, 13, 16, .5);
+  --color-cool-5-75: rgba(12, 13, 16, .75);
+  --color-cool-5-90: rgba(12, 13, 16, .9);
+
+  /* semantic text */
+  --color-text-primary: var(--rt-text);
+  --color-text-secondary: var(--rt-text-2);
+  --color-text-emphatic: var(--rt-text);
+  --color-text-accent: var(--rt-gold);
+  --color-text-light-0: #f4efe2;
+  --color-text-light-1: var(--rt-text);
+  --color-text-light-2: var(--rt-text-2);
+  --color-text-light-3: var(--rt-text-3);
+  --color-text-light-heading: var(--rt-text);
+  --color-text-light-primary: var(--rt-text);
+  --color-text-light-secondary: var(--rt-text-2);
+  --color-text-light-tertiary: var(--rt-text-3);
+  --color-text-light-highlight: var(--rt-gold-hi);
+  --color-text-light-inactive: var(--rt-text-3);
+  --color-text-dark-1: var(--rt-ink-0);
+  --color-text-dark-2: var(--rt-ink-1);
+  --color-text-dark-3: var(--rt-ink-2);
+  --color-text-dark-primary: var(--rt-ink-0);
+  --color-text-dark-secondary: var(--rt-ink-1);
+  --color-text-dark-header: var(--rt-ink-2);
+  --color-text-dark-inactive: var(--rt-text-3);
+  --color-text-hyperlink: var(--rt-hex);
+  --color-text-inactive: var(--rt-text-3);
+  --color-text-selection: var(--rt-text);
+  --color-text-selection-bg: var(--rt-gold-lo);
+
+  /* semantic borders & surfaces */
+  --color-border: var(--rt-line);
+  --color-border-dark: var(--rt-ink-0);
+  --color-border-dark-1: var(--rt-ink-0);
+  --color-border-dark-2: var(--rt-ink-1);
+  --color-border-dark-3: var(--rt-ink-2);
+  --color-border-dark-primary: var(--rt-gold-lo);
+  --color-border-dark-secondary: var(--rt-line);
+  --color-border-dark-tertiary: var(--rt-line);
+  --color-border-light-1: var(--rt-line-2);
+  --color-border-light-2: var(--rt-line);
+  --color-border-light-highlight: var(--rt-gold-hi);
+  --color-border-light-primary: var(--rt-gold-lo);
+  --color-border-light-secondary: var(--rt-line-2);
+  --color-border-light-tertiary: var(--rt-line);
+  --color-border-highlight: var(--rt-gold);
+  --color-bg: var(--rt-ink-1);
+  --color-header-background: var(--rt-ink-2);
+  --color-data-background: var(--rt-ink-0);
+  --color-data-border: var(--rt-line);
+  --color-fieldset-border: var(--rt-line);
+  --color-form-label: var(--rt-text-3);
+  --color-form-hint: var(--rt-text-3);
+  --color-code-bg: var(--rt-ink-0);
+  --color-code-border: var(--rt-line);
+  --color-select-option-bg: var(--rt-ink-2);
+  --color-scrollbar: var(--rt-gold-lo);
+  --color-scrollbar-track: transparent;
+  --color-shadow-dark: rgba(0, 0, 0, .5);
+  --color-shadow-primary: rgba(0, 0, 0, .5);
+  --color-shadow-highlight: rgba(0, 0, 0, .35);
+  --color-level-info: var(--rt-hex);
+  --color-level-info-bg: rgba(18, 20, 25, .92);
+  --color-level-info-border: var(--rt-hex);
+  --color-level-success: var(--rt-zone-g);
+  --color-level-success-bg: rgba(18, 20, 25, .92);
+  --color-level-success-border: var(--rt-zone-g);
+  --color-level-warning: var(--rt-zone-y);
+  --color-level-warning-bg: rgba(18, 20, 25, .92);
+  --color-level-warning-border: var(--rt-zone-y);
+  --color-level-error: var(--rt-zone-r);
+  --color-level-error-bg: rgba(18, 20, 25, .92);
+  --color-level-error-border: var(--rt-zone-r);
+  --color-ownership-none: var(--rt-text-3);
+  --color-ownership-observer: var(--rt-gold);
+  --color-ownership-owner: var(--rt-zone-g);
+
+  /* typography */
+  --font-primary: 'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+  --font-sans: 'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+  --font-serif: 'Marcellus', Georgia, serif;
+  --font-monospace: 'IBM Plex Mono', ui-monospace, monospace;
+
+  color-scheme: dark;
+}
+
+/* ---------- Application windows ---------- */
+:where(body.game) .window-app {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-gold-lo);
+  border-radius: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+:where(body.game) .window-app .window-header {
+  background: var(--rt-ink-2);
+  border-bottom: 1px solid var(--rt-gold-lo);
+  color: var(--rt-text-2);
+  flex: none;
+}
+:where(body.game) .window-app .window-header .window-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .74rem;
+  letter-spacing: .08em;
+  color: var(--rt-text-2);
+}
+:where(body.game) .window-app .window-header .header-button,
+:where(body.game) .window-app .window-header .header-control {
+  color: var(--rt-text-3);
+}
+:where(body.game) .window-app .window-header .header-button:hover,
+:where(body.game) .window-app .window-header .header-control:hover {
+  color: var(--rt-gold-hi);
+  text-shadow: none;
+}
+:where(body.game) .window-app .window-content,
+:where(body.game) .window-app .window-content .themed,
+:where(body.game) .window-app.themed .window-content {
+  background: var(--rt-ink-1);
+  background-image: none;
+  color: var(--rt-text);
+}
+/* Kill the parchment paper texture in the light theme. */
+:where(body.game) .window-app.themed.theme-light .window-content,
+:where(body.game) .themed.theme-light .window-content,
+:where(body.game) .window-app .themed.theme-light {
+  background: var(--rt-ink-1);
+  background-image: none;
+}
+:where(body.game) .window-app .window-content > form,
+:where(body.game) .window-app .window-content > .form-group,
+:where(body.game) .window-app .window-content section {
+  color: var(--rt-text);
+}
+
+/* Section headings inside apps: mono eyebrows. */
+:where(body.game) .window-content h1, :where(body.game) .window-content h2 {
+  font-family: 'Marcellus', Georgia, serif;
+  color: var(--rt-gold-hi);
+  font-weight: 400;
+}
+:where(body.game) .window-content h3, :where(body.game) .window-content h4, :where(body.game) .window-content h5 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--rt-gold);
+  border-bottom: 1px solid var(--rt-line);
+  padding-bottom: 3px;
+}
+
+/* ---------- Buttons: quiet by default, gold on hover, one primary look ---------- */
+/* NOTE: never set font-family on the broad button selector — V14 icon buttons carry
+   fa-* classes directly, and a winning font-family here turns glyphs into tofu. */
+:where(body.game) button,
+:where(body.game) .dialog-buttons button,
+:where(body.game) button.ui-control {
+  background: transparent;
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text-2);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+:where(body.game) button:not([class*="fa-"]) { font-family: 'Barlow Semi Condensed', sans-serif; }
+:where(body.game) button:hover,
+:where(body.game) .dialog-buttons button:hover,
+:where(body.game) button.ui-control:hover {
+  border-color: var(--rt-gold);
+  color: var(--rt-gold-hi);
+  background: var(--rt-ink-2);
+  box-shadow: none;
+}
+:where(body.game) button:focus-visible,
+:where(body.game) .dialog-buttons button:focus-visible {
+  outline: 1px solid var(--rt-gold);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+:where(body.game) button.default,
+:where(body.game) .dialog-buttons button.default,
+:where(body.game) button.primary {
+  background: var(--rt-gold);
+  border-color: var(--rt-gold);
+  color: #17130b;
+  font-weight: 600;
+}
+:where(body.game) button.default:hover,
+:where(body.game) .dialog-buttons button.default:hover,
+:where(body.game) button.primary:hover {
+  background: var(--rt-gold-hi);
+  border-color: var(--rt-gold-hi);
+  color: #17130b;
+}
+:where(body.game) button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Forms ---------- */
+:where(body.game) input[type="text"],
+:where(body.game) input[type="number"],
+:where(body.game) input[type="password"],
+:where(body.game) input[type="date"],
+:where(body.game) input[type="time"],
+:where(body.game) input[type="search"] {
+  background: var(--rt-ink-0);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text);
+  font-family: inherit;
+}
+:where(body.game) input:hover { border-color: var(--rt-gold-lo); }
+:where(body.game) input:focus { border-color: var(--rt-gold); outline: none; box-shadow: 0 0 0 1px var(--rt-gold-lo); }
+:where(body.game) input::placeholder { color: var(--rt-text-3); }
+:where(body.game) textarea {
+  background: var(--rt-ink-0);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text);
+  font-family: inherit;
+}
+:where(body.game) textarea:focus { border-color: var(--rt-gold); outline: none; }
+:where(body.game) select {
+  background: var(--rt-ink-2);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text);
+  font-family: inherit;
+}
+:where(body.game) select:focus { border-color: var(--rt-gold); outline: none; }
+:where(body.game) select option { background: var(--rt-ink-2); color: var(--rt-text); }
+:where(body.game) select optgroup { background: var(--rt-ink-2); color: var(--rt-gold); }
+:where(body.game) input[type="checkbox"], :where(body.game) input[type="radio"] { accent-color: var(--rt-gold); }
+:where(body.game) input[type="range"] { accent-color: var(--rt-gold); }
+:where(body.game) fieldset { border: 1px solid var(--rt-line); border-radius: 0; }
+:where(body.game) .form-group > label { color: var(--rt-text-2); }
+:where(body.game) .form-group .hint { color: var(--rt-text-3); }
+:where(body.game) .form-group label, :where(body.game) .form-group .form-fields { color: var(--rt-text); }
+:where(body.game) .sheet .form-group label { font-weight: 500; }
+
+/* ---------- Sidebar ---------- */
+:where(body.game) #sidebar {
+  background: var(--rt-ink-1);
+  border-left: 1px solid var(--rt-gold-lo);
+}
+:where(body.game) #sidebar-tabs {
+  background: var(--rt-ink-0);
+  border-bottom: 1px solid var(--rt-gold-lo);
+  box-shadow: none;
+}
+:where(body.game) #sidebar-tabs > .item {
+  color: var(--rt-text-3);
+  border-radius: 0;
+  text-shadow: none;
+}
+:where(body.game) #sidebar-tabs > .item:hover { color: var(--rt-text); }
+:where(body.game) #sidebar-tabs > .item.active {
+  color: var(--rt-gold-hi);
+  background: var(--rt-ink-2);
+  box-shadow: inset 0 -2px 0 var(--rt-gold);
+  text-shadow: none;
+}
+:where(body.game) .sidebar-tab .directory-header {
+  border-bottom: 1px solid var(--rt-line);
+  background: transparent;
+}
+:where(body.game) .sidebar-tab .directory-header .window-title,
+:where(body.game) .sidebar-tab .directory-header h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--rt-gold);
+  text-shadow: none;
+}
+:where(body.game) .sidebar-tab .directory-list .directory-item { border-color: var(--rt-line); }
+:where(body.game) .sidebar-tab .directory-list .document-name,
+:where(body.game) .sidebar-tab .directory-list a {
+  color: var(--rt-text);
+  text-shadow: none;
+}
+:where(body.game) .sidebar-tab .directory-list .document-name:hover,
+:where(body.game) .sidebar-tab .directory-list a:hover { color: var(--rt-gold-hi); }
+:where(body.game) .sidebar-tab .directory-list .folder > .folder-header {
+  background: var(--rt-ink-2);
+  color: var(--rt-text-2);
+  border-top: 1px solid var(--rt-line);
+  text-shadow: none;
+}
+:where(body.game) .sidebar-tab .directory-list .folder > .folder-header a {
+  color: var(--rt-text-2);
+  text-shadow: none;
+}
+:where(body.game) .sidebar-tab .directory-list .folder.collapsed > .folder-header { background: var(--rt-ink-2); }
+:where(body.game) .sidebar .directory .actions,
+:where(body.game) .sidebar .directory .item-control { color: var(--rt-text-3); }
+:where(body.game) .sidebar .directory .item-control:hover { color: var(--rt-gold-hi); }
+:where(body.game) .sidebar-tab input[type="search"] { background: var(--rt-ink-0); }
+
+/* ---------- Chat ---------- */
+:where(body.game) #chat { background: var(--rt-ink-1); }
+:where(body.game) #chat-controls { border-top: 1px solid var(--rt-line); background: var(--rt-ink-0); }
+:where(body.game) .chat-controls .control-buttons button { color: var(--rt-text-3); }
+:where(body.game) .chat-controls .control-buttons button.active { color: var(--rt-gold); }
+:where(body.game) #chat-form textarea {
+  background: var(--rt-ink-0);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text);
+}
+:where(body.game) .chat-message {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-line);
+  box-shadow: inset 0 0 0 1px var(--rt-gold-lo);
+  border-radius: 0;
+  color: var(--rt-text);
+  backdrop-filter: none;
+}
+:where(body.game) .chat-message > .message-header { color: var(--rt-text-3); border-bottom: 1px dotted var(--rt-line); }
+:where(body.game) .chat-message .message-sender { color: var(--rt-text-2); }
+:where(body.game) .chat-message .message-metadata { color: var(--rt-text-3); }
+:where(body.game) .chat-message .message-content { color: var(--rt-text); }
+:where(body.game) .chat-message .flavor-text { color: var(--rt-text-2); }
+:where(body.game) .chat-message .roll-formula,
+:where(body.game) .chat-message .dice-formula,
+:where(body.game) .chat-message .part-formula {
+  background: var(--rt-ink-0);
+  border: 1px solid var(--rt-line);
+  border-radius: 0;
+  color: var(--rt-text-2);
+  box-shadow: none;
+  text-shadow: none;
+}
+:where(body.game) .chat-message .dice-total,
+:where(body.game) .chat-message .part-total {
+  background: var(--rt-ink-0);
+  border: 1px solid var(--rt-gold-lo);
+  border-radius: 0;
+  color: var(--rt-gold-hi);
+  box-shadow: none;
+  text-shadow: none;
+}
+:where(body.game) .chat-message.whisper { background: var(--rt-ink-2); box-shadow: inset 0 0 0 1px var(--rt-text-3); }
+:where(body.game) .chat-message.blind { background: var(--rt-ink-2); box-shadow: inset 0 0 0 1px var(--rt-zone-r); }
+:where(body.game) .chat-message em { color: var(--rt-text-2); }
+
+/* ---------- Notifications, tooltips, context menus ---------- */
+:where(body.game) .notification {
+  background: var(--rt-ink-2);
+  border: 1px solid var(--rt-gold-lo);
+  border-left-width: 3px;
+  border-radius: 0;
+  color: var(--rt-text);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+  text-shadow: none;
+}
+:where(body.game) .notification.error { border-left-color: var(--rt-zone-r); }
+:where(body.game) .notification.warning { border-left-color: var(--rt-zone-y); }
+:where(body.game) .notification.info { border-left-color: var(--rt-hex); }
+:where(body.game) .notification.success { border-left-color: var(--rt-zone-g); }
+:where(body.game) #tooltip, :where(body.game) .tooltip, :where(body.game) .hover-tip .tooltip {
+  background: var(--rt-ink-0);
+  border: 1px solid var(--rt-gold-lo);
+  border-radius: 0;
+  color: var(--rt-text);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .55);
+}
+:where(body.game) #tooltip .tooltip-header, :where(body.game) .tooltip .tooltip-header {
+  background: var(--rt-ink-2);
+  border-bottom: 1px solid var(--rt-gold-lo);
+  color: var(--rt-gold-hi);
+  font-family: 'Marcellus', Georgia, serif;
+}
+:where(body.game) #tooltip .tooltip-part { border-top: 1px dotted var(--rt-line); }
+:where(body.game) #tooltip .tip-warning { color: var(--rt-zone-y); }
+:where(body.game) .context-menu, :where(body.game) .menu {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-gold-lo);
+  border-radius: 0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .55);
+  color: var(--rt-text);
+}
+:where(body.game) .context-menu li .context-item,
+:where(body.game) .menu li .context-item {
+  color: var(--rt-text-2);
+  border-radius: 0;
+}
+:where(body.game) .context-menu li .context-item:hover,
+:where(body.game) .menu li .context-item:hover {
+  background: var(--rt-ink-3);
+  color: var(--rt-gold-hi);
+  text-shadow: none;
+  box-shadow: none;
+}
+
+/* ---------- Scene navigation ---------- */
+:where(body.game) #navigation {
+  background: transparent;
+}
+:where(body.game) #nav-toggle { color: var(--rt-text-2); }
+:where(body.game) #scene-list .scene {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text-2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .45);
+  text-shadow: none;
+}
+:where(body.game) #scene-list .scene:hover { border-color: var(--rt-gold); color: var(--rt-text); }
+:where(body.game) #scene-list .scene.view {
+  border-color: var(--rt-gold);
+  color: var(--rt-gold-hi);
+  box-shadow: inset 0 -2px 0 var(--rt-gold), 0 4px 14px rgba(0, 0, 0, .45);
+}
+:where(body.game) #scene-list .scene.gm { background: var(--rt-ink-2); }
+
+/* ---------- Left controls (toolbar) ---------- */
+/* V14 structure: #scene-controls > #scene-controls-layers / #scene-controls-tools
+   (the old #controls .control-icon selectors are kept for older layouts). */
+:where(body.game) #controls,
+:where(body.game) #scene-controls {
+  background: transparent;
+}
+:where(body.game) #controls .control-icon,
+:where(body.game) #controls .control-tool,
+:where(body.game) #controls .scene-control,
+:where(body.game) #scene-controls-layers button,
+:where(body.game) #scene-controls-tools button {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text-2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .45);
+}
+:where(body.game) #controls .control-icon:hover,
+:where(body.game) #controls .control-tool:hover,
+:where(body.game) #controls .scene-control:hover,
+:where(body.game) #scene-controls-layers button:hover,
+:where(body.game) #scene-controls-tools button:hover {
+  color: var(--rt-text);
+  border-color: var(--rt-gold-lo);
+  background: var(--rt-ink-2);
+}
+:where(body.game) #controls .control-icon.active,
+:where(body.game) #controls .control-tool.active,
+:where(body.game) #controls .scene-control.active,
+:where(body.game) #scene-controls-layers button[aria-pressed="true"],
+:where(body.game) #scene-controls-tools button[aria-pressed="true"] {
+  color: var(--rt-gold-hi);
+  border-color: var(--rt-gold);
+  background: var(--rt-ink-2);
+  box-shadow: inset 0 -2px 0 var(--rt-gold-lo), 0 4px 14px rgba(0, 0, 0, .45);
+}
+:where(body.game) #controls .control-icon .bar { background: var(--rt-gold); }
+
+/* ---------- Hotbar & players list ---------- */
+:where(body.game) #hotbar { background: transparent; }
+:where(body.game) #hotbar .bar-toggle {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text-3);
+}
+:where(body.game) #hotbar .macro {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .45);
+}
+:where(body.game) #hotbar .macro:hover { border-color: var(--rt-gold); box-shadow: 0 0 0 1px var(--rt-gold-lo); }
+:where(body.game) #hotbar .macro .macro-key {
+  color: var(--rt-text-3);
+  font-family: 'IBM Plex Mono', monospace;
+  text-shadow: none;
+}
+:where(body.game) #players {
+  /* The outer container must stay transparent: Foundry anchors the inner panel
+     (players list + performance stats) to the bottom, so an opaque background here
+     shows up as a dark box sticking out above the visible panel when expanded. */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+:where(body.game) #players .players-list,
+:where(body.game) #players > div {
+  border-radius: 0;
+}
+
+/* ---------- Combat tracker ---------- */
+:where(body.game) #combat {
+  background: var(--rt-ink-1);
+  border-color: var(--rt-line);
+}
+:where(body.game) #combat #combat-tracker-header {
+  background: var(--rt-ink-2);
+  border-bottom: 1px solid var(--rt-gold-lo);
+}
+:where(body.game) #combat #combat-round .encounters, :where(body.game) #combat h3 {
+  color: var(--rt-gold);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: .1em;
+  text-shadow: none;
+}
+:where(body.game) #combat #combat-tracker-list .combatant {
+  color: var(--rt-text);
+  border-bottom: 1px solid var(--rt-line);
+}
+:where(body.game) #combat #combat-tracker-list .combatant:hover { background: var(--rt-ink-2); }
+:where(body.game) #combat #combat-tracker-list .combatant.active {
+  background: var(--rt-ink-2);
+  box-shadow: inset 3px 0 0 var(--rt-gold);
+}
+:where(body.game) #combat #combat-tracker-list .combatant .token-name,
+:where(body.game) #combat #combat-tracker-list .combatant .token-initiative { text-shadow: none; color: var(--rt-text); }
+:where(body.game) #combat .combatant .combatant-control { color: var(--rt-text-3); }
+:where(body.game) #combat .combatant .combatant-control.active { color: var(--rt-gold); }
+
+/* ---------- Token HUD ---------- */
+:where(body.game) .hud .control-icon {
+  background: var(--rt-ink-1);
+  border: 1px solid var(--rt-line-2);
+  border-radius: 0;
+  color: var(--rt-text-2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+}
+:where(body.game) .hud .control-icon:hover { border-color: var(--rt-gold); color: var(--rt-gold-hi); }
+:where(body.game) .hud .control-icon.active { border-color: var(--rt-gold); color: var(--rt-gold-hi); background: var(--rt-ink-2); }
+
+/* ---------- Journal & ProseMirror editor ---------- */
+:where(body.game) .journal-sheet .window-content,
+:where(body.game) .journal-entry,
+:where(body.game) .journal-entry-page,
+:where(body.game) .journal-entry-page .page-content {
+  background: var(--rt-ink-1);
+  color: var(--rt-text);
+  background-image: none;
+}
+:where(body.game) .journal-sheet .journal-header input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted var(--rt-line-2);
+  color: var(--rt-gold-hi);
+  font-family: 'Marcellus', Georgia, serif;
+}
+:where(body.game) .prose-mirror, :where(body.game) prose-mirror {
+  background: var(--rt-ink-0);
+  color: var(--rt-text);
+}
+:where(body.game) .prose-mirror menu, :where(body.game) prose-mirror menu {
+  background: var(--rt-ink-2);
+  border-bottom: 1px solid var(--rt-line);
+}
+:where(body.game) .prose-mirror .editor-content, :where(body.game) prose-mirror .editor-content {
+  color: var(--rt-text);
+  font-family: 'Barlow Semi Condensed', sans-serif;
+}
+:where(body.game) .editor-content h1, :where(body.game) .editor-content h2 { font-family: 'Marcellus', Georgia, serif; color: var(--rt-gold-hi); }
+:where(body.game) .editor-content h3, :where(body.game) .editor-content h4 { font-family: 'IBM Plex Mono', monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--rt-gold); font-size: .8rem; }
+:where(body.game) .editor-content a { color: var(--rt-hex); }
+:where(body.game) .editor-content blockquote { border-left: 3px solid var(--rt-gold-lo); color: var(--rt-text-2); }
+:where(body.game) .editor-content hr { border-color: var(--rt-line); }
+
+/* ---------- Cards, hand, tables, playlists, etc.: shared panel look ---------- */
+:where(body.game) .card-draw, :where(body.game) .card-list, :where(body.game) .playlist, :where(body.game) .sound,
+:where(body.game) table { color: var(--rt-text); }
+:where(body.game) table { border-color: var(--rt-line); }
+:where(body.game) table tr:nth-child(even) { background: var(--rt-ink-2); }
+:where(body.game) table td, :where(body.game) table th { border-color: var(--rt-line); }
+
+/* ---------- Scrollbars ---------- */
+:where(body.game) * { scrollbar-width: thin; scrollbar-color: var(--rt-gold-lo) transparent; }
+:where(body.game) ::-webkit-scrollbar { width: 8px; height: 8px; }
+:where(body.game) ::-webkit-scrollbar-track { background: transparent; }
+:where(body.game) ::-webkit-scrollbar-thumb {
+  background: var(--rt-gold-lo);
+  border: none;
+  border-radius: 0;
+}
+:where(body.game) ::-webkit-scrollbar-thumb:hover { background: var(--rt-gold); }
+:where(body.game) ::-webkit-scrollbar-corner { background: transparent; }
+
+/* ---------- Selection & focus ---------- */
+:where(body.game) ::selection { background: var(--rt-gold-lo); color: var(--rt-text); }
+:where(body.game) :focus-visible { outline: 1px solid var(--rt-gold); outline-offset: 1px; }
+
+/* ---------- Progress bars (loading, xp) ---------- */
+:where(body.game) .progress-bar { background: var(--rt-ink-0); border: 1px solid var(--rt-line-2); border-radius: 0; }
+:where(body.game) .progress-bar .bar { background: var(--rt-gold); }
+
 /* ---------- Window frame: Foundry's parchment overridden with the ink surface,
    chamfered top-left / bottom-right like the ficha pages. ---------- */
 .runeterra.sheet.actor,
@@ -202,8 +838,7 @@
   flex: 0 0 auto;
 }
 .runeterra .rt-rollbar button:hover { color: var(--gold-hi); border-color: var(--gold); }
-/* !important: the runeterra-theme module resets every button (background/font)
-   from layer(modules), which beats layer(system) regardless of specificity. */
+/* !important: kept from when a separate theme module reset every button from layer(modules). */
 .runeterra .rt-rollbar button.make-roll {
   background: var(--gold) !important;
   border-color: var(--gold) !important;
@@ -778,8 +1413,8 @@
    Runeterra · skin pass — the site's look on top of runeterra.css:
    translucent "ink glass" surfaces over Foundry's canvas, the site's cartographer's contour lines,
    chamfered frames with a gold corner line, callout notices, consistent fields.
-   Loaded after runeterra.css. `!important` is needed where the runeterra-theme module (layer: modules)
-   restyles the same property: module layers beat system layers regardless of specificity.
+   Sheet-level skin. The global Foundry skin (ex-runeterra-theme module) lives above, scoped with :where().
+   Some `!important`s remain from when the module competed from layer(modules).
    ============================================================ */
 
 :root {
@@ -887,3 +1522,61 @@ li.chat-message, .chat-message {
   backdrop-filter: blur(6px);
   border-color: var(--glass-line) !important;
 }
+
+/* ============================================================
+   Global glass — the same translucent ink + contour language for Foundry's own interface.
+   ============================================================ */
+/* AppV2 windows (dialogs, settings, configuration sheets…): glass, chamfered frame, gold corner lines. */
+body.game .application:has(> .window-header) {
+  background: var(--contour), var(--glass);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  border-radius: 0;
+  box-shadow: none;
+  clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+}
+body.game .application:has(> .window-header) > .window-header { background: rgba(8, 9, 12, .55); border-bottom: 1px solid var(--glass-line); }
+body.game .application:has(> .window-header) > .window-content { background: transparent; }
+body.game .application:has(> .window-header)::before,
+body.game .application:has(> .window-header)::after {
+  content: ''; position: absolute; width: var(--chamfer); height: var(--chamfer); pointer-events: none; z-index: 5;
+  background: linear-gradient(to bottom right, transparent calc(50% - .6px), var(--gold-lo) calc(50% - .6px), var(--gold-lo) calc(50% + .6px), transparent calc(50% + .6px));
+}
+body.game .application:has(> .window-header)::before { top: 0; left: 0; }
+body.game .application:has(> .window-header)::after { bottom: 0; right: 0; }
+body.game .application .dialog-buttons, body.game .application footer.form-footer { gap: 6px; }
+body.game .application button.default, body.game .application .form-footer button.default {
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+/* Sidebar & chat: translucent panels over the canvas. */
+body.game #sidebar { background: rgba(14, 15, 19, .74); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-left: 1px solid var(--glass-line); }
+body.game #sidebar-tabs { background: rgba(8, 9, 12, .55); }
+body.game #chat { background: transparent; }
+body.game #chat-controls { background: rgba(8, 9, 12, .45); }
+body.game #chat-form textarea, body.game .sidebar-tab input[type="search"] { background: rgba(8, 9, 12, .5); }
+body.game .sidebar-tab .directory-list .folder > .folder-header { background: rgba(255, 255, 255, .035); }
+body.game .chat-message.whisper { background: rgba(25, 28, 34, .82) !important; }
+body.game .chat-message.blind { background: rgba(40, 22, 22, .82) !important; }
+
+/* Floating controls, scene tabs, hotbar, notifications, tooltips, menus. */
+body.game #scene-list .scene,
+body.game #scene-controls-layers button, body.game #scene-controls-tools button,
+body.game #hotbar .macro, body.game #hotbar .bar-toggle {
+  background: rgba(18, 20, 25, .62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-color: var(--glass-line);
+  box-shadow: none;
+}
+body.game #scene-controls-layers button[aria-pressed="true"], body.game #scene-controls-tools button[aria-pressed="true"],
+body.game #scene-list .scene.view { box-shadow: inset 0 -2px 0 var(--gold-lo); }
+body.game .notification, body.game #tooltip, body.game .tooltip, body.game .context-menu, body.game .menu {
+  background: rgba(14, 15, 19, .90);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-color: var(--glass-line);
+}
+body.game #players .players-list, body.game #players > div { background: rgba(14, 15, 19, .60); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+body.game #combat { background: rgba(14, 15, 19, .74); }

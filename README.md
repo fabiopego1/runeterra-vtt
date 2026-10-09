@@ -58,6 +58,9 @@ Exemplo — dano em área nos selecionados: selecione os tokens e rode
 
 ## Decisões de design
 
+- **Visual todo no sistema**: fichas, diálogos, barra lateral, chat, atalhos e notificações usam vidro translúcido
+  (tinta + o mapa de contorno do site) em `styles/runeterra.css`. O antigo módulo `runeterra-theme` não é mais
+  necessário e deve ficar desativado (seu CSS global foi incorporado, com escopo `:where()` para não brigar com as fichas).
 - **Status é automático**: o dado de Status é sempre recalculado (Temperamento → zona de Vida;
   a Cena só empurra para baixo: verde→amarelo com Cena amarela, tudo→vermelho com Cena vermelha).
   Não existe seletor manual — é a regra do livro.
