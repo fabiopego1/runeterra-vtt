@@ -739,3 +739,12 @@
 .rt-ant-note { white-space: pre-wrap; color: var(--text-2); }
 .rt-ant-list { margin: 0 0 8px 1.1em; padding: 0; color: var(--text-2); font-size: .88rem; }
 .rt-zone-table-ant h4 { border-left: 3px solid var(--gold); padding-left: 6px; }
+
+/* --- GM twist card, scene twist block, foe builder --- */
+.rt-twist-card h3 { margin: 0 0 4px; }
+.rt-twist-major h3 { color: var(--zone-r, #c8504a); }
+.rt-twist-minor h3 { color: var(--gold-hi); }
+.rt-scene-twist { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); }
+.rt-scene-twist .rt-rollbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rt-foe-builder { display: grid; gap: 8px; }
+.rt-foe-builder label { display: grid; gap: 3px; font-size: .8rem; color: var(--text-2); }

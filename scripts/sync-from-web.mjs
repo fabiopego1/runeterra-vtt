@@ -74,7 +74,7 @@ if (!flag('--check')) {
 }
 
 if (flag('--test')) {
-  for (const t of ['test-retcon', 'test-import-fixture', 'test-rules-text', 'test-antagonist', 'test-zone-locks', 'test-divided']) {
+  for (const t of ['test-retcon', 'test-import-fixture', 'test-rules-text', 'test-antagonist', 'test-gm-tools', 'test-zone-locks', 'test-divided']) {
     console.log(`\n▶ ${t}`);
     try { execFileSync('node', [path.join(root, 'scripts', `${t}.mjs`)], { stdio: 'inherit' }); }
     catch { console.error(`✗ ${t} falhou`); process.exitCode = 5; }

@@ -95,3 +95,39 @@ Vida atual e a situação de Status escolhida).
   a ficha mostra as linhas de Status e o Mestre clica na que vale agora.
 - Testes: `GM_PASSWORD='…' node scripts/test-antagonist.mjs` (a senha nunca vai para o repositório;
   sem ela só rodam as checagens do cofre fechado).
+
+## Ferramentas do Escudo do Mestre no VTT
+
+Usam o mesmo **cofre cifrado** dos antagonistas (senha pedida uma vez por aba; só o Mestre usa).
+
+- **Reviravolta do Mestre** — na ficha da **Cena**: escolha a região e clique em *Reviravolta menor*
+  ou *maior*. O sorteio (mesmas regras do Escudo: lista da região + as 2 primeiras gerais, sem repetir
+  o último) sai no chat **sussurrado só aos Mestres**. API: `game.runeterra.rollTwist({ region, kind })`.
+- **Lacaios e tenentes (Bancada)** — botão no diretório de Atores (só Mestre): escolha um modelo
+  pronto, quantos campeões estão na cena e, se quiser, o nome do grupo. Lacaios: um por campeão;
+  tenentes: metade, arredondando para cima. Cria os atores (tipo Lacaio, mesmo `group`, então a
+  rolagem de grupo funciona) numa pasta, com a descrição, habilidades e tática do modelo.
+  API: `game.runeterra.openFoeBuilder()`.
+- **Backup do Escudo** — o arquivo *Exportar backup* do Escudo (`runeterra-gm-backup`) é importado
+  pelo botão "Importar personagem Runeterra": os lacaios e tenentes da mesa viram atores (desafios e
+  antagonistas simples da mesa são avisados, não importados).
+
+### Abertura à Forja (novos exports)
+
+Todo JSON que a Forja exporta passa por `module/forge.js` (`sniffForge`). Para aceitar um export novo
+basta registrar **um** formato, sem mexer no resto:
+
+```js
+registerForgeFormat({
+  id: 'meu-formato',
+  label: 'Nome para mensagens',
+  detect: o => o?.app === 'runeterra-algo',          // sniff barato do JSON já lido
+  create: async json => ({ ok: true, actor, warnings }), // cria o(s) documento(s)
+  into: async (actor, json) => ({ ok: true, actor })     // opcional: preenche/atualiza uma ficha
+});
+```
+
+Formatos atuais: `champion` e `antagonist` (`module/import.js`), `gm-backup` (`module/foes.js`). Os
+modelos de lacaio/tenente usam o formato do Escudo (`{ n, d, t, a, tac }`), então um export futuro
+de lacaios da Forja entra pelo mesmo caminho (`foeActorData` / `buildFoeActors`).
+Testes: `GM_PASSWORD='…' node scripts/test-gm-tools.mjs`.

@@ -6,7 +6,8 @@
 import { catalog } from './data/catalog.js';
 import { derive, effectivePrincipleId } from './rules.js';
 import { HealthUpdate } from './status.js';
-import { buildAntagonistImport, isAntagonistJson, AntagonistUpdate } from './antagonist.js';
+import { buildAntagonistImport, AntagonistUpdate } from './antagonist.js';
+import { registerForgeFormat, sniffForge } from './forge.js';
 import { ensureVillainData, villainData } from './vault.js';
 
 /** Bracket-token pt-BR labels (from the web app). */
@@ -300,7 +301,8 @@ export async function buildChampionImport(json) {
  * Returns { ok, actor?, errors?, warnings? }.
  */
 export async function importChampion(json) {
-  if (isAntagonistJson(json)) return importAntagonist(json);
+  const fmt = sniffForge(json);
+  if (fmt && fmt.id !== 'champion') return fmt.create(json);   // another Forja export (antagonist, GM backup…)
   const built = await buildChampionImport(json);
   if (!built.ok) return built;
 
@@ -447,7 +449,11 @@ export async function importIntoAntagonist(actor, json) {
  * An Antagonist JSON is routed to importIntoAntagonist.
  */
 export async function importIntoChampion(actor, json) {
-  if (isAntagonistJson(json)) return importIntoAntagonist(actor, json);
+  const fmt = sniffForge(json);
+  if (fmt && fmt.id !== 'champion') {
+    if (fmt.into) return fmt.into(actor, json);
+    return { ok: false, errors: [`Este arquivo é do tipo "${fmt.label}" e não preenche uma ficha: use o botão "Importar personagem Runeterra" do diretório de Atores.`] };
+  }
   if (actor.type === 'villain') return { ok: false, errors: ['Este arquivo é de um Campeão: importe-o numa ficha de Campeão.'] };
   const built = await buildChampionImport(json);
   if (!built.ok) return built;
@@ -475,3 +481,20 @@ export async function importIntoChampion(actor, json) {
   }
   return { ok: true, actor, warnings, reimport };
 }
+
+// ---------------------------------------------------------------- Forja formats handled here
+// New Forja exports register themselves the same way (see forge.js); nothing else needs editing.
+registerForgeFormat({
+  id: 'antagonist',
+  label: 'Antagonista (Forja do Antagonista)',
+  detect: o => o?.app === 'runeterra-antagonist',
+  create: importAntagonist,
+  into: importIntoAntagonist
+});
+registerForgeFormat({
+  id: 'champion',
+  label: 'Campeão (Forja de Campeões)',
+  detect: o => (o?.v === 1 && !!(o.bg || o.ps || o.arch || o.pers)) || o?.format === 'runeterra-foundry',
+  create: importChampion,
+  into: importIntoChampion
+});

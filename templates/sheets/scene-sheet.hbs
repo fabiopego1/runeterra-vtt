@@ -34,6 +34,19 @@
       </div>
     </div>
     {{/each}}
+    {{#if isGM}}
+    <div class="rt-scene-twist">
+      <h4>{{localize "RUNETERRA.TwistTitle"}}</h4>
+      <div class="rt-rollbar">
+        <select class="twist-region">
+          {{#select twistRegion}}<option value="any">{{localize "RUNETERRA.TwistAnywhere"}}</option>{{#each twistRegions}}<option value="{{id}}">{{name}}</option>{{/each}}{{/select}}
+        </select>
+        <button type="button" class="twist-roll" data-kind="minor">{{localize "RUNETERRA.TwistMinor"}}</button>
+        <button type="button" class="twist-roll" data-kind="major">{{localize "RUNETERRA.TwistMajor"}}</button>
+      </div>
+      <p class="rt-hint"><em>{{localize "RUNETERRA.TwistHint"}}</em></p>
+    </div>
+    {{/if}}
     <p class="rt-hint"><em>{{localize "RUNETERRA.SceneHint"}}</em></p>
   </section>
 </form>

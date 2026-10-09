@@ -125,7 +125,9 @@
         },
         "minion": {
             "group": "",
-            "dieType": "d4"
+            "dieType": "d4",
+            "formName": "",
+            "description": ""
         },
         "environment": {
             "templates": ["dice"],
@@ -145,7 +147,8 @@
                 "setting": 2,
                 "current": 0
             },
-            "options": true
+            "options": true,
+            "twistRegion": "any"
         }
     },
     "Item": {

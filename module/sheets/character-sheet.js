@@ -9,6 +9,7 @@ import { HealthUpdate, resolveStatusDie, EnvironmentUpdate, resolveEnvironmentSt
 import { onSetScene, SceneReset, applyPreset } from '../scene.js';
 import { importIntoChampion, pickChampionJson, isBuiltImport } from '../import.js';
 import { AntagonistUpdate } from '../antagonist.js';
+import { rollTwist } from '../twists.js';
 
 const DIE_RANK = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12 };
 const ZONE_RANK = { green: 0, yellow: 1, red: 2, out: 3 };
@@ -356,6 +357,9 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
 
     // Scene tracker: build the space grid for each zone.
     if (this.actor.type === 'scene') {
+      data.isGM = game.user.isGM;
+      data.twistRegions = catalog.regions().map(r => ({ id: r.id, name: r.name }));
+      data.twistRegion = sys.twistRegion ?? 'any';
       const mk = (zone, def) => ({
         zone,
         label: game.i18n.localize(`RUNETERRA.Zone${zone.charAt(0).toUpperCase()}${zone.slice(1)}`),
@@ -753,6 +757,13 @@ export class RuneterraCharacterSheet extends foundry.appv1.sheets.ActorSheet {
 
     // Scene tracker.
     html.find('.scene-click').click(ev => onSetScene(this.actor, ev.currentTarget.dataset.zone));
+    // GM-only twist generator (the Screen's "Gerador de reviravoltas"): whispered to the GMs.
+    html.find('.twist-region').change(ev => this.actor.update({ 'system.twistRegion': ev.currentTarget.value }));
+    html.find('.twist-roll').click(async ev => {
+      const region = html.find('.twist-region').val() || 'any';
+      const res = await rollTwist({ region, kind: ev.currentTarget.dataset.kind });
+      if (!res.ok) ui.notifications.warn(res.error);
+    });
     html.find('.scene-reset').click(async () => {
       await SceneReset(this.actor);
       this.render(false);
